@@ -45,6 +45,10 @@ class Issue implements Comparable<Issue> {
         return instance;
     }
 
+    public File getFile() {
+        return file;
+    }
+
     @Override
     public String toString() {
         return "Issue{" +

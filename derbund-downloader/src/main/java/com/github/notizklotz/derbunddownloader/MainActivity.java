@@ -32,6 +32,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.ListView;
@@ -62,6 +63,16 @@ public class MainActivity extends Activity {
         issuesDirectory = getExternalFilesDir("issues");
 
         ListView listView = (ListView) findViewById(R.id.listView);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Issue selectedIssue = (Issue) parent.getItemAtPosition(position);
+                if (selectedIssue != null) {
+                    openPDF(selectedIssue.getFile());
+                }
+            }
+        });
         listViewAdapter = new ArrayAdapter<Issue>(this,
                 android.R.layout.simple_list_item_1) {
 
