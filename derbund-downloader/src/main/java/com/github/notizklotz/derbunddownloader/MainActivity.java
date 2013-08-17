@@ -80,12 +80,10 @@ public class MainActivity extends Activity {
         };
         listView.setAdapter(listViewAdapter);
 
-        final Context loaderContext = this;
-
         getLoaderManager().initLoader(666, null, new LoaderManager.LoaderCallbacks<List<Issue>>() {
             @Override
             public Loader<List<Issue>> onCreateLoader(int id, Bundle args) {
-                return new IssuesLoader(loaderContext, issuesDirectory);
+                return new IssuesLoader(getApplicationContext(), issuesDirectory);
             }
 
             @Override
@@ -95,7 +93,7 @@ public class MainActivity extends Activity {
 
             @Override
             public void onLoaderReset(Loader<List<Issue>> loader) {
-
+                listViewAdapter.clear();
             }
         });
     }
