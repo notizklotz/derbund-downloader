@@ -1,2 +1,2 @@
-derbund-downloader
-==================
+Der Bund ePaper Downloader
+==========================
