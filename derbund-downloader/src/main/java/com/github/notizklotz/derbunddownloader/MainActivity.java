@@ -18,13 +18,16 @@
 
 package com.github.notizklotz.derbunddownloader;
 
+import android.app.Activity;
+import android.app.LoaderManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.Loader;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Activity;
-import android.text.util.Linkify;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -33,6 +36,7 @@ import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import org.apache.commons.io.IOUtils;
 
@@ -42,30 +46,58 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.DateFormat;
+import java.util.List;
 
 public class MainActivity extends Activity {
 
-    private ArrayAdapter<String> listViewAdapter;
+    private ArrayAdapter<Issue> listViewAdapter;
+    private File issuesDirectory;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        issuesDirectory = getExternalFilesDir("issues");
+
         ListView listView = (ListView) findViewById(R.id.listView);
-        listViewAdapter = new ArrayAdapter<String>(this,
+        listViewAdapter = new ArrayAdapter<Issue>(this,
                 android.R.layout.simple_list_item_1) {
 
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
-                View view = super.getView(position, convertView, parent);
+                TextView view = (TextView) super.getView(position, convertView, parent);
+
                 if(view != null) {
-                    ((TextView)view).setAutoLinkMask(Linkify.WEB_URLS);
+                    Issue item = getItem(position);
+                    String displayText = "Ausgabe " + DateFormat.getDateInstance().format(item.getDate().getTime());
+                    view.setText(displayText);
                 }
+
                 return view;
             }
         };
         listView.setAdapter(listViewAdapter);
+
+        final Context loaderContext = this;
+
+        getLoaderManager().initLoader(666, null, new LoaderManager.LoaderCallbacks<List<Issue>>() {
+            @Override
+            public Loader<List<Issue>> onCreateLoader(int id, Bundle args) {
+                return new IssuesLoader(loaderContext, issuesDirectory);
+            }
+
+            @Override
+            public void onLoadFinished(Loader<List<Issue>> loader, List<Issue> data) {
+                listViewAdapter.addAll(data);
+            }
+
+            @Override
+            public void onLoaderReset(Loader<List<Issue>> loader) {
+
+            }
+        });
     }
 
 
@@ -90,6 +122,8 @@ public class MainActivity extends Activity {
         if (networkInfo != null && networkInfo.isConnected()) {
             new DownloadPaperTask().execute(dayString, monthString, "2013");
         } else {
+            //noinspection ConstantConditions
+            Toast.makeText(getApplicationContext(), R.string.download_noconnection, Toast.LENGTH_SHORT).show();
             Log.d(getClass().toString(), "No network connection");
         }
     }
@@ -102,7 +136,7 @@ public class MainActivity extends Activity {
         try {
             conn.connect();
             is = conn.getInputStream();
-            File outputFile = new File(getExternalFilesDir("issues"), filename);
+            File outputFile = new File(issuesDirectory, filename);
             fileOutputStream = new FileOutputStream(outputFile);
             IOUtils.copy(is, fileOutputStream);
             return outputFile;
@@ -113,13 +147,26 @@ public class MainActivity extends Activity {
         }
     }
 
-    private class DownloadPaperTask extends AsyncTask<String, Void, File> {
-        @Override
-        protected File doInBackground(String... dayMonthYear) {
-            try {
-                String url = "http://epaper.derbund.ch/pdf/" + dayMonthYear[2] + "_3_BVBU-001-" + dayMonthYear[0] + dayMonthYear[1] + ".pdf";
+    @SuppressWarnings("UnusedDeclaration")
+    private void openPDF(File pdfFile) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+        intent.setDataAndType(Uri.fromFile(pdfFile), "application/pdf");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        startActivity(intent);
+    }
 
-                return download(url, dayMonthYear[2] + dayMonthYear[1] + dayMonthYear[0] + ".pdf");
+    private class DownloadPaperTask extends AsyncTask<String, Void, Issue> {
+        @Override
+        protected Issue doInBackground(String... dayMonthYear) {
+            try {
+                String year = dayMonthYear[2];
+                String day = dayMonthYear[0];
+                String month = dayMonthYear[1];
+                String url = "http://epaper.derbund.ch/pdf/" + year + "_3_BVBU-001-" + day + month + ".pdf";
+
+                File download = download(url, year + month + day + ".pdf");
+
+                return new Issue(Integer.parseInt(day), Integer.parseInt(month), Integer.parseInt(year), download);
             } catch (IOException e) {
                 Log.e(getClass().toString(), "Error downloading issue", e);
                 return null;
@@ -127,11 +174,14 @@ public class MainActivity extends Activity {
         }
 
         @Override
-        protected void onPostExecute(File result) {
+        protected void onPostExecute(Issue result) {
             if(result != null) {
-                listViewAdapter.add(result.toString());
+                //noinspection ConstantConditions
+                Toast.makeText(getApplicationContext(), R.string.download_success, Toast.LENGTH_SHORT).show();
+                listViewAdapter.add(result);
             }
         }
     }
+
 
 }

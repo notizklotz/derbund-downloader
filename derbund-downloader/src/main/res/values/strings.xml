@@ -18,9 +18,9 @@
   -->
 
 <resources>
-
     <string name="app_name">Der Bund ePaper Downloader</string>
     <string name="action_settings">Settings</string>
-    <string name="button.download">Download</string>
-
+    <string name="button.download">Herunterladen</string>
+    <string name="download_noconnection">Keine Internetverbindung verfügbar</string>
+    <string name="download_success">Zeitungsausgabe heruntergeladen</string>
 </resources>
