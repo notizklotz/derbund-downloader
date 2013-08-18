@@ -19,6 +19,6 @@
   -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-          android:layout_width="256px"
+          android:layout_width="180px"
           android:layout_height="wrap_content"
-          android:drawableTop="@drawable/pdf_icon"/>
+          android:drawableTop="@drawable/issue"/>
