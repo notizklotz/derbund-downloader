@@ -31,12 +31,10 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
-import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.GridView;
 import android.widget.Toast;
 
 import org.apache.commons.io.IOUtils;
@@ -47,12 +45,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
-import java.text.DateFormat;
 import java.util.List;
 
 public class MainActivity extends Activity {
 
-    private ArrayAdapter<Issue> listViewAdapter;
+    private ArrayAdapter<Issue> issueListAdapter;
     private File issuesDirectory;
 
     @Override
@@ -62,9 +59,8 @@ public class MainActivity extends Activity {
 
         issuesDirectory = getExternalFilesDir("issues");
 
-        ListView listView = (ListView) findViewById(R.id.listView);
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+        GridView gridView = (GridView) findViewById(R.id.gridview);
+        gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Issue selectedIssue = (Issue) parent.getItemAtPosition(position);
@@ -73,25 +69,10 @@ public class MainActivity extends Activity {
                 }
             }
         });
-        listViewAdapter = new ArrayAdapter<Issue>(this,
-                android.R.layout.simple_list_item_1) {
+        issueListAdapter = new ArrayAdapter<Issue>(this, R.layout.issue_item_in_grid);
+        gridView.setAdapter(issueListAdapter);
 
-            @Override
-            public View getView(int position, View convertView, ViewGroup parent) {
-                TextView view = (TextView) super.getView(position, convertView, parent);
-
-                if(view != null) {
-                    Issue item = getItem(position);
-                    String displayText = "Ausgabe " + DateFormat.getDateInstance().format(item.getDate().getTime());
-                    view.setText(displayText);
-                }
-
-                return view;
-            }
-        };
-        listView.setAdapter(listViewAdapter);
-
-        getLoaderManager().initLoader(666, null, new LoaderManager.LoaderCallbacks<List<Issue>>() {
+        getLoaderManager().initLoader(1, null, new LoaderManager.LoaderCallbacks<List<Issue>>() {
             @Override
             public Loader<List<Issue>> onCreateLoader(int id, Bundle args) {
                 return new IssuesLoader(getApplicationContext(), issuesDirectory);
@@ -99,12 +80,12 @@ public class MainActivity extends Activity {
 
             @Override
             public void onLoadFinished(Loader<List<Issue>> loader, List<Issue> data) {
-                listViewAdapter.addAll(data);
+                issueListAdapter.addAll(data);
             }
 
             @Override
             public void onLoaderReset(Loader<List<Issue>> loader) {
-                listViewAdapter.clear();
+                issueListAdapter.clear();
             }
         });
     }
@@ -129,7 +110,7 @@ public class MainActivity extends Activity {
                 getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
         if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadPaperTask().execute(dayString, monthString, "2013");
+            new DownloadPaperTask(this).execute(dayString, monthString, "2013");
         } else {
             //noinspection ConstantConditions
             Toast.makeText(getApplicationContext(), R.string.download_noconnection, Toast.LENGTH_SHORT).show();
@@ -165,6 +146,13 @@ public class MainActivity extends Activity {
     }
 
     private class DownloadPaperTask extends AsyncTask<String, Void, Issue> {
+
+        private final Context context;
+
+        private DownloadPaperTask(Context context) {
+            this.context = context;
+        }
+
         @Override
         protected Issue doInBackground(String... dayMonthYear) {
             try {
@@ -184,10 +172,10 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(Issue result) {
-            if(result != null) {
+            if (result != null) {
                 //noinspection ConstantConditions
-                Toast.makeText(getApplicationContext(), R.string.download_success, Toast.LENGTH_SHORT).show();
-                listViewAdapter.add(result);
+                Toast.makeText(context, R.string.download_success, Toast.LENGTH_SHORT).show();
+                issueListAdapter.add(result);
             }
         }
     }

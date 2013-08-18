@@ -19,6 +19,7 @@
 package com.github.notizklotz.derbunddownloader;
 
 import java.io.File;
+import java.text.DateFormat;
 import java.util.Calendar;
 
 class Issue implements Comparable<Issue> {
@@ -51,12 +52,7 @@ class Issue implements Comparable<Issue> {
 
     @Override
     public String toString() {
-        return "Issue{" +
-                "day=" + day +
-                ", month=" + month +
-                ", year=" + year +
-                ", file=" + file +
-                '}';
+        return DateFormat.getDateInstance().format(getDate().getTime());
     }
 
     @Override
