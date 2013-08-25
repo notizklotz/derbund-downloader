@@ -19,38 +19,31 @@
 package com.github.notizklotz.derbunddownloader;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.LoaderManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
-import android.util.Log;
+import android.os.FileObserver;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.GridView;
-import android.widget.Toast;
-
-import org.apache.commons.io.IOUtils;
 
 import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
+import java.util.Calendar;
 import java.util.List;
 
 public class MainActivity extends Activity {
 
     private ArrayAdapter<Issue> issueListAdapter;
     private File issuesDirectory;
+    private FileObserver fileObserver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,7 +65,7 @@ public class MainActivity extends Activity {
         issueListAdapter = new ArrayAdapter<Issue>(this, R.layout.issue_item_in_grid);
         gridView.setAdapter(issueListAdapter);
 
-        getLoaderManager().initLoader(1, null, new LoaderManager.LoaderCallbacks<List<Issue>>() {
+        final Loader<List<Issue>> listLoader = getLoaderManager().initLoader(1, null, new LoaderManager.LoaderCallbacks<List<Issue>>() {
             @Override
             public Loader<List<Issue>> onCreateLoader(int id, Bundle args) {
                 return new IssuesLoader(getApplicationContext(), issuesDirectory);
@@ -88,6 +81,17 @@ public class MainActivity extends Activity {
                 issueListAdapter.clear();
             }
         });
+
+        this.fileObserver = new FileObserver(issuesDirectory.getPath(), FileObserver.CREATE) {
+            @Override
+            public void onEvent(int event, String path) {
+                issueListAdapter.clear();
+                listLoader.forceLoad();
+            }
+        };
+        this.fileObserver.startWatching();
+
+//        setRecurringAlarm(getApplicationContext());
     }
 
 
@@ -103,38 +107,17 @@ public class MainActivity extends Activity {
 
         int day = datePicker.getDayOfMonth();
         int month = datePicker.getMonth() + 1;
-        String dayString = String.format("%02d", day);
-        String monthString = String.format("%02d", month);
 
-        ConnectivityManager connMgr = (ConnectivityManager)
-                getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-        if (networkInfo != null && networkInfo.isConnected()) {
-            new DownloadPaperTask(this).execute(dayString, monthString, "2013");
-        } else {
-            //noinspection ConstantConditions
-            Toast.makeText(getApplicationContext(), R.string.download_noconnection, Toast.LENGTH_SHORT).show();
-            Log.d(getClass().toString(), "No network connection");
-        }
+        Intent intent = IssueDownloadService.createDownloadIntent(getApplicationContext(), day, month, datePicker.getYear());
+        PendingIntent pendingIntent = createPendingResult(0, intent, PendingIntent.FLAG_ONE_SHOT);
+        intent.putExtra("pendingIntent", pendingIntent);
+        getApplicationContext().startService(intent);
     }
 
-    private File download(String urlString, String filename) throws IOException {
-        InputStream is = null;
-        FileOutputStream fileOutputStream = null;
-        URL url = new URL(urlString);
-        URLConnection conn = url.openConnection();
-        try {
-            conn.connect();
-            is = conn.getInputStream();
-            File outputFile = new File(issuesDirectory, filename);
-            fileOutputStream = new FileOutputStream(outputFile);
-            IOUtils.copy(is, fileOutputStream);
-            return outputFile;
-        } finally {
-            IOUtils.closeQuietly(fileOutputStream);
-            IOUtils.closeQuietly(is);
-            IOUtils.close(conn);
-        }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -145,40 +128,14 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
-    private class DownloadPaperTask extends AsyncTask<String, Void, Issue> {
-
-        private final Context context;
-
-        private DownloadPaperTask(Context context) {
-            this.context = context;
-        }
-
-        @Override
-        protected Issue doInBackground(String... dayMonthYear) {
-            try {
-                String year = dayMonthYear[2];
-                String day = dayMonthYear[0];
-                String month = dayMonthYear[1];
-                String url = "http://epaper.derbund.ch/pdf/" + year + "_3_BVBU-001-" + day + month + ".pdf";
-
-                File download = download(url, year + month + day + ".pdf");
-
-                return new Issue(Integer.parseInt(day), Integer.parseInt(month), Integer.parseInt(year), download);
-            } catch (IOException e) {
-                Log.e(getClass().toString(), "Error downloading issue", e);
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(Issue result) {
-            if (result != null) {
-                //noinspection ConstantConditions
-                Toast.makeText(context, R.string.download_success, Toast.LENGTH_SHORT).show();
-                issueListAdapter.add(result);
-            }
-        }
+    private void setRecurringAlarm(Context context) {
+        Calendar updateTime = Calendar.getInstance();
+        updateTime.set(Calendar.HOUR_OF_DAY, 23);
+        updateTime.set(Calendar.MINUTE, 04);
+        Intent downloader = new Intent(context, DownloadAlarmReceiver.class);
+        PendingIntent recurringDownload = PendingIntent.getBroadcast(context, 0, downloader, PendingIntent.FLAG_CANCEL_CURRENT);
+        AlarmManager alarms = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
+        //alarms.setInexactRepeating(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY, recurringDownload);
+        alarms.set(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), recurringDownload);
     }
-
-
 }

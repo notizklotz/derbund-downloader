@@ -16,33 +16,21 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
+package com.github.notizklotz.derbunddownloader;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.util.Log;
 
-buildscript {
-    repositories {
-        mavenCentral()
+public class DownloadAlarmReceiver extends BroadcastReceiver {
+
+    private static final String DEBUG_TAG = "AlarmReceiver";
+
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        Log.d(DEBUG_TAG, "Recurring alarm; requesting download service.");
+        Intent downloader = new Intent(context, IssueDownloadService.class);
+        context.startService(downloader);
     }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
-    }
-}
-apply plugin: 'android'
-
-repositories {
-    mavenCentral()
-}
-
-android {
-    compileSdkVersion 16
-    buildToolsVersion "17.0.0"
-
-    defaultConfig {
-        minSdkVersion 15
-        targetSdkVersion 16
-    }
-}
-
-dependencies {
-    compile 'commons-io:commons-io:2.4'
-    compile 'com.android.support:support-v4:18.0.0'
 }

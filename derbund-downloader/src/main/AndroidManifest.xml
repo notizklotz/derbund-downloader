@@ -16,7 +16,6 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
           package="com.github.notizklotz.derbunddownloader"
           android:versionCode="1"
@@ -44,6 +43,13 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+
+        <receiver android:name="com.github.notizklotz.derbunddownloader.DownloadAlarmReceiver"/>
+
+        <service
+                android:name="com.github.notizklotz.derbunddownloader.IssueDownloadService"
+                android:exported="false"/>
+
     </application>
 
 </manifest>

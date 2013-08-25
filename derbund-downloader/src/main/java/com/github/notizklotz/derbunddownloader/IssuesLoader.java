@@ -20,6 +20,7 @@ package com.github.notizklotz.derbunddownloader;
 
 import android.content.AsyncTaskLoader;
 import android.content.Context;
+import android.os.FileObserver;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -31,6 +32,8 @@ class IssuesLoader extends AsyncTaskLoader<List<Issue>> {
     private final File issuesDirectory;
 
     private List<Issue> cachedIssues;
+
+    private FileObserver fileObserver;
 
     public IssuesLoader(Context context, File issuesDirectory) {
         super(context);
@@ -46,13 +49,21 @@ class IssuesLoader extends AsyncTaskLoader<List<Issue>> {
             throw new IllegalStateException("Given path is not a directory " + issuesDirectory);
         }
         for (File issueFile : files) {
-            int year = Integer.parseInt(issueFile.getName().substring(0, 4));
-            int month = Integer.parseInt(issueFile.getName().substring(4, 6));
-            int day = Integer.parseInt(issueFile.getName().substring(6, 8));
-            issues.add(new Issue(day, month, year, issueFile));
+            addIssue(issues, issueFile);
         }
-        Collections.sort(issues, Collections.reverseOrder());
+        sortIssues(issues);
         return issues;
+    }
+
+    private void sortIssues(List<Issue> issues) {
+        Collections.sort(issues, Collections.reverseOrder());
+    }
+
+    private void addIssue(List<Issue> issues, File issueFile) {
+        int year = Integer.parseInt(issueFile.getName().substring(0, 4));
+        int month = Integer.parseInt(issueFile.getName().substring(4, 6));
+        int day = Integer.parseInt(issueFile.getName().substring(6, 8));
+        issues.add(new Issue(day, month, year, issueFile));
     }
 
     @Override
