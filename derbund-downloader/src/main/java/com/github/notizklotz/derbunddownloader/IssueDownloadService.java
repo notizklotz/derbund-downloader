@@ -19,12 +19,10 @@
 package com.github.notizklotz.derbunddownloader;
 
 import android.app.IntentService;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Parcelable;
 import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
@@ -58,9 +56,12 @@ public class IssueDownloadService extends IntentService {
             Log.e(getClass().toString(), "extras missing");
         }
 
-        String dayString = String.format("%02d", intent.getIntExtra("day", 0));
-        String monthString = String.format("%02d", intent.getIntExtra("month", 0));
-        String yearString = Integer.toString(intent.getIntExtra("year", 0));
+        int day = intent.getIntExtra("day", 0);
+        String dayString = String.format("%02d", day);
+        int month = intent.getIntExtra("month", 0);
+        String monthString = String.format("%02d", month);
+        int year = intent.getIntExtra("year", 0);
+        String yearString = Integer.toString(year);
 
         String url = "http://epaper.derbund.ch/pdf/" + yearString + "_3_BVBU-001-" + dayString + monthString + ".pdf";
         try {
@@ -69,19 +70,13 @@ public class IssueDownloadService extends IntentService {
                     getSystemService(Context.CONNECTIVITY_SERVICE);
             NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
             if (networkInfo != null && networkInfo.isConnected()) {
-                download(url, yearString + monthString + dayString + ".pdf");
-
-                Parcelable pendingIntent = intent.getParcelableExtra("pendingIntent");
-                if (pendingIntent != null && pendingIntent instanceof PendingIntent) {
-                    ((PendingIntent) pendingIntent).send(0);
-                }
+                File downloadedFile = download(url, yearString + monthString + dayString + ".pdf");
+                getContentResolver().insert(IssueContentProvider.ISSUES_URI, IssueContentProvider.createContentValues(day, month, year, downloadedFile.getPath()));
             } else {
                 Log.d(getClass().toString(), "No network connection");
             }
         } catch (IOException e) {
             Log.e(getClass().toString(), "Download failed", e);
-        } catch (PendingIntent.CanceledException e) {
-            Log.e(getClass().toString(), "Download notification failed", e);
         }
     }
 

@@ -19,6 +19,7 @@
   -->
 
 <TextView xmlns:android="http://schemas.android.com/apk/res/android"
-          android:layout_width="180px"
-          android:layout_height="wrap_content"
-          android:drawableTop="@drawable/issue"/>
+    android:id="@+id/issueTextView"
+    android:layout_width="180px"
+    android:layout_height="wrap_content"
+    android:drawableTop="@drawable/issue" />

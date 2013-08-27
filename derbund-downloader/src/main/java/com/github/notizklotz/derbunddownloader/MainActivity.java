@@ -23,73 +23,51 @@ import android.app.AlarmManager;
 import android.app.LoaderManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
+import android.database.Cursor;
+import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.FileObserver;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.GridView;
+import android.widget.SimpleCursorAdapter;
 
 import java.io.File;
 import java.util.Calendar;
-import java.util.List;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements
+        LoaderManager.LoaderCallbacks<Cursor> {
 
-    private ArrayAdapter<Issue> issueListAdapter;
-    private File issuesDirectory;
-    private FileObserver fileObserver;
+    private SimpleCursorAdapter issueListAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        issuesDirectory = getExternalFilesDir("issues");
-
         GridView gridView = (GridView) findViewById(R.id.gridview);
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Issue selectedIssue = (Issue) parent.getItemAtPosition(position);
+                MatrixCursor selectedIssue = (MatrixCursor) parent.getItemAtPosition(position);
                 if (selectedIssue != null) {
-                    openPDF(selectedIssue.getFile());
+                    openPDF(new File(selectedIssue.getString(4)));
                 }
             }
         });
-        issueListAdapter = new ArrayAdapter<Issue>(this, R.layout.issue_item_in_grid);
+
+        issueListAdapter = new SimpleCursorAdapter(this,
+                R.layout.issue_item_in_grid, null,
+                new String[]{IssueContentProvider.COLUMN_NAMES[0]},
+                new int[]{R.id.issueTextView}, 0);
         gridView.setAdapter(issueListAdapter);
 
-        final Loader<List<Issue>> listLoader = getLoaderManager().initLoader(1, null, new LoaderManager.LoaderCallbacks<List<Issue>>() {
-            @Override
-            public Loader<List<Issue>> onCreateLoader(int id, Bundle args) {
-                return new IssuesLoader(getApplicationContext(), issuesDirectory);
-            }
-
-            @Override
-            public void onLoadFinished(Loader<List<Issue>> loader, List<Issue> data) {
-                issueListAdapter.addAll(data);
-            }
-
-            @Override
-            public void onLoaderReset(Loader<List<Issue>> loader) {
-                issueListAdapter.clear();
-            }
-        });
-
-        this.fileObserver = new FileObserver(issuesDirectory.getPath(), FileObserver.CREATE) {
-            @Override
-            public void onEvent(int event, String path) {
-                issueListAdapter.clear();
-                listLoader.forceLoad();
-            }
-        };
-        this.fileObserver.startWatching();
+        getLoaderManager().initLoader(1, null, this);
 
 //        setRecurringAlarm(getApplicationContext());
     }
@@ -104,20 +82,11 @@ public class MainActivity extends Activity {
 
     public void downloadPaper(@SuppressWarnings("UnusedParameters") View view) {
         DatePicker datePicker = (DatePicker) findViewById(R.id.datePicker);
-
         int day = datePicker.getDayOfMonth();
         int month = datePicker.getMonth() + 1;
 
-        Intent intent = IssueDownloadService.createDownloadIntent(getApplicationContext(), day, month, datePicker.getYear());
-        PendingIntent pendingIntent = createPendingResult(0, intent, PendingIntent.FLAG_ONE_SHOT);
-        intent.putExtra("pendingIntent", pendingIntent);
-        getApplicationContext().startService(intent);
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-
+        Intent intent = IssueDownloadService.createDownloadIntent(this, day, month, datePicker.getYear());
+        startService(intent);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -131,11 +100,34 @@ public class MainActivity extends Activity {
     private void setRecurringAlarm(Context context) {
         Calendar updateTime = Calendar.getInstance();
         updateTime.set(Calendar.HOUR_OF_DAY, 23);
-        updateTime.set(Calendar.MINUTE, 04);
+        updateTime.set(Calendar.MINUTE, 4);
         Intent downloader = new Intent(context, DownloadAlarmReceiver.class);
         PendingIntent recurringDownload = PendingIntent.getBroadcast(context, 0, downloader, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarms = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         //alarms.setInexactRepeating(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY, recurringDownload);
         alarms.set(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), recurringDownload);
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(this, IssueContentProvider.ISSUES_URI, null, null, null, null) {
+
+            @Override
+            public Cursor loadInBackground() {
+                Cursor cursor = super.loadInBackground();
+                cursor.setNotificationUri(getContentResolver(), IssueContentProvider.ISSUES_URI);
+                return cursor;
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        issueListAdapter.changeCursor(data);
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+        issueListAdapter.changeCursor(null);
     }
 }

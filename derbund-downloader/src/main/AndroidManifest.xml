@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <!--
   ~ Der Bund ePaper Downloader - App to download ePaper issues of the Der Bund newspaper
   ~ Copyright (C) 2013 Adrian Gygax
@@ -47,8 +48,13 @@
         <receiver android:name="com.github.notizklotz.derbunddownloader.DownloadAlarmReceiver"/>
 
         <service
-                android:name="com.github.notizklotz.derbunddownloader.IssueDownloadService"
-                android:exported="false"/>
+            android:name="com.github.notizklotz.derbunddownloader.IssueDownloadService"
+            android:exported="false" />
+
+        <provider
+            android:name=".IssueContentProvider"
+            android:authorities="com.github.notizklotz.derbunddownloader.issues"
+            android:exported="false" />
 
     </application>
 
