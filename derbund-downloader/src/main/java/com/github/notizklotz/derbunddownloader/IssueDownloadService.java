@@ -90,6 +90,7 @@ public class IssueDownloadService extends IntentService {
             is = conn.getInputStream();
             File issuesDirectory = IssueContentProvider.getIssuesDirectory(this);
             if (!issuesDirectory.exists()) {
+                //noinspection ResultOfMethodCallIgnored
                 issuesDirectory.mkdir();
             }
             File outputFile = new File(issuesDirectory, filename);

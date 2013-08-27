@@ -85,8 +85,7 @@ public class MainActivity extends Activity implements
         int day = datePicker.getDayOfMonth();
         int month = datePicker.getMonth() + 1;
 
-        Intent intent = IssueDownloadService.createDownloadIntent(this, day, month, datePicker.getYear());
-        startService(intent);
+        startService(IssueDownloadService.createDownloadIntent(this, day, month, datePicker.getYear()));
     }
 
     @SuppressWarnings("UnusedDeclaration")
