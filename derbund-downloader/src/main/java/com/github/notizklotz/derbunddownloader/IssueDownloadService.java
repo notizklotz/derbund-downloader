@@ -63,7 +63,7 @@ public class IssueDownloadService extends IntentService {
         int year = intent.getIntExtra("year", 0);
         String yearString = Integer.toString(year);
 
-        String url = "http://epaper.derbund.ch/pdf/" + yearString + "_3_BVBU-001-" + dayString + monthString + ".pdf";
+        String url = "http://epaper.derbund.ch/getAll.asp?d=" + dayString + monthString + yearString;
         try {
 
             ConnectivityManager connMgr = (ConnectivityManager)
@@ -88,7 +88,11 @@ public class IssueDownloadService extends IntentService {
         try {
             conn.connect();
             is = conn.getInputStream();
-            File outputFile = new File(getExternalFilesDir("issues"), filename);
+            File issuesDirectory = IssueContentProvider.getIssuesDirectory(this);
+            if (!issuesDirectory.exists()) {
+                issuesDirectory.mkdir();
+            }
+            File outputFile = new File(issuesDirectory, filename);
             fileOutputStream = new FileOutputStream(outputFile);
             IOUtils.copy(is, fileOutputStream);
             return outputFile;

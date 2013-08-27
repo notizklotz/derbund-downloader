@@ -29,6 +29,7 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.FileProvider;
 import android.view.Menu;
 import android.view.View;
 import android.widget.AdapterView;
@@ -91,8 +92,12 @@ public class MainActivity extends Activity implements
     @SuppressWarnings("UnusedDeclaration")
     private void openPDF(File pdfFile) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(pdfFile), "application/pdf");
+        final Uri uri = FileProvider.getUriForFile(this, "com.github.notizklotz.derbunddownloader.publicissues", pdfFile);
+        intent.setDataAndType(uri, "application/pdf");
+
+        //intent.setDataAndType(Uri.fromFile(pdfFile), "application/pdf");
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
     }
 

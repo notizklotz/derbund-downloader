@@ -52,6 +52,10 @@ public class IssueContentProvider extends ContentProvider {
         return contentValues;
     }
 
+    public static File getIssuesDirectory(Context context) {
+        return new File(context.getCacheDir(), "issues");
+    }
+
     @Override
     public boolean onCreate() {
         return true;
@@ -65,23 +69,18 @@ public class IssueContentProvider extends ContentProvider {
         if (context == null) {
             throw new IllegalStateException("Context not available");
         }
-        File issuesDir = context.getExternalFilesDir("issues");
-        if (issuesDir == null) {
-            throw new IllegalStateException("External storage is not mounted");
-        }
+        File issuesDir = getIssuesDirectory(context);
         File[] files = issuesDir.listFiles();
-        if (files == null) {
-            throw new IllegalStateException("issuesDir was not a directory");
-        }
+        if (files != null) {
+            List<File> sortedFiles = Arrays.asList(files);
+            Collections.sort(sortedFiles, Collections.reverseOrder());
 
-        List<File> sortedFiles = Arrays.asList(files);
-        Collections.sort(sortedFiles, Collections.reverseOrder());
-
-        for (File issueFile : sortedFiles) {
-            int year = Integer.parseInt(issueFile.getName().substring(0, 4));
-            int month = Integer.parseInt(issueFile.getName().substring(4, 6));
-            int day = Integer.parseInt(issueFile.getName().substring(6, 8));
-            matrixCursor.newRow().add(createId(year, month, day)).add(day).add(month).add(year).add(issueFile.getPath());
+            for (File issueFile : sortedFiles) {
+                int year = Integer.parseInt(issueFile.getName().substring(0, 4));
+                int month = Integer.parseInt(issueFile.getName().substring(4, 6));
+                int day = Integer.parseInt(issueFile.getName().substring(6, 8));
+                matrixCursor.newRow().add(createId(year, month, day)).add(day).add(month).add(year).add(issueFile.getPath());
+            }
         }
 
         return matrixCursor;

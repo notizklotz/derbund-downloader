@@ -17,35 +17,35 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
+
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          package="com.github.notizklotz.derbunddownloader"
-          android:versionCode="1"
-          android:versionName="1.0">
+    package="com.github.notizklotz.derbunddownloader"
+    android:versionCode="1"
+    android:versionName="1.0">
 
     <uses-sdk
-            android:minSdkVersion="15"
-            android:targetSdkVersion="16"/>
+        android:minSdkVersion="15"
+        android:targetSdkVersion="16" />
 
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-            android:allowBackup="true"
-            android:icon="@drawable/ic_launcher"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme">
+        android:allowBackup="true"
+        android:icon="@drawable/ic_launcher"
+        android:label="@string/app_name"
+        android:theme="@style/AppTheme">
         <activity
-                android:name="com.github.notizklotz.derbunddownloader.MainActivity"
-                android:label="@string/app_name">
+            android:name="com.github.notizklotz.derbunddownloader.MainActivity"
+            android:label="@string/app_name">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
+                <action android:name="android.intent.action.MAIN" />
 
-                <category android:name="android.intent.category.LAUNCHER"/>
+                <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
-        <receiver android:name="com.github.notizklotz.derbunddownloader.DownloadAlarmReceiver"/>
+        <receiver android:name="com.github.notizklotz.derbunddownloader.DownloadAlarmReceiver" />
 
         <service
             android:name="com.github.notizklotz.derbunddownloader.IssueDownloadService"
@@ -55,6 +55,16 @@
             android:name=".IssueContentProvider"
             android:authorities="com.github.notizklotz.derbunddownloader.issues"
             android:exported="false" />
+
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="com.github.notizklotz.derbunddownloader.publicissues"
+            android:grantUriPermissions="true"
+            android:exported="false">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/paths" />
+        </provider>
 
     </application>
 
