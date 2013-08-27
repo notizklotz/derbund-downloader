@@ -27,7 +27,6 @@ import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
-import android.database.MatrixCursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
@@ -54,7 +53,7 @@ public class MainActivity extends Activity implements
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                MatrixCursor selectedIssue = (MatrixCursor) parent.getItemAtPosition(position);
+                Cursor selectedIssue = (Cursor) parent.getItemAtPosition(position);
                 if (selectedIssue != null) {
                     openPDF(new File(selectedIssue.getString(4)));
                 }
