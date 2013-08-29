@@ -20,6 +20,9 @@ package com.github.notizklotz.derbunddownloader;
 
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.LoaderManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -31,6 +34,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.content.FileProvider;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.DatePicker;
@@ -75,31 +79,20 @@ public class MainActivity extends Activity implements
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
 
-    public void downloadPaper(@SuppressWarnings("UnusedParameters") View view) {
-        DatePicker datePicker = (DatePicker) findViewById(R.id.datePicker);
-        int day = datePicker.getDayOfMonth();
-        int month = datePicker.getMonth() + 1;
-
-        startService(IssueDownloadService.createDownloadIntent(this, day, month, datePicker.getYear()));
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
     private void openPDF(File pdfFile) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
         final Uri uri = FileProvider.getUriForFile(this, "com.github.notizklotz.derbunddownloader.publicissues", pdfFile);
         intent.setDataAndType(uri, "application/pdf");
-
-        //intent.setDataAndType(Uri.fromFile(pdfFile), "application/pdf");
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
     }
 
+    @SuppressWarnings("UnusedDeclaration")
     private void setRecurringAlarm(Context context) {
         Calendar updateTime = Calendar.getInstance();
         updateTime.set(Calendar.HOUR_OF_DAY, 23);
@@ -109,6 +102,41 @@ public class MainActivity extends Activity implements
         AlarmManager alarms = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
         //alarms.setInexactRepeating(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY, recurringDownload);
         alarms.set(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), recurringDownload);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_download:
+                new DatePickerFragment().show(getFragmentManager(), "downloadIssueDatePicker");
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private static class DatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final Calendar c = Calendar.getInstance();
+            Activity activity = getActivity();
+            if (activity == null) {
+                throw new IllegalStateException("Activity is null");
+            }
+
+            return new DatePickerDialog(activity, this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+        }
+
+        @Override
+        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+            Activity activity = getActivity();
+            if (activity == null) {
+                throw new IllegalStateException("Activity is null");
+            }
+
+            activity.startService(IssueDownloadService.createDownloadIntent(activity, dayOfMonth, monthOfYear + 1, year));
+        }
     }
 
     @Override
