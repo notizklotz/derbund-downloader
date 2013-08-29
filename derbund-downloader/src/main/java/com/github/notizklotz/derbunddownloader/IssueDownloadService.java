@@ -18,21 +18,12 @@
 
 package com.github.notizklotz.derbunddownloader;
 
+import android.app.DownloadManager;
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
+import android.net.Uri;
 import android.util.Log;
-
-import org.apache.commons.io.IOUtils;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
-import java.net.URLConnection;
 
 public class IssueDownloadService extends IntentService {
 
@@ -57,50 +48,21 @@ public class IssueDownloadService extends IntentService {
         }
 
         int day = intent.getIntExtra("day", 0);
-        String dayString = String.format("%02d", day);
         int month = intent.getIntExtra("month", 0);
-        String monthString = String.format("%02d", month);
         int year = intent.getIntExtra("year", 0);
+
+        String dayString = String.format("%02d", day);
+        String monthString = String.format("%02d", month);
         String yearString = Integer.toString(year);
 
         String url = "http://epaper.derbund.ch/getAll.asp?d=" + dayString + monthString + yearString;
-        try {
 
-            ConnectivityManager connMgr = (ConnectivityManager)
-                    getSystemService(Context.CONNECTIVITY_SERVICE);
-            NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
-            if (networkInfo != null && networkInfo.isConnected()) {
-                File downloadedFile = download(url, yearString + monthString + dayString + ".pdf");
-                getContentResolver().insert(IssueContentProvider.ISSUES_URI, IssueContentProvider.createContentValues(day, month, year, downloadedFile.getPath()));
-            } else {
-                Log.d(getClass().toString(), "No network connection");
-            }
-        } catch (IOException e) {
-            Log.e(getClass().toString(), "Download failed", e);
-        }
+        DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
+                setTitle("derbund" + dayString + monthString + yearString).
+                setDescription("Der Bund ePaper " + dayString + "." + monthString + "." + yearString).
+                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+        downloadManager.enqueue(request);
     }
 
-    private File download(String urlString, String filename) throws IOException {
-        InputStream is = null;
-        FileOutputStream fileOutputStream = null;
-        URL url = new URL(urlString);
-        URLConnection conn = url.openConnection();
-        try {
-            conn.connect();
-            is = conn.getInputStream();
-            File issuesDirectory = IssueContentProvider.getIssuesDirectory(this);
-            if (!issuesDirectory.exists()) {
-                //noinspection ResultOfMethodCallIgnored
-                issuesDirectory.mkdir();
-            }
-            File outputFile = new File(issuesDirectory, filename);
-            fileOutputStream = new FileOutputStream(outputFile);
-            IOUtils.copy(is, fileOutputStream);
-            return outputFile;
-        } finally {
-            IOUtils.closeQuietly(fileOutputStream);
-            IOUtils.closeQuietly(is);
-            IOUtils.close(conn);
-        }
-    }
 }

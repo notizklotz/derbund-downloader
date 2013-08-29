@@ -23,6 +23,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
+import java.util.Calendar;
+
 public class DownloadAlarmReceiver extends BroadcastReceiver {
 
     private static final String DEBUG_TAG = "AlarmReceiver";
@@ -30,7 +32,8 @@ public class DownloadAlarmReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(DEBUG_TAG, "Recurring alarm; requesting download service.");
-        Intent downloader = new Intent(context, IssueDownloadService.class);
-        context.startService(downloader);
+
+        final Calendar c = Calendar.getInstance();
+        context.startService(IssueDownloadService.createDownloadIntent(context, c.get(Calendar.YEAR), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH)));
     }
 }

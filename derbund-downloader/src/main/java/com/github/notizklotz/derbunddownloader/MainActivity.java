@@ -23,6 +23,7 @@ import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.DownloadManager;
 import android.app.LoaderManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -32,7 +33,6 @@ import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.content.FileProvider;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -41,12 +41,12 @@ import android.widget.DatePicker;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
 
-import java.io.File;
 import java.util.Calendar;
 
 public class MainActivity extends Activity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final Uri DOWNLOADS_URI = Uri.parse("content://downloads/my_downloads");
     private SimpleCursorAdapter issueListAdapter;
 
     @Override
@@ -60,14 +60,16 @@ public class MainActivity extends Activity implements
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor selectedIssue = (Cursor) parent.getItemAtPosition(position);
                 if (selectedIssue != null) {
-                    openPDF(new File(selectedIssue.getString(4)));
+
+                    Intent intent = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
+                    startActivity(intent);
                 }
             }
         });
 
         issueListAdapter = new SimpleCursorAdapter(this,
                 R.layout.issue_item_in_grid, null,
-                new String[]{IssueContentProvider.COLUMN_NAMES[0]},
+                new String[]{DownloadManager.COLUMN_TITLE},
                 new int[]{R.id.issueTextView}, 0);
         gridView.setAdapter(issueListAdapter);
 
@@ -81,15 +83,6 @@ public class MainActivity extends Activity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
-    }
-
-    private void openPDF(File pdfFile) {
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        final Uri uri = FileProvider.getUriForFile(this, "com.github.notizklotz.derbunddownloader.publicissues", pdfFile);
-        intent.setDataAndType(uri, "application/pdf");
-        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(intent);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -141,12 +134,12 @@ public class MainActivity extends Activity implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, IssueContentProvider.ISSUES_URI, null, null, null, null) {
+        return new CursorLoader(this, DOWNLOADS_URI, null, null, null, null) {
 
             @Override
             public Cursor loadInBackground() {
                 Cursor cursor = super.loadInBackground();
-                cursor.setNotificationUri(getContentResolver(), IssueContentProvider.ISSUES_URI);
+                cursor.setNotificationUri(getContentResolver(), DOWNLOADS_URI);
                 return cursor;
             }
         };

@@ -20,6 +20,8 @@
 
 
 
+
+
 buildscript {
     repositories {
         mavenCentral()
@@ -45,6 +47,4 @@ android {
 }
 
 dependencies {
-    compile 'commons-io:commons-io:2.4'
-    compile 'com.android.support:support-v4:18.0.0'
 }
