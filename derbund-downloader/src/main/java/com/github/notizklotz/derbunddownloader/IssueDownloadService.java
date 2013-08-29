@@ -19,45 +19,23 @@
 package com.github.notizklotz.derbunddownloader;
 
 import android.app.DownloadManager;
-import android.app.IntentService;
 import android.content.Context;
-import android.content.Intent;
 import android.net.Uri;
-import android.util.Log;
 
-public class IssueDownloadService extends IntentService {
+public class IssueDownloadService {
 
-    public IssueDownloadService() {
-        super(IssueDownloadService.class.getName());
+    private IssueDownloadService() {
+
     }
 
-    public static Intent createDownloadIntent(Context context, int day, int month, int year) {
-        Intent intent = new Intent(context, IssueDownloadService.class);
-        intent.putExtra("day", day);
-        intent.putExtra("month", month);
-        intent.putExtra("year", year);
-
-        return intent;
-    }
-
-    @Override
-    protected void onHandleIntent(Intent intent) {
-
-        if (!(intent.hasExtra("day") && intent.hasExtra("month") && intent.hasExtra("year"))) {
-            Log.e(getClass().toString(), "extras missing");
-        }
-
-        int day = intent.getIntExtra("day", 0);
-        int month = intent.getIntExtra("month", 0);
-        int year = intent.getIntExtra("year", 0);
-
+    public static void startDownload(Context context, int day, int month, int year) {
         String dayString = String.format("%02d", day);
         String monthString = String.format("%02d", month);
         String yearString = Integer.toString(year);
 
         String url = "http://epaper.derbund.ch/getAll.asp?d=" + dayString + monthString + yearString;
 
-        DownloadManager downloadManager = (DownloadManager) getSystemService(DOWNLOAD_SERVICE);
+        DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
                 setTitle("derbund" + dayString + monthString + yearString).
                 setDescription("Der Bund ePaper " + dayString + "." + monthString + "." + yearString).

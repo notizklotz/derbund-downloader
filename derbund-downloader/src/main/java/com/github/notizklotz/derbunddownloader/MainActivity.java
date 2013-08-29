@@ -128,7 +128,7 @@ public class MainActivity extends Activity implements
                 throw new IllegalStateException("Activity is null");
             }
 
-            activity.startService(IssueDownloadService.createDownloadIntent(activity, dayOfMonth, monthOfYear + 1, year));
+            IssueDownloadService.startDownload(getActivity(), dayOfMonth, monthOfYear + 1, year);
         }
     }
 
