@@ -18,15 +18,84 @@
 
 package com.github.notizklotz.derbunddownloader;
 
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 
-public class SettingsFragment extends PreferenceFragment {
+import java.util.Calendar;
+
+public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         addPreferencesFromResource(R.xml.preferences);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+        if (sharedPreferences == null) {
+            throw new IllegalStateException("could not get shared preferences");
+        }
+        sharedPreferences.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
+        if (sharedPreferences == null) {
+            throw new IllegalStateException("could not get shared preferences");
+        }
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        Activity activity = getActivity();
+        if (activity == null) {
+            throw new IllegalStateException("This fragment is not associated with an Activity");
+        }
+
+        AlarmManager alarms = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
+        Context applicationContext = activity.getApplicationContext();
+        if (applicationContext == null) {
+            throw new IllegalStateException("ApplicationContext was null");
+        }
+
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                applicationContext, 0,
+                new Intent(applicationContext, DownloadAlarmReceiver.class),
+                PendingIntent.FLAG_CANCEL_CURRENT);
+
+        if (sharedPreferences.getBoolean("auto_download_enabled", false)) {
+            String auto_download_time = sharedPreferences.getString("auto_download_time", null);
+            if (auto_download_time != null) {
+                Calendar now = Calendar.getInstance();
+
+                Integer[] time = TimePickerPreference.toHourMinuteIntegers(auto_download_time);
+                Calendar updateTime = Calendar.getInstance();
+                updateTime.clear();
+                //noinspection MagicConstant
+                updateTime.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH), time[0], time[1]);
+
+                if (updateTime.before(now)) {
+                    updateTime.roll(Calendar.DAY_OF_MONTH, true);
+                }
+
+                alarms.setRepeating(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
+            }
+
+        } else {
+            alarms.cancel(pendingIntent);
+        }
+
     }
 }

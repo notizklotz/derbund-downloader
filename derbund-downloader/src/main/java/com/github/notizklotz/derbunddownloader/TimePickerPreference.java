@@ -34,6 +34,14 @@ public class TimePickerPreference extends DialogPreference {
         super(context, attrs);
     }
 
+    public static Integer[] toHourMinuteIntegers(String timeString) {
+        String[] values = timeString.split(":|/");
+        Integer hour = Integer.valueOf(values[0]);
+        Integer minute = Integer.valueOf(values[1]);
+
+        return new Integer[]{hour, minute};
+    }
+
     @Override
     protected View onCreateDialogView() {
         tp = new TimePicker(getContext());
@@ -42,13 +50,11 @@ public class TimePickerPreference extends DialogPreference {
     }
 
     @Override
-    protected void onBindDialogView(View view) {
+    protected void onBindDialogView(@SuppressWarnings("NullableProblems") View view) {
         super.onBindDialogView(view);
-
-        String[] values = currentTime.split(":|/");
-
-        tp.setCurrentHour(Integer.valueOf(values[0]));
-        tp.setCurrentMinute(Integer.valueOf(values[1]));
+        Integer[] time = toHourMinuteIntegers(currentTime);
+        tp.setCurrentHour(time[0]);
+        tp.setCurrentMinute(time[1]);
     }
 
     private void setTime(String text) {

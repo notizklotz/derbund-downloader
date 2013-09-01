@@ -19,14 +19,11 @@
 package com.github.notizklotz.derbunddownloader;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.DownloadManager;
 import android.app.LoaderManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
@@ -77,8 +74,6 @@ public class MainActivity extends Activity implements
         gridView.setAdapter(issueListAdapter);
 
         getLoaderManager().initLoader(1, null, this);
-
-//        setRecurringAlarm(getApplicationContext());
     }
 
 
@@ -86,18 +81,6 @@ public class MainActivity extends Activity implements
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    private void setRecurringAlarm(Context context) {
-        Calendar updateTime = Calendar.getInstance();
-        updateTime.set(Calendar.HOUR_OF_DAY, 23);
-        updateTime.set(Calendar.MINUTE, 4);
-        Intent downloader = new Intent(context, DownloadAlarmReceiver.class);
-        PendingIntent recurringDownload = PendingIntent.getBroadcast(context, 0, downloader, PendingIntent.FLAG_CANCEL_CURRENT);
-        AlarmManager alarms = (AlarmManager) this.getSystemService(Context.ALARM_SERVICE);
-        //alarms.setInexactRepeating(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY, recurringDownload);
-        alarms.set(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), recurringDownload);
     }
 
     @Override
@@ -159,4 +142,6 @@ public class MainActivity extends Activity implements
     public void onLoaderReset(Loader<Cursor> loader) {
         issueListAdapter.changeCursor(null);
     }
+
+
 }
