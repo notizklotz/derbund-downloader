@@ -25,4 +25,5 @@
     <string name="action_download">Ausgabe herunterladen</string>
     <string name="auto_download">Automatisch täglich herunterladen</string>
     <string name="auto_download_time">Zeitpunkt</string>
+    <string name="einstellungen">Einstellungen</string>
 </resources>
