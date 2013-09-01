@@ -41,6 +41,10 @@
             </intent-filter>
         </activity>
 
+        <activity
+            android:name=".SettingsActivity"
+            android:exported="false" />
+
         <receiver android:name="com.github.notizklotz.derbunddownloader.DownloadAlarmReceiver" />
 
     </application>

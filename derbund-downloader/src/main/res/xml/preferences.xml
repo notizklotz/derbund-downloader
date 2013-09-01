@@ -1,4 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
   ~ Der Bund ePaper Downloader - App to download ePaper issues of the Der Bund newspaper
   ~ Copyright (C) 2013 Adrian Gygax
   ~
@@ -16,13 +18,16 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
-<resources>
-    <string name="app_name">Der Bund ePaper Downloader</string>
-    <string name="action_settings">Einstellungen</string>
-    <string name="button.download">Herunterladen</string>
-    <string name="download_noconnection">Keine Internetverbindung verfügbar</string>
-    <string name="download_success">Ausgabe heruntergeladen</string>
-    <string name="action_download">Ausgabe herunterladen</string>
-    <string name="auto_download">Automatisch täglich herunterladen</string>
-    <string name="auto_download_time">Zeitpunkt</string>
-</resources>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <CheckBoxPreference
+        android:key="auto_download_enabled"
+        android:title="@string/auto_download"
+        android:defaultValue="true"
+        android:persistent="true" />
+    <com.github.notizklotz.derbunddownloader.TimePickerPreference
+        android:key="auto_download_time"
+        android:dependency="auto_download_enabled"
+        android:title="@string/auto_download_time"
+        android:defaultValue="06:00"
+        android:persistent="true" />
+</PreferenceScreen>
