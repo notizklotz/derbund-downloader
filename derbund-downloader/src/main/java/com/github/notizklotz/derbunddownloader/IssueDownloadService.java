@@ -39,7 +39,8 @@ public class IssueDownloadService {
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
                 setTitle("derbund" + dayString + monthString + yearString).
                 setDescription("Der Bund ePaper " + dayString + "." + monthString + "." + yearString).
-                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED).
+                setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
         downloadManager.enqueue(request);
     }
 
