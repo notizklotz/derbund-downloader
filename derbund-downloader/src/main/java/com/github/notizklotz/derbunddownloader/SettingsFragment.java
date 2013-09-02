@@ -31,6 +31,8 @@ import java.util.Calendar;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
+    private static final boolean DEBUG = true;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,6 +59,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
+    @SuppressWarnings({"PointlessBooleanExpression", "ConstantConditions"})
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         Activity activity = getActivity();
@@ -72,7 +75,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 applicationContext, 0,
-                new Intent(applicationContext, DownloadAlarmReceiver.class),
+                new Intent(applicationContext, AutomaticIssueDownloadAlarmReceiver.class),
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
         if (sharedPreferences.getBoolean("auto_download_enabled", false)) {
@@ -86,7 +89,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                 //noinspection MagicConstant
                 updateTime.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH), time[0], time[1]);
 
-                if (updateTime.before(now)) {
+                if (!DEBUG && updateTime.before(now)) {
                     updateTime.roll(Calendar.DAY_OF_MONTH, true);
                 }
 

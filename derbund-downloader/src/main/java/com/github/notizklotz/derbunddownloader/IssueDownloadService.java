@@ -28,7 +28,7 @@ public class IssueDownloadService {
 
     }
 
-    public static void startDownload(Context context, int day, int month, int year) {
+    public static long startDownload(Context context, int day, int month, int year) {
         String dayString = String.format("%02d", day);
         String monthString = String.format("%02d", month);
         String yearString = Integer.toString(year);
@@ -37,11 +37,11 @@ public class IssueDownloadService {
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
-                setTitle("derbund" + dayString + monthString + yearString).
+                setTitle("derbund-" + yearString + monthString + dayString).
                 setDescription("Der Bund ePaper " + dayString + "." + monthString + "." + yearString).
                 setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED).
                 setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-        downloadManager.enqueue(request);
+        return downloadManager.enqueue(request);
     }
 
 }

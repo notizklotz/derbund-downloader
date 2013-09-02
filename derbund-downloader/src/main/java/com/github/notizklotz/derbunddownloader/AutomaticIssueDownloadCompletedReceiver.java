@@ -21,19 +21,12 @@ package com.github.notizklotz.derbunddownloader;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
-import java.util.Calendar;
-
-public class DownloadAlarmReceiver extends BroadcastReceiver {
-
-    private static final String DEBUG_TAG = "AlarmReceiver";
-
-    @Override
+/**
+ * Triggered if automatic download of an issue has been completed.
+ */
+public class AutomaticIssueDownloadCompletedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
-        Log.d(DEBUG_TAG, "Recurring alarm; requesting download service.");
-
-        final Calendar c = Calendar.getInstance();
-        IssueDownloadService.startDownload(context, c.get(Calendar.DAY_OF_MONTH), c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_YEAR));
+        context.stopService(new Intent(context, AutomaticIssueDownloadService.class));
     }
 }
