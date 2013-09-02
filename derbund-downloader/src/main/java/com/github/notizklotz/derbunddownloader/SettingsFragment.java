@@ -31,7 +31,7 @@ import java.util.Calendar;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    private static final boolean DEBUG = true;
+    private static final boolean DEBUG = false;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
