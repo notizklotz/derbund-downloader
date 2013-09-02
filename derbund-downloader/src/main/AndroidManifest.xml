@@ -53,7 +53,7 @@
             android:exported="false" />
 
         <service
-            android:name=".AutomaticIssueDownloadService"
+            android:name=".IssueDownloadService"
             android:exported="false" />
     </application>
 

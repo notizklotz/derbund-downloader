@@ -19,13 +19,46 @@
 package com.github.notizklotz.derbunddownloader;
 
 import android.app.DownloadManager;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.net.Uri;
+import android.net.wifi.WifiManager;
+import android.os.IBinder;
 
-public class IssueDownloadService {
+public class IssueDownloadService extends Service {
 
-    private IssueDownloadService() {
+    public static final String DAY = "day";
+    public static final String MONTH = "month";
+    public static final String YEAR = "year";
 
+    private Intent intent;
+    private WifiManager.WifiLock myWifiLock;
+
+    private final AutomaticIssueDownloadCompletedReceiver automaticIssueDownloadCompletedReceiver = new AutomaticIssueDownloadCompletedReceiver();
+
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        this.intent = intent;
+
+        WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, "IssueDownloadWifilock");
+        myWifiLock.acquire();
+
+        registerReceiver(automaticIssueDownloadCompletedReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+        if (!(intent.hasExtra(DAY) && intent.hasExtra(MONTH) && intent.hasExtra(YEAR))) {
+            throw new IllegalArgumentException("Intent is missing extras");
+        }
+
+        startDownload(this, intent.getIntExtra(DAY, 0), intent.getIntExtra(MONTH, 0), intent.getIntExtra(YEAR, 0));
+
+        return START_STICKY;
     }
 
     public static long startDownload(Context context, int day, int month, int year) {
@@ -44,4 +77,16 @@ public class IssueDownloadService {
         return downloadManager.enqueue(request);
     }
 
+    @Override
+    public void onDestroy() {
+        if (myWifiLock != null) {
+            myWifiLock.release();
+        }
+
+        unregisterReceiver(automaticIssueDownloadCompletedReceiver);
+
+        if (intent != null) {
+            AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
+        }
+    }
 }

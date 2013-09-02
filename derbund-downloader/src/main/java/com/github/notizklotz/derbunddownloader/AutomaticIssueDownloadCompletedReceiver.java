@@ -27,6 +27,6 @@ import android.content.Intent;
  */
 public class AutomaticIssueDownloadCompletedReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
-        context.stopService(new Intent(context, AutomaticIssueDownloadService.class));
+        context.stopService(new Intent(context, IssueDownloadService.class));
     }
 }
