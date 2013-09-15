@@ -35,4 +35,12 @@
         android:verticalSpacing="10dp"
         android:horizontalSpacing="10dp"
         android:gravity="center" />
+
+    <TextView
+        android:id="@+id/empty_grid_view"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Keine Ausgaben heruntergeladen"
+        android:visibility="gone" />
 </RelativeLayout>

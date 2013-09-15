@@ -59,6 +59,7 @@ public class MainActivity extends Activity implements
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
 
         GridView gridView = (GridView) findViewById(R.id.gridview);
+        gridView.setEmptyView(findViewById(R.id.empty_grid_view));
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
