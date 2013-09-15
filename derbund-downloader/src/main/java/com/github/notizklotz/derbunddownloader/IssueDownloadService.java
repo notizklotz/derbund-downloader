@@ -66,7 +66,7 @@ public class IssueDownloadService extends Service {
         String monthString = String.format("%02d", month);
         String yearString = Integer.toString(year);
 
-        String url = "http://epaper.derbund.ch/getAll.asp?d=" + dayString + monthString + yearString;
+        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + dayString + monthString + yearString;
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
