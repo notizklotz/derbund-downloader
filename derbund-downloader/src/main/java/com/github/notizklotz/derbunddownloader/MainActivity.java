@@ -38,6 +38,7 @@ import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 
 import java.util.Calendar;
 
@@ -106,8 +107,17 @@ public class MainActivity extends Activity implements
                 throw new IllegalStateException("Activity is null");
             }
 
-            return new DatePickerDialog(activity, this, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+            DatePickerDialog datePickerDialog = new DatePickerDialog(activity, this,
+                    c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+
+            DatePicker datePicker = datePickerDialog.getDatePicker();
+            if (datePicker != null) {
+                datePicker.setMaxDate(System.currentTimeMillis());
+            }
+
+            return datePickerDialog;
         }
+
 
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
@@ -116,7 +126,14 @@ public class MainActivity extends Activity implements
                 throw new IllegalStateException("Activity is null");
             }
 
-            IssueDownloadService.startDownload(getActivity(), dayOfMonth, monthOfYear + 1, year);
+            Calendar selectedDate = Calendar.getInstance();
+            //noinspection MagicConstant
+            selectedDate.set(year, monthOfYear, dayOfMonth);
+            if (selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+                Toast.makeText(activity, "Der Bund erscheint Sonntags nicht", Toast.LENGTH_SHORT).show();
+            } else {
+                IssueDownloadService.startDownload(activity, dayOfMonth, monthOfYear + 1, year);
+            }
         }
     }
 

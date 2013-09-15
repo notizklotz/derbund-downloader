@@ -32,15 +32,19 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
     @Override
     public void onReceive(Context context, Intent intent) {
         final Calendar c = Calendar.getInstance();
-        int day = c.get(Calendar.DAY_OF_MONTH);
-        int month = c.get(Calendar.MONTH) + 1;
-        int year = c.get(Calendar.YEAR);
 
-        Intent service = new Intent(context, IssueDownloadService.class);
-        service.putExtra(IssueDownloadService.DAY, day);
-        service.putExtra(IssueDownloadService.MONTH, month);
-        service.putExtra(IssueDownloadService.YEAR, year);
+        if (!(c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
 
-        startWakefulService(context, service);
+            int day = c.get(Calendar.DAY_OF_MONTH);
+            int month = c.get(Calendar.MONTH) + 1;
+            int year = c.get(Calendar.YEAR);
+
+            Intent service = new Intent(context, IssueDownloadService.class);
+            service.putExtra(IssueDownloadService.DAY, day);
+            service.putExtra(IssueDownloadService.MONTH, month);
+            service.putExtra(IssueDownloadService.YEAR, year);
+
+            startWakefulService(context, service);
+        }
     }
 }
