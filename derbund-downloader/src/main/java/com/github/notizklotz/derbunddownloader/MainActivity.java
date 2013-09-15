@@ -130,7 +130,7 @@ public class MainActivity extends Activity implements
             //noinspection MagicConstant
             selectedDate.set(year, monthOfYear, dayOfMonth);
             if (selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
-                Toast.makeText(activity, "Der Bund erscheint Sonntags nicht", Toast.LENGTH_SHORT).show();
+                Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
             } else {
                 IssueDownloadService.startDownload(activity, dayOfMonth, monthOfYear + 1, year);
             }
