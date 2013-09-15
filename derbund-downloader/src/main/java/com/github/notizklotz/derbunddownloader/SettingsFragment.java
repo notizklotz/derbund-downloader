@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 import java.util.Calendar;
@@ -32,11 +33,15 @@ import java.util.Calendar;
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final boolean DEBUG = false;
+    public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
+    public static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
+
+        updateSummaries(getPreferenceScreen().getSharedPreferences());
     }
 
     @Override
@@ -62,6 +67,8 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @SuppressWarnings({"PointlessBooleanExpression", "ConstantConditions"})
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        updateSummaries(sharedPreferences);
+
         Activity activity = getActivity();
         if (activity == null) {
             throw new IllegalStateException("This fragment is not associated with an Activity");
@@ -78,8 +85,8 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
                 new Intent(applicationContext, AutomaticIssueDownloadAlarmReceiver.class),
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        if (sharedPreferences.getBoolean("auto_download_enabled", false)) {
-            String auto_download_time = sharedPreferences.getString("auto_download_time", null);
+        if (sharedPreferences.getBoolean(KEY_AUTO_DOWNLOAD_ENABLED, false)) {
+            String auto_download_time = sharedPreferences.getString(KEY_AUTO_DOWNLOAD_TIME, null);
             if (auto_download_time != null) {
                 Calendar now = Calendar.getInstance();
 
@@ -100,5 +107,13 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
             alarms.cancel(pendingIntent);
         }
 
+    }
+
+    private void updateSummaries(SharedPreferences sharedPreferences) {
+        String auto_download_time = sharedPreferences.getString(KEY_AUTO_DOWNLOAD_TIME, null);
+        Preference auto_download_time_preference = getPreferenceScreen().findPreference(KEY_AUTO_DOWNLOAD_TIME);
+        if (auto_download_time_preference != null) {
+            auto_download_time_preference.setSummary(auto_download_time);
+        }
     }
 }

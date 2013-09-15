@@ -62,16 +62,12 @@ public class IssueDownloadService extends Service {
     }
 
     public static long startDownload(Context context, int day, int month, int year) {
-        String dayString = String.format("%02d", day);
-        String monthString = String.format("%02d", month);
-        String yearString = Integer.toString(year);
-
-        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + dayString + monthString + yearString;
+        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
-                setTitle("derbund-" + yearString + monthString + dayString).
-                setDescription("Der Bund ePaper " + dayString + "." + monthString + "." + yearString).
+                setTitle("derbund-" + DateFormatterUtils.toDDMMYYYYString(day, month, year)).
+                setDescription("Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year)).
                 setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED).
                 setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
         return downloadManager.enqueue(request);

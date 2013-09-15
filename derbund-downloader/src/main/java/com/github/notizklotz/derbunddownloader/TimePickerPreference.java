@@ -69,7 +69,7 @@ public class TimePickerPreference extends DialogPreference {
     protected void onDialogClosed(boolean positiveResult) {
         if (positiveResult) {
             tp.clearFocus();  // to get value of number if edited in text field, and clicking OK without clicking outside the field first (bug in NumberPicker)
-            String newtime = tp.getCurrentHour() + ":" + tp.getCurrentMinute();
+            String newtime = DateFormatterUtils.toHH_MM(tp.getCurrentHour(), tp.getCurrentMinute());
             if (callChangeListener(newtime)) {
                 setTime(newtime);
             }
@@ -80,7 +80,7 @@ public class TimePickerPreference extends DialogPreference {
     protected void onSetInitialValue(boolean restorePersistedValue, Object defaultValue) {
 
         if (restorePersistedValue) {
-            setTime(this.getPersistedString("06:00"));
+            setTime(this.getPersistedString(DateFormatterUtils.toHH_MM(6, 0)));
         } else {
             // Set default state from the XML attribute
             setTime(defaultValue.toString());
