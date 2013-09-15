@@ -24,13 +24,13 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.DownloadManager;
 import android.app.LoaderManager;
-import android.content.CursorLoader;
 import android.content.Intent;
 import android.content.Loader;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.support.v4.content.FileProvider;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -38,15 +38,18 @@ import android.widget.AdapterView;
 import android.widget.DatePicker;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
+import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.File;
 import java.util.Calendar;
 
 public class MainActivity extends Activity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
-    private static final Uri DOWNLOADS_URI = Uri.parse("content://downloads/my_downloads");
     private SimpleCursorAdapter issueListAdapter;
+
+    private final DownloadManager.Query query = new DownloadManager.Query();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,22 +64,60 @@ public class MainActivity extends Activity implements
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor selectedIssue = (Cursor) parent.getItemAtPosition(position);
                 if (selectedIssue != null) {
-
-                    Intent intent = new Intent(DownloadManager.ACTION_VIEW_DOWNLOADS);
-                    startActivity(intent);
+                    String uri = selectedIssue.getString(selectedIssue.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+                    openPDF(uri);
                 }
             }
         });
 
         issueListAdapter = new SimpleCursorAdapter(this,
-                R.layout.issue_item_in_grid, null,
-                new String[]{DownloadManager.COLUMN_TITLE},
-                new int[]{R.id.issueTextView}, 0);
+                R.layout.issue, null,
+                new String[]{DownloadManager.COLUMN_DESCRIPTION, DownloadManager.COLUMN_STATUS},
+                new int[]{R.id.dateTextView, R.id.stateTextView}, 0);
+
+        issueListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
+            @Override
+            public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
+                if (view.getId() == R.id.stateTextView) {
+                    String statusText = "Unbekannt";
+                    int status = cursor.getInt(columnIndex);
+                    switch (status) {
+                        case DownloadManager.STATUS_SUCCESSFUL:
+                            statusText = "Heruntergeladen";
+                            break;
+                        case DownloadManager.STATUS_PAUSED:
+                        case DownloadManager.STATUS_PENDING:
+                            statusText = "Warte auf Netzwerkverbindung...";
+                            break;
+                        case DownloadManager.STATUS_RUNNING:
+                            statusText = "Lade herunter...";
+                            break;
+                        case DownloadManager.STATUS_FAILED:
+                            statusText = "Fehler beim herunterladen";
+                            break;
+                    }
+                    ((TextView) view).setText(statusText);
+                    return true;
+                }
+
+                return false;
+            }
+        });
+
         gridView.setAdapter(issueListAdapter);
 
         getLoaderManager().initLoader(1, null, this);
     }
 
+    private void openPDF(String uri) {
+        Intent intent = new Intent(Intent.ACTION_VIEW);
+
+        final Uri publicUri = FileProvider.getUriForFile(this, "com.github.notizklotz.derbunddownloader.publicissues", new File(uri));
+        intent.setDataAndType(publicUri, "application/pdf");
+        intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        startActivity(intent);
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -139,15 +180,7 @@ public class MainActivity extends Activity implements
 
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(this, DOWNLOADS_URI, null, null, null, null) {
-
-            @Override
-            public Cursor loadInBackground() {
-                Cursor cursor = super.loadInBackground();
-                cursor.setNotificationUri(getContentResolver(), DOWNLOADS_URI);
-                return cursor;
-            }
-        };
+        return new DownloadManagerLoader(this, query);
     }
 
     @Override

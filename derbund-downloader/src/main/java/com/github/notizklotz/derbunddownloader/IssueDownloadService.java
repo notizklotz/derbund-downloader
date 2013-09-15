@@ -25,6 +25,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Environment;
 import android.os.IBinder;
 
 public class IssueDownloadService extends Service {
@@ -57,7 +58,6 @@ public class IssueDownloadService extends Service {
         }
 
         startDownload(this, intent.getIntExtra(DAY, 0), intent.getIntExtra(MONTH, 0), intent.getIntExtra(YEAR, 0));
-
         return START_STICKY;
     }
 
@@ -66,10 +66,11 @@ public class IssueDownloadService extends Service {
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
         DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
-                setTitle("derbund-" + DateFormatterUtils.toDDMMYYYYString(day, month, year)).
-                setDescription("Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year)).
+                setTitle("Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year)).
+                setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year)).
                 setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED).
-                setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+                setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI).
+                setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, "derbundissues");
         return downloadManager.enqueue(request);
     }
 
