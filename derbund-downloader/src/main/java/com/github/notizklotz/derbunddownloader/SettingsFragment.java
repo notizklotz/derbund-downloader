@@ -30,11 +30,11 @@ import android.preference.PreferenceFragment;
 
 import java.util.Calendar;
 
-public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
+class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final boolean DEBUG = false;
-    public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
-    public static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
+    private static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
+    private static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

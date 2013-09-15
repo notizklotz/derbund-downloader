@@ -27,7 +27,7 @@ import android.database.Cursor;
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
 
-public class DownloadManagerLoader extends AsyncTaskLoader<Cursor> {
+class DownloadManagerLoader extends AsyncTaskLoader<Cursor> {
     private final Loader.ForceLoadContentObserver mObserver;
     private final DownloadManager.Query mQuery;
     private final DownloadManager downloadManager;

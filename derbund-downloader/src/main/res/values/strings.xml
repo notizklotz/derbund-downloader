@@ -19,13 +19,11 @@
 <resources>
     <string name="app_name">Der Bund ePaper Downloader</string>
     <string name="action_settings">Einstellungen</string>
-    <string name="button.download">Herunterladen</string>
-    <string name="download_noconnection">Keine Internetverbindung verfügbar</string>
-    <string name="download_success">Ausgabe heruntergeladen</string>
     <string name="action_download">Ausgabe herunterladen</string>
     <string name="auto_download">Automatisch täglich herunterladen</string>
     <string name="auto_download_time">Zeitpunkt</string>
     <string name="einstellungen">Einstellungen</string>
     <string name="error_no_issue_on_sundays">Der Bund erscheint Sonntags nicht</string>
     <string name="no_issues_downloaded">Keine Ausgaben heruntergeladen</string>
+    <string name="issue">Zeitungsausgabe</string>
 </resources>

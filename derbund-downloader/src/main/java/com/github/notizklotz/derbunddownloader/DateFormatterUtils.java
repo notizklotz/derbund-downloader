@@ -18,7 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader;
 
-public class DateFormatterUtils {
+class DateFormatterUtils {
 
     private static final String FORMAT_HH_MM = "%02d:%02d";
     private static final String FORMAT_DDMMYYYY = "%02d%02d%04d";

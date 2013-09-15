@@ -61,7 +61,7 @@ public class IssueDownloadService extends Service {
         return START_STICKY;
     }
 
-    public static long startDownload(Context context, int day, int month, int year) {
+    public static void startDownload(Context context, int day, int month, int year) {
         String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
@@ -71,7 +71,7 @@ public class IssueDownloadService extends Service {
                 setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED).
                 setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI).
                 setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, "derbundissues");
-        return downloadManager.enqueue(request);
+        downloadManager.enqueue(request);
     }
 
     @Override
