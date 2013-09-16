@@ -68,8 +68,11 @@ public class MainActivity extends Activity implements
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 Cursor selectedIssue = (Cursor) parent.getItemAtPosition(position);
                 if (selectedIssue != null) {
-                    String uri = selectedIssue.getString(selectedIssue.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
-                    openPDF(uri);
+                    boolean completed = selectedIssue.getInt(selectedIssue.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL;
+                    if (completed) {
+                        String uri = selectedIssue.getString(selectedIssue.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
+                        openPDF(uri);
+                    }
                 }
             }
         });
