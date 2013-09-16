@@ -19,35 +19,39 @@
   -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
+    android:layout_width="@dimen/issue_item_size"
+    android:layout_height="@dimen/issue_item_size">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:src="@drawable/issue"
         android:contentDescription="@string/issue" />
 
-    <TextView
-        android:id="@+id/dateTextView"
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|top"
-        android:textColor="#FF716c61"
-        android:textSize="20sp"
-        android:padding="15dip"
-        android:textStyle="bold" />
-
-    <TextView
-        android:id="@+id/stateTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal|bottom"
-        android:background="#AA000000"
-        android:textColor="#ffffffff"
+        android:background="#CC000000"
+        android:layout_gravity="bottom"
         android:paddingLeft="20dip"
         android:paddingTop="10dip"
         android:paddingRight="20dip"
-        android:paddingBottom="20dip" />
+        android:paddingBottom="20dip">
+
+        <TextView
+            android:id="@+id/dateTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#ffffffff"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/stateTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#ffffffff"
+            android:layout_below="@id/dateTextView" />
+    </RelativeLayout>
 
 </FrameLayout>
