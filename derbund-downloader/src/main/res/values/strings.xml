@@ -26,4 +26,9 @@
     <string name="error_no_issue_on_sundays">Der Bund erscheint Sonntags nicht</string>
     <string name="no_issues_downloaded">Keine Ausgaben heruntergeladen</string>
     <string name="issue">Zeitungsausgabe</string>
+    <string name="download_state_unknown">Unbekannt</string>
+    <string name="download_state_successful">Heruntergeladen</string>
+    <string name="download_state_pending">Warte auf Netzwerkverbindung...</string>
+    <string name="download_state_running">Lade herunter...</string>
+    <string name="download_state_failed">Fehler beim Herunterladen</string>
 </resources>

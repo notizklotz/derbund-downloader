@@ -80,21 +80,21 @@ public class MainActivity extends Activity implements
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
                 if (view.getId() == R.id.stateTextView) {
-                    String statusText = "Unbekannt";
+                    String statusText = getString(R.string.download_state_unknown);
                     int status = cursor.getInt(columnIndex);
                     switch (status) {
                         case DownloadManager.STATUS_SUCCESSFUL:
-                            statusText = "Heruntergeladen";
+                            statusText = getString(R.string.download_state_successful);
                             break;
                         case DownloadManager.STATUS_PAUSED:
                         case DownloadManager.STATUS_PENDING:
-                            statusText = "Warte auf Netzwerkverbindung...";
+                            statusText = getString(R.string.download_state_pending);
                             break;
                         case DownloadManager.STATUS_RUNNING:
-                            statusText = "Lade herunter...";
+                            statusText = getString(R.string.download_state_running);
                             break;
                         case DownloadManager.STATUS_FAILED:
-                            statusText = "Fehler beim herunterladen";
+                            statusText = getString(R.string.download_state_failed);
                             break;
                     }
                     ((TextView) view).setText(statusText);
