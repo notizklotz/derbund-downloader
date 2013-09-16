@@ -47,6 +47,9 @@ import java.util.Calendar;
 public class MainActivity extends Activity implements
         LoaderManager.LoaderCallbacks<Cursor> {
 
+    public static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
+    public static final String MEDIA_TYPE_PDF = "application/pdf";
+    public static final String PUBLIC_ISSUES_AUTHORITY = "com.github.notizklotz.derbunddownloader.publicissues";
     private SimpleCursorAdapter issueListAdapter;
 
     private final DownloadManager.Query query = new DownloadManager.Query();
@@ -75,7 +78,6 @@ public class MainActivity extends Activity implements
                 R.layout.issue, null,
                 new String[]{DownloadManager.COLUMN_DESCRIPTION, DownloadManager.COLUMN_STATUS},
                 new int[]{R.id.dateTextView, R.id.stateTextView}, 0);
-
         issueListAdapter.setViewBinder(new SimpleCursorAdapter.ViewBinder() {
             @Override
             public boolean setViewValue(View view, Cursor cursor, int columnIndex) {
@@ -113,8 +115,8 @@ public class MainActivity extends Activity implements
     private void openPDF(String uri) {
         Intent intent = new Intent(Intent.ACTION_VIEW);
 
-        final Uri publicUri = FileProvider.getUriForFile(this, "com.github.notizklotz.derbunddownloader.publicissues", new File(uri));
-        intent.setDataAndType(publicUri, "application/pdf");
+        final Uri publicUri = FileProvider.getUriForFile(this, PUBLIC_ISSUES_AUTHORITY, new File(uri));
+        intent.setDataAndType(publicUri, MEDIA_TYPE_PDF);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         startActivity(intent);
@@ -130,7 +132,7 @@ public class MainActivity extends Activity implements
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case R.id.action_download:
-                new DatePickerFragment().show(getFragmentManager(), "downloadIssueDatePicker");
+                new DatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
                 return true;
             case R.id.action_settings:
                 startActivity(new Intent(this, SettingsActivity.class));
