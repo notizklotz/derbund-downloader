@@ -29,6 +29,7 @@ import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.content.FileProvider;
@@ -42,6 +43,9 @@ import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
 import java.util.Calendar;
@@ -117,7 +121,27 @@ public class MainActivity extends Activity implements
         getLoaderManager().initLoader(1, null, this);
     }
 
+    private boolean login() {
+        RestTemplate restTemplate = new RestTemplate(true);
+        LinkedMultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();
+        form.add("user", "asdf");
+        form.add("password", "asdf");
+        form.add("dologin", "1");
+        form.add("t", "");
+        String result = restTemplate.postForObject("http://epaper.derbund.ch", form, String.class);
+        return result.contains("flashcontent");
+    }
+
     private void openPDF(String uri) {
+
+        new AsyncTask<String, String, String>() {
+            @Override
+            protected String doInBackground(String... params) {
+                login();
+                return null;
+            }
+        }.execute();
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
 
         final Uri publicUri = FileProvider.getUriForFile(this, PUBLIC_ISSUES_AUTHORITY, new File(uri));

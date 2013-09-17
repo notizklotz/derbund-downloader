@@ -20,6 +20,8 @@
 
 
 
+
+
 buildscript {
     repositories {
         mavenCentral()
@@ -46,4 +48,5 @@ android {
 
 dependencies {
     compile 'com.android.support:support-v4:18.0.0'
+    compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
 }
