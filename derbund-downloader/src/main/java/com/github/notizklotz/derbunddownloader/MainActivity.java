@@ -36,6 +36,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
@@ -170,6 +171,10 @@ public class MainActivity extends Activity implements
 
             DatePicker datePicker = datePickerDialog.getDatePicker();
             if (datePicker != null) {
+                CalendarView calendarView = datePicker.getCalendarView();
+                if (calendarView != null) {
+                    calendarView.setFirstDayOfWeek(Calendar.MONDAY);
+                }
                 datePicker.setMaxDate(System.currentTimeMillis());
             }
 
