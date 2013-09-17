@@ -26,6 +26,7 @@ import android.app.DownloadManager;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -122,7 +123,17 @@ public class MainActivity extends Activity implements
         intent.setDataAndType(publicUri, MEDIA_TYPE_PDF);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
         intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        startActivity(intent);
+
+        PackageManager packageManager = getPackageManager();
+        if (packageManager == null) {
+            throw new IllegalStateException("Package Manager was null");
+        }
+
+        if (intent.resolveActivity(packageManager) != null) {
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
+        }
     }
 
     @Override
