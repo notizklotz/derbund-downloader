@@ -18,16 +18,12 @@
 
 
 
-
-
-
-
 buildscript {
     repositories {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:0.5.+'
+        classpath 'com.android.tools.build:gradle:0.6.+'
     }
 }
 apply plugin: 'android'
@@ -38,7 +34,7 @@ repositories {
 
 android {
     compileSdkVersion 18
-    buildToolsVersion "18.0.1"
+    buildToolsVersion '19'
 
     defaultConfig {
         minSdkVersion 15
@@ -47,6 +43,6 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:support-v4:18.0.0'
+    compile 'com.android.support:support-v4:19.0.0'
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
 }
