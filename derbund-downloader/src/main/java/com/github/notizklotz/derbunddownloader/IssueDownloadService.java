@@ -27,6 +27,7 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.os.IBinder;
+import android.util.Log;
 
 public class IssueDownloadService extends Service {
 
@@ -36,6 +37,7 @@ public class IssueDownloadService extends Service {
 
     private Intent intent;
     private WifiManager.WifiLock myWifiLock;
+    private boolean previousWifiState;
 
     private final AutomaticIssueDownloadCompletedReceiver automaticIssueDownloadCompletedReceiver = new AutomaticIssueDownloadCompletedReceiver();
 
@@ -48,8 +50,11 @@ public class IssueDownloadService extends Service {
         this.intent = intent;
 
         WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        previousWifiState = wm.isWifiEnabled();
+        wm.setWifiEnabled(true);
         myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, "IssueDownloadWifilock");
         myWifiLock.acquire();
+        Log.d(getClass().getName(), "Wifi enabled an Wifi lock acquired");
 
         registerReceiver(automaticIssueDownloadCompletedReceiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
@@ -72,18 +77,27 @@ public class IssueDownloadService extends Service {
                 setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI).
                 setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, "derbundissues");
         downloadManager.enqueue(request);
+
+        Log.d(IssueDownloadService.class.getName(), "Download enqueued");
     }
 
     @Override
     public void onDestroy() {
         if (myWifiLock != null) {
             myWifiLock.release();
+            Log.d(IssueDownloadService.class.getName(), "Wifi lock released");
+        } else {
+            Log.w(IssueDownloadService.class.getName(), "No Wifi lock was held");
         }
+        WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        wm.setWifiEnabled(previousWifiState);
+        Log.d(IssueDownloadService.class.getName(), "Restored Wifi state to previous value: " + previousWifiState);
 
         unregisterReceiver(automaticIssueDownloadCompletedReceiver);
 
         if (intent != null) {
             AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
+            Log.d(IssueDownloadService.class.getName(), "Wakelock released");
         }
     }
 }
