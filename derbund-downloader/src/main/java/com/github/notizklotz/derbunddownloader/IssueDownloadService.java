@@ -70,12 +70,13 @@ public class IssueDownloadService extends Service {
         String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
 
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url)).
-                setTitle("Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year)).
-                setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year)).
-                setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED).
-                setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI).
-                setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, "derbundissues");
+        String title = "Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year);
+        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url))
+                .setTitle(title)
+                .setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year))
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
+                .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, title + ".pdf");
         downloadManager.enqueue(request);
 
         Log.d(IssueDownloadService.class.getName(), "Download enqueued");

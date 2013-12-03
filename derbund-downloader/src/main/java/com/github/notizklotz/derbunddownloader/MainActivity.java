@@ -29,10 +29,9 @@ import android.content.Loader;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -55,7 +54,6 @@ public class MainActivity extends Activity implements
 
     public static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     public static final String MEDIA_TYPE_PDF = "application/pdf";
-    public static final String PUBLIC_ISSUES_AUTHORITY = "com.github.notizklotz.derbunddownloader.publicissues";
     private SimpleCursorAdapter issueListAdapter;
 
     private final DownloadManager.Query query = new DownloadManager.Query();
@@ -122,32 +120,33 @@ public class MainActivity extends Activity implements
     }
 
     private boolean login() {
+        Log.d(MainActivity.class.getName(), "Trying to login");
+
         RestTemplate restTemplate = new RestTemplate(true);
         LinkedMultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();
         form.add("user", "asdf");
         form.add("password", "asdf");
         form.add("dologin", "1");
         form.add("t", "");
-        String result = restTemplate.postForObject("http://epaper.derbund.ch", form, String.class);
-        return result.contains("flashcontent");
+        String response = restTemplate.postForObject("http://epaper.derbund.ch", form, String.class);
+        boolean loginSuccessful = response.contains("flashcontent");
+        Log.d(MainActivity.class.getName(), "Login successful: " + loginSuccessful);
+        return loginSuccessful;
     }
 
     private void openPDF(String uri) {
 
-        new AsyncTask<String, String, String>() {
-            @Override
-            protected String doInBackground(String... params) {
-                login();
-                return null;
-            }
-        }.execute();
+//        new AsyncTask<String, String, String>() {
+//            @Override
+//            protected String doInBackground(String... params) {
+//                login();
+//                return null;
+//            }
+//        }.execute();
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
-
-        final Uri publicUri = FileProvider.getUriForFile(this, PUBLIC_ISSUES_AUTHORITY, new File(uri));
-        intent.setDataAndType(publicUri, MEDIA_TYPE_PDF);
+        intent.setDataAndType(Uri.fromFile(new File(uri)), MEDIA_TYPE_PDF);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-        intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
         PackageManager packageManager = getPackageManager();
         if (packageManager == null) {
@@ -155,6 +154,8 @@ public class MainActivity extends Activity implements
         }
 
         if (intent.resolveActivity(packageManager) != null) {
+            Log.d(MainActivity.class.getName(), "Starting activitiy for data: " + intent.getDataString());
+
             startActivity(intent);
         } else {
             Toast.makeText(this, R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
