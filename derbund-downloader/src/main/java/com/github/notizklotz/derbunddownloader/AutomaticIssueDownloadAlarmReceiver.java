@@ -40,9 +40,9 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
             int year = c.get(Calendar.YEAR);
 
             Intent service = new Intent(context, IssueDownloadService.class);
-            service.putExtra(IssueDownloadService.DAY, day);
-            service.putExtra(IssueDownloadService.MONTH, month);
-            service.putExtra(IssueDownloadService.YEAR, year);
+            service.putExtra(IssueDownloadService.EXTRA_DAY, day);
+            service.putExtra(IssueDownloadService.EXTRA_MONTH, month);
+            service.putExtra(IssueDownloadService.EXTRA_YEAR, year);
 
             startWakefulService(context, service);
         }

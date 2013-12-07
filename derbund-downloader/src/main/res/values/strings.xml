@@ -23,7 +23,7 @@
     <string name="auto_download">Automatisch täglich herunterladen</string>
     <string name="auto_download_time">Zeitpunkt</string>
     <string name="einstellungen">Einstellungen</string>
-    <string name="error_no_issue_on_sundays">Der Bund erscheint Sonntags nicht</string>
+    <string name="error_no_issue_on_sundays">Der Bund erscheint Sonntags nicht!</string>
     <string name="no_issues_downloaded">Keine Ausgaben heruntergeladen</string>
     <string name="issue">Zeitungsausgabe</string>
     <string name="download_state_unknown">Unbekannt</string>
@@ -32,4 +32,5 @@
     <string name="download_state_running">Lade herunter...</string>
     <string name="download_state_failed">Fehler beim Herunterladen</string>
     <string name="no_pdf_reader">Bitte installieren Sie einen PDF Reader</string>
+    <string name="login_failed">Login fehlgeschlagen</string>
 </resources>

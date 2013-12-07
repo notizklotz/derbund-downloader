@@ -30,6 +30,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -43,9 +44,6 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestTemplate;
-
 import java.io.File;
 import java.util.Calendar;
 
@@ -54,6 +52,7 @@ public class MainActivity extends Activity implements
 
     public static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     public static final String MEDIA_TYPE_PDF = "application/pdf";
+    private static final boolean DEVELOPER_MODE = true;
     private SimpleCursorAdapter issueListAdapter;
 
     private final DownloadManager.Query query = new DownloadManager.Query();
@@ -61,6 +60,18 @@ public class MainActivity extends Activity implements
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if (DEVELOPER_MODE) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                    .detectAll()
+                    .penaltyLog()
+                    .build());
+        }
+
         setContentView(R.layout.activity_main);
 
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -119,31 +130,7 @@ public class MainActivity extends Activity implements
         getLoaderManager().initLoader(1, null, this);
     }
 
-    private boolean login() {
-        Log.d(MainActivity.class.getName(), "Trying to login");
-
-        RestTemplate restTemplate = new RestTemplate(true);
-        LinkedMultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();
-        form.add("user", "asdf");
-        form.add("password", "asdf");
-        form.add("dologin", "1");
-        form.add("t", "");
-        String response = restTemplate.postForObject("http://epaper.derbund.ch", form, String.class);
-        boolean loginSuccessful = response.contains("flashcontent");
-        Log.d(MainActivity.class.getName(), "Login successful: " + loginSuccessful);
-        return loginSuccessful;
-    }
-
     private void openPDF(String uri) {
-
-//        new AsyncTask<String, String, String>() {
-//            @Override
-//            protected String doInBackground(String... params) {
-//                login();
-//                return null;
-//            }
-//        }.execute();
-
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.fromFile(new File(uri)), MEDIA_TYPE_PDF);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
@@ -206,10 +193,9 @@ public class MainActivity extends Activity implements
             return datePickerDialog;
         }
 
-
         @Override
-        public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-            Activity activity = getActivity();
+        public void onDateSet(DatePicker view, final int year, final int monthOfYear, final int dayOfMonth) {
+            final Activity activity = getActivity();
             if (activity == null) {
                 throw new IllegalStateException("Activity is null");
             }
@@ -220,7 +206,11 @@ public class MainActivity extends Activity implements
             if (selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
                 Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
             } else {
-                IssueDownloadService.startDownload(activity, dayOfMonth, monthOfYear + 1, year);
+                Intent downloadIntent = new Intent(getActivity(), IssueDownloadService.class);
+                downloadIntent.putExtra(IssueDownloadService.EXTRA_DAY, dayOfMonth);
+                downloadIntent.putExtra(IssueDownloadService.EXTRA_MONTH, monthOfYear + 1);
+                downloadIntent.putExtra(IssueDownloadService.EXTRA_YEAR, year);
+                getActivity().startService(downloadIntent);
             }
         }
     }
