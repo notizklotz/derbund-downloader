@@ -19,6 +19,16 @@
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference
+        android:key="username"
+        android:title="Benutzername (E-Mail Adresse)"
+        android:persistent="true"
+        android:inputType="textEmailAddress" />
+    <EditTextPreference
+        android:key="password"
+        android:title="Passwort"
+        android:persistent="true"
+        android:inputType="textPassword" />
     <CheckBoxPreference
         android:key="auto_download_enabled"
         android:title="@string/auto_download"

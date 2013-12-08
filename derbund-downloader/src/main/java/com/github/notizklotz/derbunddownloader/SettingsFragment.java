@@ -33,8 +33,10 @@ import java.util.Calendar;
 class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final boolean DEBUG = false;
-    private static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
-    private static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
+    public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
+    public static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
+    public static final String KEY_USERNAME = "username";
+    public static final String KEY_PASSWORD = "password";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -115,5 +117,8 @@ class SettingsFragment extends PreferenceFragment implements SharedPreferences.O
         if (auto_download_time_preference != null) {
             auto_download_time_preference.setSummary(auto_download_time);
         }
+
+        getPreferenceScreen().findPreference(KEY_USERNAME).setSummary(sharedPreferences.getString(KEY_USERNAME, "Bitte geben Sie ihren Benutzernamen ein"));
+        getPreferenceScreen().findPreference(KEY_PASSWORD).setSummary(sharedPreferences.contains(KEY_PASSWORD) ? "****" : "Bitte geben Sie ihr Passwort ein");
     }
 }
