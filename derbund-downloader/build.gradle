@@ -18,6 +18,8 @@
 
 
 
+
+
 buildscript {
     repositories {
         mavenCentral()
@@ -37,7 +39,7 @@ android {
     buildToolsVersion '19'
 
     defaultConfig {
-        minSdkVersion 15
+        minSdkVersion 14
         targetSdkVersion 18
     }
 }

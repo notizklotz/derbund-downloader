@@ -19,7 +19,7 @@
 <resources>
     <string name="app_name">Der Bund ePaper Downloader</string>
     <string name="action_settings">Einstellungen</string>
-    <string name="action_download">Ausgabe herunterladen</string>
+    <string name="action_download">Herunterladen</string>
     <string name="auto_download">Automatisch täglich herunterladen</string>
     <string name="auto_download_time">Zeitpunkt</string>
     <string name="einstellungen">Einstellungen</string>

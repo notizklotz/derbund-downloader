@@ -21,7 +21,7 @@
         android:id="@+id/action_download"
         android:icon="@drawable/ic_menu_download"
         android:title="@string/action_download"
-        android:showAsAction="ifRoom" />
+        android:showAsAction="ifRoom|withText" />
     <item
         android:id="@+id/action_settings"
         android:title="@string/action_settings"
