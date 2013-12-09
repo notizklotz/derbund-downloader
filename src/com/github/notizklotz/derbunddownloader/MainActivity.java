@@ -18,12 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader;
 
-import android.app.Activity;
-import android.app.DatePickerDialog;
-import android.app.Dialog;
-import android.app.DialogFragment;
-import android.app.DownloadManager;
-import android.app.LoaderManager;
+import android.app.*;
 import android.content.Context;
 import android.content.Intent;
 import android.content.Loader;
@@ -34,19 +29,8 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.view.ActionMode;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
-import android.view.View;
-import android.widget.AbsListView;
-import android.widget.AdapterView;
-import android.widget.CalendarView;
-import android.widget.DatePicker;
-import android.widget.GridView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.view.*;
+import android.widget.*;
 
 import java.io.File;
 import java.util.Calendar;

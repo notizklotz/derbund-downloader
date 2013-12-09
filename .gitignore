@@ -1,4 +1,7 @@
-.gradle
 /local.properties
+/project.properties
 /.idea/workspace.xml
+/.idea/libraries
+/.idea/uiDesigner.xml
+gen
 .DS_Store
