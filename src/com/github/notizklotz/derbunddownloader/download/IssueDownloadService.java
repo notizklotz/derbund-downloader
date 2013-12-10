@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader;
+package com.github.notizklotz.derbunddownloader.download;
 
 import android.app.DownloadManager;
 import android.app.IntentService;
@@ -30,6 +30,9 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.common.DateFormatterUtils;
+import com.github.notizklotz.derbunddownloader.settings.Settings;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClientException;
@@ -125,8 +128,8 @@ public class IssueDownloadService extends IntentService {
             } while (!connected);
 
             final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-            final String username = sharedPref.getString(SettingsFragment.KEY_USERNAME, "");
-            final String password = sharedPref.getString(SettingsFragment.KEY_PASSWORD, "");
+            final String username = sharedPref.getString(Settings.KEY_USERNAME, "");
+            final String password = sharedPref.getString(Settings.KEY_PASSWORD, "");
 
             RestTemplate restTemplate = new RestTemplate(true);
             LinkedMultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();

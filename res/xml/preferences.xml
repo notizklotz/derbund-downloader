@@ -34,7 +34,7 @@
         android:title="@string/auto_download"
         android:defaultValue="true"
         android:persistent="true" />
-    <com.github.notizklotz.derbunddownloader.TimePickerPreference
+    <com.github.notizklotz.derbunddownloader.settings.TimePickerPreference
         android:key="auto_download_time"
         android:dependency="auto_download_enabled"
         android:title="@string/auto_download_time"

@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader;
+package com.github.notizklotz.derbunddownloader.settings;
 
 import android.app.Activity;
 import android.app.AlarmManager;
@@ -27,16 +27,14 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmReceiver;
 
 import java.util.Calendar;
 
 class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     private static final boolean DEBUG = false;
-    public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
-    public static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
-    public static final String KEY_USERNAME = "username";
-    public static final String KEY_PASSWORD = "password";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -87,8 +85,8 @@ class SettingsFragment extends PreferenceFragment implements SharedPreferences.O
                 new Intent(applicationContext, AutomaticIssueDownloadAlarmReceiver.class),
                 PendingIntent.FLAG_CANCEL_CURRENT);
 
-        if (sharedPreferences.getBoolean(KEY_AUTO_DOWNLOAD_ENABLED, false)) {
-            String auto_download_time = sharedPreferences.getString(KEY_AUTO_DOWNLOAD_TIME, null);
+        if (sharedPreferences.getBoolean(Settings.KEY_AUTO_DOWNLOAD_ENABLED, false)) {
+            String auto_download_time = sharedPreferences.getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
             if (auto_download_time != null) {
                 Calendar now = Calendar.getInstance();
 
@@ -112,13 +110,17 @@ class SettingsFragment extends PreferenceFragment implements SharedPreferences.O
     }
 
     private void updateSummaries(SharedPreferences sharedPreferences) {
-        String auto_download_time = sharedPreferences.getString(KEY_AUTO_DOWNLOAD_TIME, null);
-        Preference auto_download_time_preference = getPreferenceScreen().findPreference(KEY_AUTO_DOWNLOAD_TIME);
+        String auto_download_time = sharedPreferences.getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
+        Preference auto_download_time_preference = getPreferenceScreen().findPreference(Settings.KEY_AUTO_DOWNLOAD_TIME);
         if (auto_download_time_preference != null) {
             auto_download_time_preference.setSummary(auto_download_time);
         }
 
-        getPreferenceScreen().findPreference(KEY_USERNAME).setSummary(sharedPreferences.getString(KEY_USERNAME, "Bitte geben Sie ihren Benutzernamen ein"));
-        getPreferenceScreen().findPreference(KEY_PASSWORD).setSummary(sharedPreferences.contains(KEY_PASSWORD) ? "****" : "Bitte geben Sie ihr Passwort ein");
+        getPreferenceScreen().findPreference(Settings.KEY_USERNAME).setSummary(sharedPreferences.getString(Settings.KEY_USERNAME, this.getString(R.string.username_summary)));
+        Preference passwordPreference = getPreferenceScreen().findPreference(Settings.KEY_PASSWORD);
+        if (sharedPreferences.contains(Settings.KEY_PASSWORD))
+            passwordPreference.setSummary("****");
+        else
+            passwordPreference.setSummary(this.getString(R.string.password_summary));
     }
 }

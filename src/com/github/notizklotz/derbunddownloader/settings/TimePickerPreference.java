@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader;
+package com.github.notizklotz.derbunddownloader.settings;
 
 import android.content.Context;
 import android.content.res.TypedArray;
@@ -24,6 +24,7 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TimePicker;
+import com.github.notizklotz.derbunddownloader.common.DateFormatterUtils;
 
 public class TimePickerPreference extends DialogPreference {
 

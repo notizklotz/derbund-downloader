@@ -3,5 +3,6 @@
 /.idea/workspace.xml
 /.idea/libraries
 /.idea/uiDesigner.xml
+*.apk
 gen
 .DS_Store

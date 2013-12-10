@@ -16,26 +16,17 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader;
+package com.github.notizklotz.derbunddownloader.settings;
 
-class DateFormatterUtils {
+public class Settings {
 
-    private static final String FORMAT_HH_MM = "%02d:%02d";
-    private static final String FORMAT_DDMMYYYY = "%02d%02d%04d";
-    private static final String FORMAT_DD_MM_YYYY = "%02d.%02d.%04d";
+    public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
+    public static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
+    public static final String KEY_USERNAME = "username";
+    public static final String KEY_PASSWORD = "password";
 
-    private DateFormatterUtils() {
+    private Settings() {
+
     }
 
-    public static String toDDMMYYYYString(int day, int month, int year) {
-        return String.format(FORMAT_DDMMYYYY, day, month, year);
-    }
-
-    public static String toDD_MM_YYYYString(int day, int month, int year) {
-        return String.format(FORMAT_DD_MM_YYYY, day, month, year);
-    }
-
-    public static String toHH_MM(int hours, int minutes) {
-        return String.format(FORMAT_HH_MM, hours, minutes);
-    }
 }
