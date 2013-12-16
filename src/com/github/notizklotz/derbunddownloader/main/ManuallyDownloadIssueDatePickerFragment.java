@@ -22,6 +22,7 @@ import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.CalendarView;
@@ -29,10 +30,11 @@ import android.widget.DatePicker;
 import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadService;
+import org.springframework.util.Assert;
 
 import java.util.Calendar;
 
-class ManuallyDownloadIssueDatePickerFragment extends DialogFragment implements DatePickerDialog.OnDateSetListener {
+class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -42,23 +44,34 @@ class ManuallyDownloadIssueDatePickerFragment extends DialogFragment implements 
             throw new IllegalStateException("Activity is null");
         }
 
-        DatePickerDialog datePickerDialog = new DatePickerDialog(activity, this,
+        DatePickerDialog datePickerDialog = new DatePickerDialog(activity, null,
                 c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+        datePickerDialog.setCancelable(true);
+        datePickerDialog.setCanceledOnTouchOutside(true);
 
-        DatePicker datePicker = datePickerDialog.getDatePicker();
-        if (datePicker != null) {
-            CalendarView calendarView = datePicker.getCalendarView();
-            if (calendarView != null) {
-                calendarView.setFirstDayOfWeek(Calendar.MONDAY);
-            }
-            datePicker.setMaxDate(System.currentTimeMillis());
+        final DatePicker datePicker = datePickerDialog.getDatePicker();
+        Assert.notNull(datePicker);
+
+        CalendarView calendarView = datePicker.getCalendarView();
+        if (calendarView != null) {
+            calendarView.setFirstDayOfWeek(Calendar.MONDAY);
         }
+        datePicker.setMaxDate(System.currentTimeMillis());
+
+        //Override the OK button instead of using the OnDateSetListener callback due to bug https://code.google.com/p/android/issues/detail?id=34833
+        datePickerDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, activity.getText(R.string.action_download), new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                onDateSet(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth());
+            }
+        });
+
+
 
         return datePickerDialog;
     }
 
-    @Override
-    public void onDateSet(DatePicker view, final int year, final int monthOfYear, final int dayOfMonth) {
+    private void onDateSet(final int year, final int monthOfYear, final int dayOfMonth) {
         final Activity activity = getActivity();
         if (activity == null) {
             throw new IllegalStateException("Activity is null");
@@ -77,4 +90,5 @@ class ManuallyDownloadIssueDatePickerFragment extends DialogFragment implements 
             getActivity().startService(downloadIntent);
         }
     }
+
 }
