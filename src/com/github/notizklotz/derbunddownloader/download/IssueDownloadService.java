@@ -42,6 +42,10 @@ import java.util.concurrent.CountDownLatch;
 
 public class IssueDownloadService extends IntentService {
 
+    //STOPSHIP
+    private static final boolean ENABLE_WIFI_CHECK = false;
+    private static final boolean ENABLE_USER_CHECK = false;
+
     public static final String EXTRA_DAY = "day";
     public static final String EXTRA_MONTH = "month";
     public static final String EXTRA_YEAR = "year";
@@ -56,19 +60,24 @@ public class IssueDownloadService extends IntentService {
             throw new IllegalArgumentException("Intent is missing extras");
         }
 
-        //Enable Wifi and lock it
-        final WifiManager wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        final boolean previousWifiState = wm.isWifiEnabled();
-        wm.setWifiEnabled(true);
-        final WifiManager.WifiLock myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, "IssueDownloadWifilock");
-        myWifiLock.acquire();
+        WifiManager.WifiLock myWifiLock;
+        WifiManager wm;
+        boolean previousWifiState;
+        if(ENABLE_WIFI_CHECK) {
+            //Enable Wifi and lock it
+            wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+            previousWifiState = wm.isWifiEnabled();
+            wm.setWifiEnabled(true);
+            myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, "IssueDownloadWifilock");
+            myWifiLock.acquire();
+        }
 
         if (!checkUserAccount()) {
             Notification.Builder mBuilder =
                     new Notification.Builder(this)
                             .setSmallIcon(R.drawable.issue)
-                            .setContentTitle("Der Bund Login fehlgeschlagen")
-                            .setContentText("Möglicherweise ist ihr Benutzeraccount nicht gültig");
+                            .setContentTitle(getString(R.string.download_login_failed))
+                            .setContentText(getString(R.string.download_login_failed_text));
             NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
             mNotifyMgr.notify(1, mBuilder.getNotification());
         } else {
@@ -86,46 +95,58 @@ public class IssueDownloadService extends IntentService {
             unregisterReceiver(receiver);
         }
 
-        //Stop Wifi if it was before and release Wifi lock
-        myWifiLock.release();
-        wm.setWifiEnabled(previousWifiState);
+        if(ENABLE_WIFI_CHECK) {
+            //Stop Wifi if it was before and release Wifi lock
+            myWifiLock.release();
+            wm.setWifiEnabled(previousWifiState);
+        }
 
         AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
     }
 
     private void startDownload(Context context, int day, int month, int year) {
-        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
+
+        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
         String title = "Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year);
-        DownloadManager.Request request = new DownloadManager.Request(Uri.parse(url))
+        DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(Uri.parse(url))
                 .setTitle(title)
                 .setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                 .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
                 .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, title + ".pdf");
-        downloadManager.enqueue(request);
+        if(ENABLE_WIFI_CHECK) {
+            pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+        }
+        long id = downloadManager.enqueue(pdfDownloadRequest);
 
         Log.d(IssueDownloadService.class.getName(), "Download enqueued");
     }
 
     private boolean checkUserAccount() {
+        if(!ENABLE_USER_CHECK) {
+            return true;
+        }
         Log.d(getClass().getName(), "Checking user account validty");
 
         ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         try {
-            boolean connected;
-            do {
-                NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                if (networkInfo == null) {
-                    throw new IllegalStateException("No Wifi device found");
-                }
-                connected = networkInfo.isConnected();
 
-                if (!connected) {
-                    Log.d(getClass().getName(), "Wifi connection is not yet ready. Wait 3 seconds and recheck");
-                    Thread.sleep(3000);
-                }
-            } while (!connected);
+            if(ENABLE_WIFI_CHECK) {
+                boolean connected;
+                do {
+                    NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                    if (networkInfo == null) {
+                        throw new IllegalStateException("No Wifi device found");
+                    }
+                    connected = networkInfo.isConnected();
+
+                    if (!connected) {
+                        Log.d(getClass().getName(), "Wifi connection is not yet ready. Wait 3 seconds and recheck");
+                        Thread.sleep(3000);
+                    }
+                } while (!connected);
+            }
 
             final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
             final String username = sharedPref.getString(Settings.KEY_USERNAME, "");

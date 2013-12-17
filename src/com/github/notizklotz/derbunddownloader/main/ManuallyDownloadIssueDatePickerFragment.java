@@ -30,7 +30,6 @@ import android.widget.DatePicker;
 import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadService;
-import org.springframework.util.Assert;
 
 import java.util.Calendar;
 
@@ -46,11 +45,9 @@ class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
         DatePickerDialog datePickerDialog = new DatePickerDialog(activity, null,
                 c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
-        datePickerDialog.setCancelable(true);
-        datePickerDialog.setCanceledOnTouchOutside(true);
 
         final DatePicker datePicker = datePickerDialog.getDatePicker();
-        Assert.notNull(datePicker);
+        assert datePicker != null;
 
         CalendarView calendarView = datePicker.getCalendarView();
         if (calendarView != null) {
@@ -65,8 +62,6 @@ class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
                 onDateSet(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth());
             }
         });
-
-
 
         return datePickerDialog;
     }
