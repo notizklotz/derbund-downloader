@@ -113,12 +113,11 @@ public class IssueDownloadService extends IntentService {
                 .setTitle(title)
                 .setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                .setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI)
                 .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, title + ".pdf");
         if(ENABLE_WIFI_CHECK) {
             pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
         }
-        long id = downloadManager.enqueue(pdfDownloadRequest);
+        downloadManager.enqueue(pdfDownloadRequest);
 
         Log.d(IssueDownloadService.class.getName(), "Download enqueued");
     }
