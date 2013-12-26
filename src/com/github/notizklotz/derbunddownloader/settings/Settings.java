@@ -18,6 +18,9 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
+import android.content.Context;
+import android.preference.PreferenceManager;
+
 public class Settings {
 
     public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
@@ -27,6 +30,14 @@ public class Settings {
 
     private Settings() {
 
+    }
+
+    public static String getUsername(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_USERNAME, null);
+    }
+
+    public static String getPassword(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_PASSWORD, null);
     }
 
 }

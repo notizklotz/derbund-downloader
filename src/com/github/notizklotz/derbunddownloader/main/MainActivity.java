@@ -20,6 +20,7 @@ package com.github.notizklotz.derbunddownloader.main;
 
 import android.app.Activity;
 import android.app.DownloadManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -35,8 +36,11 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+import com.github.notizklotz.derbunddownloader.DebugConstants;
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 
@@ -44,22 +48,33 @@ public class MainActivity extends Activity {
 
     public static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     public static final String MEDIA_TYPE_PDF = "application/pdf";
-    private static final boolean DEVELOPER_MODE = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (DEVELOPER_MODE) {
+        if (DebugConstants.DEBUG) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
 
         setContentView(R.layout.activity_main);
 
-        PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
+        PreferenceManager.setDefaultValues(getNullSafeApplicationContext(), R.xml.preferences, false);
 
         setupIssuesGrid();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        String username = Settings.getUsername(getApplicationContext());
+        String password = Settings.getPassword(getApplicationContext());
+        if(!(StringUtils.hasText(username) && StringUtils.hasText(password))) {
+            startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
+            Toast.makeText(getNullSafeApplicationContext(), getString(R.string.please_login), Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void setupIssuesGrid() {
@@ -96,7 +111,7 @@ public class MainActivity extends Activity {
 
             startActivity(intent);
         } else {
-            Toast.makeText(this, R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
+            Toast.makeText(getNullSafeApplicationContext(), R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
         }
     }
 
@@ -113,9 +128,18 @@ public class MainActivity extends Activity {
                 new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
                 return true;
             case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
+                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
             default:
                 return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private Context getNullSafeApplicationContext() {
+        Context applicationContext = getApplicationContext();
+        if(applicationContext != null) {
+            return applicationContext;
+        } else {
+            throw new IllegalStateException("Application context was null");
         }
     }
 

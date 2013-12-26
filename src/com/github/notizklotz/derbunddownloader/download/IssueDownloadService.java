@@ -30,6 +30,7 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import com.github.notizklotz.derbunddownloader.DebugConstants;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateFormatterUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -41,9 +42,6 @@ import org.springframework.web.client.RestTemplate;
 import java.util.concurrent.CountDownLatch;
 
 public class IssueDownloadService extends IntentService {
-
-    private static final boolean ENABLE_WIFI_CHECK = true;
-    private static final boolean ENABLE_USER_CHECK = true;
 
     private static final int WIFI_RECHECK_WAIT_MILLIS = 5 * 1000;
     private static final int WIFI_CHECK_MAX_MILLIS = 60 * 1000;
@@ -66,7 +64,8 @@ public class IssueDownloadService extends IntentService {
         WifiManager wm;
         boolean previousWifiState;
         boolean connected;
-        if(ENABLE_WIFI_CHECK) {
+        //noinspection PointlessBooleanExpression,ConstantConditions
+        if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             //Enable Wifi and lock it
             wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
             previousWifiState = wm.isWifiEnabled();
@@ -120,7 +119,8 @@ public class IssueDownloadService extends IntentService {
             }
         }
 
-        if(ENABLE_WIFI_CHECK) {
+        //noinspection PointlessBooleanExpression,ConstantConditions
+        if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             //Stop Wifi if it was started before and release Wifi lock
             myWifiLock.release();
             wm.setWifiEnabled(previousWifiState);
@@ -152,7 +152,8 @@ public class IssueDownloadService extends IntentService {
                 .setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                 .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, title + ".pdf");
-        if(ENABLE_WIFI_CHECK) {
+        //noinspection PointlessBooleanExpression,ConstantConditions
+        if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
         }
         downloadManager.enqueue(pdfDownloadRequest);
@@ -161,10 +162,6 @@ public class IssueDownloadService extends IntentService {
     }
 
     private boolean checkUserAccount() {
-        //noinspection PointlessBooleanExpression,ConstantConditions
-        if(!ENABLE_USER_CHECK) {
-            return true;
-        }
         Log.d(getClass().getName(), "Checking user account validity");
 
         try {
