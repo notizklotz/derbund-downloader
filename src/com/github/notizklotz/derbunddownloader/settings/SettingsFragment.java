@@ -32,9 +32,7 @@ import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAl
 
 import java.util.Calendar;
 
-class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
-
-    private static final boolean DEBUG = false;
+public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -96,7 +94,7 @@ class SettingsFragment extends PreferenceFragment implements SharedPreferences.O
                 //noinspection MagicConstant
                 updateTime.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH), time[0], time[1]);
 
-                if (!DEBUG && updateTime.before(now)) {
+                if (updateTime.before(now)) {
                     updateTime.roll(Calendar.DAY_OF_MONTH, true);
                 }
 
@@ -116,10 +114,16 @@ class SettingsFragment extends PreferenceFragment implements SharedPreferences.O
             auto_download_time_preference.setSummary(auto_download_time);
         }
 
-        getPreferenceScreen().findPreference(Settings.KEY_USERNAME).setSummary(sharedPreferences.getString(Settings.KEY_USERNAME, this.getString(R.string.username_summary)));
+        Preference usernamePreference = getPreferenceScreen().findPreference(Settings.KEY_USERNAME);
+        assert usernamePreference != null;
+        usernamePreference.setSummary(sharedPreferences.getString(Settings.KEY_USERNAME, this.getString(R.string.username_summary)));
+
         Preference passwordPreference = getPreferenceScreen().findPreference(Settings.KEY_PASSWORD);
-        if (sharedPreferences.contains(Settings.KEY_PASSWORD))
+        assert passwordPreference != null;
+
+        if (sharedPreferences.contains(Settings.KEY_PASSWORD)) {
             passwordPreference.setSummary("****");
+        }
         else
             passwordPreference.setSummary(this.getString(R.string.password_summary));
     }

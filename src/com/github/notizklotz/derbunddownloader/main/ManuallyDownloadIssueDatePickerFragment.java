@@ -33,7 +33,7 @@ import com.github.notizklotz.derbunddownloader.download.IssueDownloadService;
 
 import java.util.Calendar;
 
-class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
+public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
