@@ -33,6 +33,7 @@ import com.github.notizklotz.derbunddownloader.download.IssueDownloadService;
 
 import java.util.Calendar;
 
+@SuppressWarnings("WeakerAccess")
 public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
     @Override

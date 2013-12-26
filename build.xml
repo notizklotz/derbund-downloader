@@ -17,6 +17,7 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
+<!--suppress XmlUnboundNsPrefix -->
 <project name="androidtest" default="help">
 
     <!-- The local.properties file is created and updated by the 'android' tool.
@@ -51,6 +52,7 @@
          This must be done before we load project.properties since
          the proguard config can use sdk.dir -->
     <property environment="env"/>
+    <!--suppress AntResolveInspection -->
     <condition property="sdk.dir" value="${env.ANDROID_HOME}">
         <isset property="env.ANDROID_HOME"/>
     </condition>

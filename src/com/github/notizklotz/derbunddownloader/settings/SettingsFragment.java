@@ -32,6 +32,7 @@ import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAl
 
 import java.util.Calendar;
 
+@SuppressWarnings("WeakerAccess")
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override

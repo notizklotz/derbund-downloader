@@ -44,10 +44,11 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 
+@SuppressWarnings("WeakerAccess")
 public class MainActivity extends Activity {
 
-    public static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
-    public static final String MEDIA_TYPE_PDF = "application/pdf";
+    private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
+    private static final String MEDIA_TYPE_PDF = "application/pdf";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

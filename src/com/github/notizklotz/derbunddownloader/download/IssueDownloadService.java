@@ -161,6 +161,7 @@ public class IssueDownloadService extends IntentService {
         Log.d(IssueDownloadService.class.getName(), "Download enqueued");
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean checkUserAccount() {
         Log.d(getClass().getName(), "Checking user account validity");
 

@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.TimePicker;
 import com.github.notizklotz.derbunddownloader.common.DateFormatterUtils;
 
+@SuppressWarnings("WeakerAccess")
 public class TimePickerPreference extends DialogPreference {
 
     private String currentTime;
