@@ -60,12 +60,19 @@ public class IssueDownloadService extends IntentService {
             throw new IllegalArgumentException("Intent is missing extras");
         }
 
+        if(DebugConstants.DEBUG) {
+            Log.d(getClass().getName(), "Handling download intent");
+        }
+
         WifiManager.WifiLock myWifiLock;
         WifiManager wm;
         boolean previousWifiState;
         boolean connected = false;
         //noinspection PointlessBooleanExpression,ConstantConditions
         if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
+            if(DebugConstants.DEBUG) {
+                Log.d(getClass().getName(), "Making sure Wifi is enabled");
+            }
             //Enable Wifi and lock it
             wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
             previousWifiState = wm.isWifiEnabled();
@@ -100,7 +107,11 @@ public class IssueDownloadService extends IntentService {
             } while (!connected);
         }
 
-        if(connected) {
+        if(DebugConstants.DEBUG) {
+            Log.d(getClass().getName(), "Connected: " + connected);
+        }
+
+        if(connected || DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             if (!checkUserAccount()) {
                 notifyUser(R.string.download_login_failed, R.string.download_login_failed_text);
             } else {
