@@ -132,7 +132,7 @@ public class IssueDownloadService extends IntentService {
     private void notifyUser(int download_login_failed, int download_login_failed_text) {
         Notification.Builder mBuilder =
                 new Notification.Builder(this)
-                        .setSmallIcon(R.drawable.issue)
+                        .setSmallIcon(R.drawable.ic_stat_error)
                         .setContentTitle(getString(download_login_failed))
                         .setContentText(getString(download_login_failed_text))
                         .setTicker(getString(download_login_failed));
