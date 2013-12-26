@@ -44,7 +44,7 @@ public class MainActivity extends Activity {
 
     public static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     public static final String MEDIA_TYPE_PDF = "application/pdf";
-    private static final boolean DEVELOPER_MODE = true;
+    private static final boolean DEVELOPER_MODE = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

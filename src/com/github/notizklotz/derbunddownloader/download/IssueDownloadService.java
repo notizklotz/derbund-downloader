@@ -45,6 +45,9 @@ public class IssueDownloadService extends IntentService {
     private static final boolean ENABLE_WIFI_CHECK = true;
     private static final boolean ENABLE_USER_CHECK = true;
 
+    private static final int WIFI_RECHECK_WAIT_MILLIS = 5 * 1000;
+    private static final int WIFI_CHECK_MAX_MILLIS = 60 * 1000;
+
     public static final String EXTRA_DAY = "day";
     public static final String EXTRA_MONTH = "month";
     public static final String EXTRA_YEAR = "year";
@@ -62,6 +65,7 @@ public class IssueDownloadService extends IntentService {
         WifiManager.WifiLock myWifiLock;
         WifiManager wm;
         boolean previousWifiState;
+        boolean connected;
         if(ENABLE_WIFI_CHECK) {
             //Enable Wifi and lock it
             wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -69,39 +73,73 @@ public class IssueDownloadService extends IntentService {
             wm.setWifiEnabled(true);
             myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, "IssueDownloadWifilock");
             myWifiLock.acquire();
+
+            //Wait for Wifi coming up
+            long firstCheckMillis = System.currentTimeMillis();
+            ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            do {
+                NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                if (networkInfo == null) {
+                    throw new IllegalStateException("No Wifi device found");
+                }
+                connected = networkInfo.isConnected();
+
+                if (!connected) {
+                    Log.d(getClass().getName(), "Wifi connection is not yet ready. Wait and recheck");
+
+                    if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
+                        notifyUser(R.string.download_connection_failed, R.string.download_connection_failed_text);
+                        break;
+                    }
+
+                    try {
+                        Thread.sleep(WIFI_RECHECK_WAIT_MILLIS);
+                    } catch (InterruptedException e) {
+                        Log.w(getClass().getName(), "Interrupted while waiting for Wifi connection", e);
+                    }
+                }
+            } while (!connected);
         }
 
-        if (!checkUserAccount()) {
-            Notification.Builder mBuilder =
-                    new Notification.Builder(this)
-                            .setSmallIcon(R.drawable.issue)
-                            .setContentTitle(getString(R.string.download_login_failed))
-                            .setContentText(getString(R.string.download_login_failed_text));
-            NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-            //noinspection deprecation
-            mNotifyMgr.notify(1, mBuilder.getNotification());
-        } else {
-            //Download
-            final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
-            final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
-            registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-            startDownload(this, intent.getIntExtra(EXTRA_DAY, 0), intent.getIntExtra(EXTRA_MONTH, 0), intent.getIntExtra(EXTRA_YEAR, 0));
+        if(connected) {
+            if (!checkUserAccount()) {
+                notifyUser(R.string.download_login_failed, R.string.download_login_failed_text);
+            } else {
+                //Download
+                final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
+                final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
+                registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+                startDownload(this, intent.getIntExtra(EXTRA_DAY, 0), intent.getIntExtra(EXTRA_MONTH, 0), intent.getIntExtra(EXTRA_YEAR, 0));
 
-            try {
-                downloadDoneSignal.await();
-            } catch (InterruptedException e) {
-                Log.w(getClass().getName(), "Interrupted while waiting for the downloadDoneSignal");
+                try {
+                    downloadDoneSignal.await();
+                } catch (InterruptedException e) {
+                    Log.w(getClass().getName(), "Interrupted while waiting for the downloadDoneSignal");
+                }
+                unregisterReceiver(receiver);
             }
-            unregisterReceiver(receiver);
         }
 
         if(ENABLE_WIFI_CHECK) {
-            //Stop Wifi if it was before and release Wifi lock
+            //Stop Wifi if it was started before and release Wifi lock
             myWifiLock.release();
             wm.setWifiEnabled(previousWifiState);
         }
 
         AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
+    }
+
+    private void notifyUser(int download_login_failed, int download_login_failed_text) {
+        Notification.Builder mBuilder =
+                new Notification.Builder(this)
+                        .setSmallIcon(R.drawable.issue)
+                        .setContentTitle(getString(download_login_failed))
+                        .setContentText(getString(download_login_failed_text))
+                        .setTicker(getString(download_login_failed));
+
+        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        //noinspection deprecation
+        mNotifyMgr.notify(1, mBuilder.getNotification());
     }
 
     private void startDownload(Context context, int day, int month, int year) {
@@ -127,27 +165,9 @@ public class IssueDownloadService extends IntentService {
         if(!ENABLE_USER_CHECK) {
             return true;
         }
-        Log.d(getClass().getName(), "Checking user account validty");
+        Log.d(getClass().getName(), "Checking user account validity");
 
-        ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         try {
-
-            if(ENABLE_WIFI_CHECK) {
-                boolean connected;
-                do {
-                    NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                    if (networkInfo == null) {
-                        throw new IllegalStateException("No Wifi device found");
-                    }
-                    connected = networkInfo.isConnected();
-
-                    if (!connected) {
-                        Log.d(getClass().getName(), "Wifi connection is not yet ready. Wait 3 seconds and recheck");
-                        Thread.sleep(3000);
-                    }
-                } while (!connected);
-            }
-
             final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
             final String username = sharedPref.getString(Settings.KEY_USERNAME, "");
             final String password = sharedPref.getString(Settings.KEY_PASSWORD, "");
@@ -163,9 +183,6 @@ public class IssueDownloadService extends IntentService {
             boolean loginSuccessful = response.contains("flashcontent");
             Log.d(getClass().getName(), "Login successful? " + loginSuccessful);
             return loginSuccessful;
-        } catch (InterruptedException e) {
-            Log.e(getClass().getName(), "Error while waiting for Wifi connection", e);
-            return false;
         } catch (RestClientException e) {
             Log.e(getClass().getName(), "Error while trying to login", e);
             return false;

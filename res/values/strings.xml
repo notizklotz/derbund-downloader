@@ -37,4 +37,6 @@
     <string name="loeschen">Löschen</string>
     <string name="download_login_failed">Der Bund Login fehlgeschlagen</string>
     <string name="download_login_failed_text">Möglicherweise ist ihr Benutzeraccount nicht gültig</string>
+    <string name="download_connection_failed">Wifi Verbindung fehlgeschlagen</string>
+    <string name="download_connection_failed_text">Es konnte keine Wifi-Verbindung hergestellt werden. Der Bund wurde nicht heruntergeladen</string>
 </resources>
