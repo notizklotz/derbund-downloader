@@ -42,9 +42,8 @@ import java.util.concurrent.CountDownLatch;
 
 public class IssueDownloadService extends IntentService {
 
-    //STOPSHIP
-    private static final boolean ENABLE_WIFI_CHECK = false;
-    private static final boolean ENABLE_USER_CHECK = false;
+    private static final boolean ENABLE_WIFI_CHECK = true;
+    private static final boolean ENABLE_USER_CHECK = true;
 
     public static final String EXTRA_DAY = "day";
     public static final String EXTRA_MONTH = "month";
@@ -79,6 +78,7 @@ public class IssueDownloadService extends IntentService {
                             .setContentTitle(getString(R.string.download_login_failed))
                             .setContentText(getString(R.string.download_login_failed_text));
             NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+            //noinspection deprecation
             mNotifyMgr.notify(1, mBuilder.getNotification());
         } else {
             //Download
@@ -123,6 +123,7 @@ public class IssueDownloadService extends IntentService {
     }
 
     private boolean checkUserAccount() {
+        //noinspection PointlessBooleanExpression,ConstantConditions
         if(!ENABLE_USER_CHECK) {
             return true;
         }
