@@ -63,7 +63,7 @@ public class IssueDownloadService extends IntentService {
         WifiManager.WifiLock myWifiLock;
         WifiManager wm;
         boolean previousWifiState;
-        boolean connected;
+        boolean connected = false;
         //noinspection PointlessBooleanExpression,ConstantConditions
         if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             //Enable Wifi and lock it
@@ -138,7 +138,6 @@ public class IssueDownloadService extends IntentService {
                         .setTicker(getString(download_login_failed));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        //noinspection deprecation
         mNotifyMgr.notify(1, mBuilder.getNotification());
     }
 
