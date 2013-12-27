@@ -21,6 +21,8 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
+import android.util.Log;
+import com.github.notizklotz.derbunddownloader.DebugConstants;
 
 import java.util.Calendar;
 
@@ -31,6 +33,10 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
 
     @Override
     public void onReceive(Context context, Intent intent) {
+        if(DebugConstants.DEBUG) {
+            Log.d(getClass().getName(), "I woke up this morning and got ready to start the service");
+        }
+
         final Calendar c = Calendar.getInstance();
 
         if (!(c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {

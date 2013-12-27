@@ -44,7 +44,7 @@ import java.util.concurrent.CountDownLatch;
 public class IssueDownloadService extends IntentService {
 
     private static final int WIFI_RECHECK_WAIT_MILLIS = 5 * 1000;
-    private static final int WIFI_CHECK_MAX_MILLIS = 60 * 1000;
+    private static final int WIFI_CHECK_MAX_MILLIS = 30 * 1000;
 
     public static final String EXTRA_DAY = "day";
     public static final String EXTRA_MONTH = "month";
@@ -76,8 +76,15 @@ public class IssueDownloadService extends IntentService {
             //Enable Wifi and lock it
             wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
             previousWifiState = wm.isWifiEnabled();
+            if(DebugConstants.DEBUG) {
+                Log.d(getClass().getName(), "Was Wifi enabled? " + previousWifiState);
+                Log.d(getClass().getName(), "Connection info: " + wm.getConnectionInfo());
+            }
             wm.setWifiEnabled(true);
-            myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL, "IssueDownloadWifilock");
+
+            //WIFI_MODE_FULL was not enough on Xperia Tablet Z to reconnect to the AP if Wifi was enabled but connection
+            //was lost
+            myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "IssueDownloadWifilock");
             myWifiLock.acquire();
 
             //Wait for Wifi coming up
@@ -91,7 +98,9 @@ public class IssueDownloadService extends IntentService {
                 connected = networkInfo.isConnected();
 
                 if (!connected) {
-                    Log.d(getClass().getName(), "Wifi connection is not yet ready. Wait and recheck");
+                    if(DebugConstants.DEBUG) {
+                        Log.d(getClass().getName(), "Wifi connection is not yet ready. Wait and recheck");
+                    }
 
                     if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
                         notifyUser(R.string.download_connection_failed, R.string.download_connection_failed_text);
