@@ -18,10 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.app.DownloadManager;
-import android.app.IntentService;
-import android.app.Notification;
-import android.app.NotificationManager;
+import android.app.*;
 import android.content.*;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -33,6 +30,7 @@ import android.util.Log;
 import com.github.notizklotz.derbunddownloader.DebugConstants;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateFormatterUtils;
+import com.github.notizklotz.derbunddownloader.main.MainActivity;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
@@ -104,7 +102,7 @@ public class IssueDownloadService extends IntentService {
                     }
 
                     if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
-                        notifyUser(R.string.download_connection_failed, R.string.download_connection_failed_text);
+                        notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
                         break;
                     }
 
@@ -124,16 +122,17 @@ public class IssueDownloadService extends IntentService {
         //noinspection PointlessBooleanExpression
         if(connected || DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             if (!checkUserAccount()) {
-                notifyUser(R.string.download_login_failed, R.string.download_login_failed_text);
+                notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_error);
             } else {
                 //Download
                 final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                 final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
                 registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-                startDownload(this, intent.getIntExtra(EXTRA_DAY, 0), intent.getIntExtra(EXTRA_MONTH, 0), intent.getIntExtra(EXTRA_YEAR, 0));
+                String title = startDownload(this, intent.getIntExtra(EXTRA_DAY, 0), intent.getIntExtra(EXTRA_MONTH, 0), intent.getIntExtra(EXTRA_YEAR, 0));
 
                 try {
                     downloadDoneSignal.await();
+                    notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_av_download);
                 } catch (InterruptedException e) {
                     Log.w(getClass().getName(), "Interrupted while waiting for the downloadDoneSignal");
                 }
@@ -151,20 +150,29 @@ public class IssueDownloadService extends IntentService {
         AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
     }
 
-    private void notifyUser(int download_login_failed, int download_login_failed_text) {
+    private void notifyUser(CharSequence contentTitle, CharSequence contentText, int icon) {
         Notification.Builder mBuilder =
-                new Notification.Builder(this)
-                        .setSmallIcon(R.drawable.ic_stat_error)
-                        .setContentTitle(getString(download_login_failed))
-                        .setContentText(getString(download_login_failed_text))
-                        .setTicker(getString(download_login_failed));
+                new Notification.Builder(getApplicationContext())
+                        .setSmallIcon(icon)
+                        .setContentTitle(contentTitle)
+                        .setContentText(contentText)
+                        .setTicker(contentTitle)
+                        .setAutoCancel(true);
+
+        //http://developer.android.com/guide/topics/ui/notifiers/notifications.html
+        // The stack builder object will contain an artificial back stack for thestarted Activity.
+        // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
+        mBuilder.setContentIntent(android.support.v4.app.TaskStackBuilder.create(getApplicationContext()).
+                addParentStack(MainActivity.class).
+                addNextIntent(new Intent(getApplicationContext(), MainActivity.class)).
+                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         //noinspection deprecation
         mNotifyMgr.notify(1, mBuilder.getNotification());
     }
 
-    private void startDownload(Context context, int day, int month, int year) {
+    private String startDownload(Context context, int day, int month, int year) {
         DownloadManager downloadManager = (DownloadManager) context.getSystemService(Context.DOWNLOAD_SERVICE);
 
         String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
@@ -181,6 +189,7 @@ public class IssueDownloadService extends IntentService {
         downloadManager.enqueue(pdfDownloadRequest);
 
         Log.d(IssueDownloadService.class.getName(), "Download enqueued");
+        return title;
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")

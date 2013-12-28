@@ -40,4 +40,5 @@
     <string name="download_connection_failed">Wifi Verbindung fehlgeschlagen</string>
     <string name="download_connection_failed_text">Es konnte keine Wifi-Verbindung hergestellt werden. Der Bund wurde nicht heruntergeladen</string>
     <string name="please_login">Bitte geben Sie Benutzername und Passwort ihres \"Der Bund ePaper\" Logins ein</string>
+    <string name="download_completed">Download Abgeschlossen</string>
 </resources>
