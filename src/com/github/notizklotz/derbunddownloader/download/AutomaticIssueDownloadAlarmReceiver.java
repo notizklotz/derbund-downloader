@@ -20,16 +20,18 @@ package com.github.notizklotz.derbunddownloader.download;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v4.content.WakefulBroadcastReceiver;
+import android.os.PowerManager;
 import android.util.Log;
 import com.github.notizklotz.derbunddownloader.DebugConstants;
 
 import java.util.Calendar;
 
 /**
- * Triggered by an alarm to automatically download an issue.
+ * Triggered by an alarm to automatically download the issue of today.
  */
-public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceiver {
+public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastReceiver {
+
+    private static final long WAKE_LOCK_TIMEOUT = 60 * 1000;
 
     @Override
     public void onReceive(Context context, Intent intent) {
@@ -38,7 +40,6 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
         }
 
         final Calendar c = Calendar.getInstance();
-
         if (!(c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
 
             int day = c.get(Calendar.DAY_OF_MONTH);
@@ -50,7 +51,8 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
             service.putExtra(IssueDownloadService.EXTRA_MONTH, month);
             service.putExtra(IssueDownloadService.EXTRA_YEAR, year);
 
-            startWakefulService(context, service);
+            //noinspection deprecation
+            startWakefulService(context, service, PowerManager.SCREEN_DIM_WAKE_LOCK, WAKE_LOCK_TIMEOUT);
         }
     }
 }
