@@ -67,6 +67,7 @@ public class IssueDownloadService extends IntentService {
         WifiManager.WifiLock myWifiLock;
         WifiManager wm;
         boolean previousWifiState;
+        //noinspection UnusedAssignment
         boolean connected = false;
         //noinspection PointlessBooleanExpression,ConstantConditions
         if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
@@ -120,6 +121,7 @@ public class IssueDownloadService extends IntentService {
             Log.d(getClass().getName(), "Connected: " + connected);
         }
 
+        //noinspection PointlessBooleanExpression
         if(connected || DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             if (!checkUserAccount()) {
                 notifyUser(R.string.download_login_failed, R.string.download_login_failed_text);
@@ -158,6 +160,7 @@ public class IssueDownloadService extends IntentService {
                         .setTicker(getString(download_login_failed));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        //noinspection deprecation
         mNotifyMgr.notify(1, mBuilder.getNotification());
     }
 
