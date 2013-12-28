@@ -74,7 +74,7 @@ public class MainActivity extends Activity {
         String password = Settings.getPassword(getApplicationContext());
         if(!(StringUtils.hasText(username) && StringUtils.hasText(password))) {
             startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-            Toast.makeText(getNullSafeApplicationContext(), getString(R.string.please_login), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getNullSafeApplicationContext(), getString(R.string.please_login), Toast.LENGTH_LONG).show();
         }
     }
 
