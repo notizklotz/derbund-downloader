@@ -30,7 +30,7 @@ import java.util.Calendar;
  */
 public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastReceiver {
 
-    private static final long WAKE_LOCK_TIMEOUT = 60 * 1000;
+    private static final long WAKE_LOCK_TIMEOUT = 2 * 60 * 1000;
 
     private static final String LOG_TAG = AutomaticIssueDownloadAlarmReceiver.class.getSimpleName();
 

@@ -64,21 +64,13 @@ public class IssueDownloadService extends IntentService {
 
         WifiManager.WifiLock myWifiLock;
         WifiManager wm;
-        boolean previousWifiState;
         //noinspection UnusedAssignment
         boolean connected = false;
         //noinspection PointlessBooleanExpression,ConstantConditions
         if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             Log.d(LOG_TAG, "Making sure Wifi is enabled");
-            //Enable Wifi and lock it
             wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-            previousWifiState = wm.isWifiEnabled();
-            if(Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-                Log.d(LOG_TAG, "Was Wifi enabled? " + previousWifiState);
-            }
-            wm.setWifiEnabled(true);
-
-            //WIFI_MODE_FULL was not enough on Xperia Tablet Z to reconnect to the AP if Wifi was enabled but connection
+            //WIFI_MODE_FULL was not enough on Xperia Tablet Z Android 4.2 to reconnect to the AP if Wifi was enabled but connection
             //was lost
             myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "IssueDownloadWifilock");
             myWifiLock.acquire();
@@ -86,33 +78,33 @@ public class IssueDownloadService extends IntentService {
             //Wait for Wifi coming up
             long firstCheckMillis = System.currentTimeMillis();
             ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            do {
-                NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                if (networkInfo == null) {
-                    throw new IllegalStateException("No Wifi device found");
-                }
-                connected = networkInfo.isConnected();
+            if(!wm.isWifiEnabled()) {
+                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
+            } else {
+                do {
+                    NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                    assert networkInfo != null;
+                    connected = networkInfo.isConnected();
 
-                if (!connected) {
-                    Log.d(LOG_TAG, "Wifi connection is not yet ready. Wait and recheck");
+                    if (!connected) {
+                        Log.d(LOG_TAG, "Wifi connection is not yet ready. Wait and recheck");
 
-                    if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
-                        notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
-                        break;
+                        if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
+                            notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
+                            break;
+                        }
+
+                        try {
+                            Thread.sleep(WIFI_RECHECK_WAIT_MILLIS);
+                        } catch (InterruptedException e) {
+                            Log.wtf(LOG_TAG, "Interrupted while waiting for Wifi connection", e);
+                        }
                     }
-
-                    try {
-                        Thread.sleep(WIFI_RECHECK_WAIT_MILLIS);
-                    } catch (InterruptedException e) {
-                        Log.wtf(LOG_TAG, "Interrupted while waiting for Wifi connection", e);
-                    }
-                }
-            } while (!connected);
+                } while (!connected);
+            }
         }
 
-        if(Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-            Log.d(LOG_TAG, "Connected: " + connected);
-        }
+         Log.d(LOG_TAG, "Connected: " + connected);
 
         //noinspection PointlessBooleanExpression
         if(connected || DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
@@ -129,7 +121,7 @@ public class IssueDownloadService extends IntentService {
                     downloadDoneSignal.await();
                     notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_av_download);
                 } catch (InterruptedException e) {
-                    Log.w(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
+                    Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
                 }
                 unregisterReceiver(receiver);
             }
@@ -137,9 +129,7 @@ public class IssueDownloadService extends IntentService {
 
         //noinspection PointlessBooleanExpression,ConstantConditions
         if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
-            //Stop Wifi if it was started before and release Wifi lock
             myWifiLock.release();
-            wm.setWifiEnabled(previousWifiState);
         }
 
         AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
