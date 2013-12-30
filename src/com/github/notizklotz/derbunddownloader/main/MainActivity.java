@@ -28,7 +28,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -49,7 +48,6 @@ public class MainActivity extends Activity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
-    public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,15 +102,9 @@ public class MainActivity extends Activity {
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
 
         PackageManager packageManager = getPackageManager();
-        if (packageManager == null) {
-            throw new IllegalStateException("Package Manager was null");
-        }
+        assert packageManager != null;
 
         if (intent.resolveActivity(packageManager) != null) {
-            if(Log.isLoggable(LOG_TAG, Log.DEBUG)) {
-                Log.d(LOG_TAG, "Starting activitiy for data: " + intent.getDataString());
-            }
-
             startActivity(intent);
         } else {
             Toast.makeText(getNullSafeApplicationContext(), R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
