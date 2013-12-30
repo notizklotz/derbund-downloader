@@ -47,9 +47,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     public void onResume() {
         super.onResume();
         SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
-        if (sharedPreferences == null) {
-            throw new IllegalStateException("could not get shared preferences");
-        }
+        assert sharedPreferences != null;
         sharedPreferences.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -57,9 +55,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     public void onPause() {
         super.onPause();
         SharedPreferences sharedPreferences = getPreferenceScreen().getSharedPreferences();
-        if (sharedPreferences == null) {
-            throw new IllegalStateException("could not get shared preferences");
-        }
+        assert sharedPreferences != null;
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
@@ -69,15 +65,11 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         updateSummaries(sharedPreferences);
 
         Activity activity = getActivity();
-        if (activity == null) {
-            throw new IllegalStateException("This fragment is not associated with an Activity");
-        }
+        assert activity != null;
 
         AlarmManager alarms = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
         Context applicationContext = activity.getApplicationContext();
-        if (applicationContext == null) {
-            throw new IllegalStateException("ApplicationContext was null");
-        }
+        assert applicationContext != null;
 
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
                 applicationContext, 0,

@@ -24,8 +24,6 @@ public final class DebugConstants {
 
     }
 
-    public static final boolean DEBUG = false;
-
     public static final boolean DISABLE_WIFI_ENFORCEMENT = false;
 
 }

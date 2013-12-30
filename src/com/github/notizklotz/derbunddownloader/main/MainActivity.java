@@ -36,7 +36,7 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
-import com.github.notizklotz.derbunddownloader.DebugConstants;
+import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity;
@@ -49,12 +49,13 @@ public class MainActivity extends Activity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
+    public static final String LOG_TAG = MainActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (DebugConstants.DEBUG) {
+        if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
@@ -108,7 +109,9 @@ public class MainActivity extends Activity {
         }
 
         if (intent.resolveActivity(packageManager) != null) {
-            Log.d(MainActivity.class.getName(), "Starting activitiy for data: " + intent.getDataString());
+            if(Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+                Log.d(LOG_TAG, "Starting activitiy for data: " + intent.getDataString());
+            }
 
             startActivity(intent);
         } else {

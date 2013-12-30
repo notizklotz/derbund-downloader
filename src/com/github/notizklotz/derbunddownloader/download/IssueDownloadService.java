@@ -27,6 +27,7 @@ import android.net.wifi.WifiManager;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
+import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.DebugConstants;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateFormatterUtils;
@@ -47,6 +48,7 @@ public class IssueDownloadService extends IntentService {
     public static final String EXTRA_DAY = "day";
     public static final String EXTRA_MONTH = "month";
     public static final String EXTRA_YEAR = "year";
+    private static final String LOG_TAG = IssueDownloadService.class.getSimpleName();
 
     public IssueDownloadService() {
         super("IssueDownloadService");
@@ -58,9 +60,7 @@ public class IssueDownloadService extends IntentService {
             throw new IllegalArgumentException("Intent is missing extras");
         }
 
-        if(DebugConstants.DEBUG) {
-            Log.d(getClass().getName(), "Handling download intent");
-        }
+        Log.d(LOG_TAG, "Handling download intent");
 
         WifiManager.WifiLock myWifiLock;
         WifiManager wm;
@@ -69,15 +69,12 @@ public class IssueDownloadService extends IntentService {
         boolean connected = false;
         //noinspection PointlessBooleanExpression,ConstantConditions
         if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
-            if(DebugConstants.DEBUG) {
-                Log.d(getClass().getName(), "Making sure Wifi is enabled");
-            }
+            Log.d(LOG_TAG, "Making sure Wifi is enabled");
             //Enable Wifi and lock it
             wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
             previousWifiState = wm.isWifiEnabled();
-            if(DebugConstants.DEBUG) {
-                Log.d(getClass().getName(), "Was Wifi enabled? " + previousWifiState);
-                Log.d(getClass().getName(), "Connection info: " + wm.getConnectionInfo());
+            if(Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+                Log.d(LOG_TAG, "Was Wifi enabled? " + previousWifiState);
             }
             wm.setWifiEnabled(true);
 
@@ -97,9 +94,7 @@ public class IssueDownloadService extends IntentService {
                 connected = networkInfo.isConnected();
 
                 if (!connected) {
-                    if(DebugConstants.DEBUG) {
-                        Log.d(getClass().getName(), "Wifi connection is not yet ready. Wait and recheck");
-                    }
+                    Log.d(LOG_TAG, "Wifi connection is not yet ready. Wait and recheck");
 
                     if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
                         notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
@@ -109,14 +104,14 @@ public class IssueDownloadService extends IntentService {
                     try {
                         Thread.sleep(WIFI_RECHECK_WAIT_MILLIS);
                     } catch (InterruptedException e) {
-                        Log.w(getClass().getName(), "Interrupted while waiting for Wifi connection", e);
+                        Log.wtf(LOG_TAG, "Interrupted while waiting for Wifi connection", e);
                     }
                 }
             } while (!connected);
         }
 
-        if(DebugConstants.DEBUG) {
-            Log.d(getClass().getName(), "Connected: " + connected);
+        if(Log.isLoggable(LOG_TAG, Log.DEBUG)) {
+            Log.d(LOG_TAG, "Connected: " + connected);
         }
 
         //noinspection PointlessBooleanExpression
@@ -134,7 +129,7 @@ public class IssueDownloadService extends IntentService {
                     downloadDoneSignal.await();
                     notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_av_download);
                 } catch (InterruptedException e) {
-                    Log.w(getClass().getName(), "Interrupted while waiting for the downloadDoneSignal");
+                    Log.w(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
                 }
                 unregisterReceiver(receiver);
             }
@@ -188,13 +183,17 @@ public class IssueDownloadService extends IntentService {
         }
         downloadManager.enqueue(pdfDownloadRequest);
 
-        Log.d(IssueDownloadService.class.getName(), "Download enqueued");
+        if(BuildConfig.DEBUG) {
+            Log.d(LOG_TAG, "Download enqueued");
+        }
         return title;
     }
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean checkUserAccount() {
-        Log.d(getClass().getName(), "Checking user account validity");
+        if(BuildConfig.DEBUG) {
+            Log.d(LOG_TAG, "Checking user account validity");
+        }
 
         try {
             final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
@@ -210,10 +209,10 @@ public class IssueDownloadService extends IntentService {
 
             String response = restTemplate.postForObject("http://epaper.derbund.ch", form, String.class);
             boolean loginSuccessful = response.contains("flashcontent");
-            Log.d(getClass().getName(), "Login successful? " + loginSuccessful);
+            Log.d(LOG_TAG, "Login successful? " + loginSuccessful);
             return loginSuccessful;
         } catch (RestClientException e) {
-            Log.e(getClass().getName(), "Error while trying to login", e);
+            Log.e(LOG_TAG, "Error while trying to login", e);
             return false;
         }
     }

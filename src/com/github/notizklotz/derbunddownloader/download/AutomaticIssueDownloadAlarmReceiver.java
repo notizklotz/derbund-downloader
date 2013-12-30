@@ -22,7 +22,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
 import android.util.Log;
-import com.github.notizklotz.derbunddownloader.DebugConstants;
 
 import java.util.Calendar;
 
@@ -33,11 +32,11 @@ public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastR
 
     private static final long WAKE_LOCK_TIMEOUT = 60 * 1000;
 
+    private static final String LOG_TAG = AutomaticIssueDownloadAlarmReceiver.class.getSimpleName();
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        if(DebugConstants.DEBUG) {
-            Log.d(getClass().getName(), "I woke up this morning and got ready to start the service");
-        }
+        Log.d(LOG_TAG, "I woke up this morning and got ready to start the service");
 
         final Calendar c = Calendar.getInstance();
         if (!(c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {

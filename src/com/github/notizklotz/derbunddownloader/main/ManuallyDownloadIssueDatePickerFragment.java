@@ -69,9 +69,7 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
     private void onDateSet(final int year, final int monthOfYear, final int dayOfMonth) {
         final Activity activity = getActivity();
-        if (activity == null) {
-            throw new IllegalStateException("Activity is null");
-        }
+        assert activity != null;
 
         Calendar selectedDate = Calendar.getInstance();
         //noinspection MagicConstant
