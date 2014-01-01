@@ -51,7 +51,7 @@ public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastR
             service.putExtra(IssueDownloadService.EXTRA_YEAR, year);
 
             //noinspection deprecation
-            startWakefulService(context, service, PowerManager.SCREEN_DIM_WAKE_LOCK, WAKE_LOCK_TIMEOUT);
+            startWakefulService(context, service, PowerManager.PARTIAL_WAKE_LOCK, WAKE_LOCK_TIMEOUT);
         }
     }
 }
