@@ -26,7 +26,9 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
+import java.text.DateFormat;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Triggered by an alarm to automatically download the issue of today.
@@ -40,7 +42,13 @@ public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastR
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.d(LOG_TAG, "I woke up this morning and got ready to start the service");
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
+        updateLastWakeupTimestamp(sharedPref);
+        callDownloadService(context, sharedPref);
+    }
+
+    private void callDownloadService(Context context, SharedPreferences sharedPref) {
         final Calendar c = Calendar.getInstance();
         if (!(c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
             int day = c.get(Calendar.DAY_OF_MONTH);
@@ -52,12 +60,17 @@ public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastR
             service.putExtra(IssueDownloadService.EXTRA_MONTH, month);
             service.putExtra(IssueDownloadService.EXTRA_YEAR, year);
 
-            final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
             final boolean altWakelockMode = sharedPref.getBoolean(Settings.KEY_ALT_WAKELOCK_MODE, false);
-            final int wakelockMode = altWakelockMode ? PowerManager.SCREEN_DIM_WAKE_LOCK : PowerManager.PARTIAL_WAKE_LOCK;
+            final int wakelockMode = altWakelockMode ? PowerManager.FULL_WAKE_LOCK : PowerManager.PARTIAL_WAKE_LOCK;
 
             //noinspection deprecation
             startWakefulService(context, service, wakelockMode, WAKE_LOCK_TIMEOUT);
         }
+    }
+
+    private void updateLastWakeupTimestamp(SharedPreferences sharedPref) {
+        SharedPreferences.Editor prefEditor = sharedPref.edit();
+        prefEditor.putString(Settings.LAST_WAKEUP, DateFormat.getDateTimeInstance().format(new Date()));
+        prefEditor.apply();
     }
 }

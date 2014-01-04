@@ -28,6 +28,7 @@ public class Settings {
     public static final String KEY_ALT_WAKELOCK_MODE = "alternative_wakelock_mode";
     public static final String KEY_USERNAME = "username";
     public static final String KEY_PASSWORD = "password";
+    public static final String LAST_WAKEUP = "last_wakeup";
 
     private Settings() {
 

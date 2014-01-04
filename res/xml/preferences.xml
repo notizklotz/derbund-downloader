@@ -47,4 +47,10 @@
         android:summary="@string/alternative_wakelock_mode_summary"
         android:defaultValue="false"
         android:persistent="true" />
+    <EditTextPreference
+        android:key="last_wakeup"
+        android:title="@string/last_wakeup"
+        android:persistent="true"
+        android:inputType="none"
+        android:editable="false"/>
 </PreferenceScreen>
