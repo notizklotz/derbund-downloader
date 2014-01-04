@@ -21,8 +21,8 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.PowerManager;
 import android.preference.PreferenceManager;
+import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
@@ -33,9 +33,7 @@ import java.util.Date;
 /**
  * Triggered by an alarm to automatically download the issue of today.
  */
-public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastReceiver {
-
-    private static final long WAKE_LOCK_TIMEOUT = 2 * 60 * 1000;
+public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceiver {
 
     private static final String LOG_TAG = AutomaticIssueDownloadAlarmReceiver.class.getSimpleName();
 
@@ -45,10 +43,10 @@ public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastR
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
         updateLastWakeupTimestamp(sharedPref);
-        callDownloadService(context, sharedPref);
+        callDownloadService(context);
     }
 
-    private void callDownloadService(Context context, SharedPreferences sharedPref) {
+    private void callDownloadService(Context context) {
         final Calendar c = Calendar.getInstance();
         if (!(c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
             int day = c.get(Calendar.DAY_OF_MONTH);
@@ -60,11 +58,8 @@ public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastR
             service.putExtra(IssueDownloadService.EXTRA_MONTH, month);
             service.putExtra(IssueDownloadService.EXTRA_YEAR, year);
 
-            final boolean altWakelockMode = sharedPref.getBoolean(Settings.KEY_ALT_WAKELOCK_MODE, false);
-            final int wakelockMode = altWakelockMode ? PowerManager.FULL_WAKE_LOCK : PowerManager.PARTIAL_WAKE_LOCK;
-
             //noinspection deprecation
-            startWakefulService(context, service, wakelockMode, WAKE_LOCK_TIMEOUT);
+            startWakefulService(context, service);
         }
     }
 

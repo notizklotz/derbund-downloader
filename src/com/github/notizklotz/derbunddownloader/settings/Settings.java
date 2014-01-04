@@ -25,7 +25,6 @@ public class Settings {
 
     public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
     public static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
-    public static final String KEY_ALT_WAKELOCK_MODE = "alternative_wakelock_mode";
     public static final String KEY_USERNAME = "username";
     public static final String KEY_PASSWORD = "password";
     public static final String KEY_LAST_WAKEUP = "last_wakeup";
