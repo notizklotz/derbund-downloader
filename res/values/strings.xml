@@ -45,4 +45,5 @@
     <string name="alternative_wakelock_mode">Alternativer Aufwachmodus</string>
     <string name="alternative_wakelock_mode_summary">Behebt auf manchen Geräten ein Problem mit dem Aufwachen aus dem Standby-Modus zum Download-Zeitpunkt</string>
     <string name="last_wakeup">Zuletzt aufgewacht</string>
+    <string name="last_wakeup_never">Nie</string>
 </resources>

@@ -70,7 +70,7 @@ public class AutomaticIssueDownloadAlarmReceiver extends CustomWakefulBroadcastR
 
     private void updateLastWakeupTimestamp(SharedPreferences sharedPref) {
         SharedPreferences.Editor prefEditor = sharedPref.edit();
-        prefEditor.putString(Settings.LAST_WAKEUP, DateFormat.getDateTimeInstance().format(new Date()));
+        prefEditor.putString(Settings.KEY_LAST_WAKEUP, DateFormat.getDateTimeInstance().format(new Date()));
         prefEditor.apply();
     }
 }

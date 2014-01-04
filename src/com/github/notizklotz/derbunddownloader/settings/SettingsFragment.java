@@ -63,7 +63,10 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updateSummaries(sharedPreferences);
+        updateAutomaticDownloadAlarm(sharedPreferences);
+    }
 
+    private void updateAutomaticDownloadAlarm(SharedPreferences sharedPreferences) {
         Activity activity = getActivity();
         assert activity != null;
 
@@ -97,27 +100,44 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         } else {
             alarms.cancel(pendingIntent);
         }
-
     }
 
     private void updateSummaries(SharedPreferences sharedPreferences) {
+        updateAutoDownloadTime(sharedPreferences);
+        updateUsername(sharedPreferences);
+        updateLogin(sharedPreferences);
+        updateLastWakeup(sharedPreferences);
+    }
+
+    private void updateLastWakeup(SharedPreferences sharedPreferences) {
+        Preference lastWakeupPreference = getPreferenceScreen().findPreference(Settings.KEY_LAST_WAKEUP);
+        assert lastWakeupPreference != null;
+        lastWakeupPreference.setSummary(sharedPreferences.getString(Settings.KEY_LAST_WAKEUP,
+                    this.getString(R.string.last_wakeup_never)));
+    }
+
+    private void updateLogin(SharedPreferences sharedPreferences) {
+        Preference passwordPreference = getPreferenceScreen().findPreference(Settings.KEY_PASSWORD);
+        assert passwordPreference != null;
+        if (sharedPreferences.contains(Settings.KEY_PASSWORD)) {
+            passwordPreference.setSummary("****");
+        }
+        else {
+            passwordPreference.setSummary(this.getString(R.string.password_summary));
+        }
+    }
+
+    private void updateUsername(SharedPreferences sharedPreferences) {
+        Preference usernamePreference = getPreferenceScreen().findPreference(Settings.KEY_USERNAME);
+        assert usernamePreference != null;
+        usernamePreference.setSummary(sharedPreferences.getString(Settings.KEY_USERNAME, this.getString(R.string.username_summary)));
+    }
+
+    private void updateAutoDownloadTime(SharedPreferences sharedPreferences) {
         String auto_download_time = sharedPreferences.getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
         Preference auto_download_time_preference = getPreferenceScreen().findPreference(Settings.KEY_AUTO_DOWNLOAD_TIME);
         if (auto_download_time_preference != null) {
             auto_download_time_preference.setSummary(auto_download_time);
         }
-
-        Preference usernamePreference = getPreferenceScreen().findPreference(Settings.KEY_USERNAME);
-        assert usernamePreference != null;
-        usernamePreference.setSummary(sharedPreferences.getString(Settings.KEY_USERNAME, this.getString(R.string.username_summary)));
-
-        Preference passwordPreference = getPreferenceScreen().findPreference(Settings.KEY_PASSWORD);
-        assert passwordPreference != null;
-
-        if (sharedPreferences.contains(Settings.KEY_PASSWORD)) {
-            passwordPreference.setSummary("****");
-        }
-        else
-            passwordPreference.setSummary(this.getString(R.string.password_summary));
     }
 }

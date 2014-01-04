@@ -49,8 +49,10 @@
         android:persistent="true" />
     <EditTextPreference
         android:key="last_wakeup"
+        android:dependency="auto_download_enabled"
         android:title="@string/last_wakeup"
         android:persistent="true"
         android:inputType="none"
+        android:selectable="false"
         android:editable="false"/>
 </PreferenceScreen>
