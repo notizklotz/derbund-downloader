@@ -42,4 +42,6 @@
     <string name="download_connection_failed_no_wifi_text">Wifi war nicht eingeschaltet. Die Zeitung wurde nicht heruntergeladen</string>
     <string name="please_login">Bitte geben Sie Benutzername und Passwort ihres \"Der Bund ePaper\" Logins ein</string>
     <string name="download_completed">Download Abgeschlossen</string>
+    <string name="alternative_wakelock_mode">Alternativer Aufwachmodus</string>
+    <string name="alternative_wakelock_mode_summary">Behebt auf manchen Geräten ein Problem mit dem Aufwachen aus dem Standby-Modus zum Download-Zeitpunkt</string>
 </resources>

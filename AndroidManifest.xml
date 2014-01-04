@@ -20,7 +20,7 @@
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.github.notizklotz.derbunddownloader"
-    android:versionCode="6"
+    android:versionCode="7"
     android:versionName="1.0">
 
     <uses-sdk

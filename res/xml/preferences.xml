@@ -40,4 +40,11 @@
         android:title="@string/auto_download_time"
         android:defaultValue="06:00"
         android:persistent="true" />
+    <CheckBoxPreference
+        android:key="alternative_wakelock_mode"
+        android:dependency="auto_download_enabled"
+        android:title="@string/alternative_wakelock_mode"
+        android:summary="@string/alternative_wakelock_mode_summary"
+        android:defaultValue="false"
+        android:persistent="true" />
 </PreferenceScreen>
