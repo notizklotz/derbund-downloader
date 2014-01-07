@@ -44,4 +44,6 @@
     <string name="download_completed">Download Abgeschlossen</string>
     <string name="last_wakeup">Zuletzt aufgewacht</string>
     <string name="last_wakeup_never">Nie</string>
+    <string name="download_service_error">Fehler beim Herunterladen</string>
+    <string name="download_service_error_text">Es ist ein Problem aufgetreten: </string>
 </resources>

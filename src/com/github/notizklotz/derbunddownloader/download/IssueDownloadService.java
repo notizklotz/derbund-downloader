@@ -38,6 +38,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
 public class IssueDownloadService extends IntentService {
@@ -60,79 +61,88 @@ public class IssueDownloadService extends IntentService {
             throw new IllegalArgumentException("Intent is missing extras");
         }
 
-        Log.d(LOG_TAG, "Handling download intent");
+        Log.i(LOG_TAG, "Handling download intent");
 
-        WifiManager.WifiLock myWifiLock;
-        WifiManager wm;
-        //noinspection UnusedAssignment
-        boolean connected = false;
-        //noinspection PointlessBooleanExpression,ConstantConditions
-        if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
-            Log.d(LOG_TAG, "Making sure Wifi is enabled");
-            wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-            //WIFI_MODE_FULL was not enough on Xperia Tablet Z Android 4.2 to reconnect to the AP if Wifi was enabled but connection
-            //was lost
-            myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "IssueDownloadWifilock");
-            myWifiLock.acquire();
-
-            //Wait for Wifi coming up
-            long firstCheckMillis = System.currentTimeMillis();
-            ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-            if(!wm.isWifiEnabled()) {
-                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), R.drawable.ic_stat_error);
-            } else {
-                do {
-                    NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                    assert networkInfo != null;
-                    connected = networkInfo.isConnected();
-
-                    if (!connected) {
-                        Log.d(LOG_TAG, "Wifi connection is not yet ready. Wait and recheck");
-
-                        if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
-                            notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
-                            break;
+        WifiManager.WifiLock myWifiLock = null;
+        try {
+            WifiManager wm;
+            //noinspection UnusedAssignment
+            boolean connected = false;
+            //noinspection PointlessBooleanExpression,ConstantConditions
+            if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
+                Log.d(LOG_TAG, "Making sure Wifi is enabled");
+                wm = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+                //WIFI_MODE_FULL was not enough on Xperia Tablet Z Android 4.2 to reconnect to the AP if Wifi was enabled but connection
+                //was lost
+                myWifiLock = wm.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "IssueDownloadWifilock");
+                myWifiLock.acquire();
+    
+                //Wait for Wifi coming up
+                long firstCheckMillis = System.currentTimeMillis();
+                ConnectivityManager connMgr = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+                if(!wm.isWifiEnabled()) {
+                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), R.drawable.ic_stat_error);
+                } else {
+                    do {
+                        NetworkInfo networkInfo = connMgr.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+                        assert networkInfo != null;
+                        connected = networkInfo.isConnected();
+    
+                        if (!connected) {
+                            Log.d(LOG_TAG, "Wifi connection is not yet ready. Wait and recheck");
+    
+                            if(System.currentTimeMillis() - firstCheckMillis > WIFI_CHECK_MAX_MILLIS) {
+                                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
+                                break;
+                            }
+    
+                            try {
+                                Thread.sleep(WIFI_RECHECK_WAIT_MILLIS);
+                            } catch (InterruptedException e) {
+                                Log.wtf(LOG_TAG, "Interrupted while waiting for Wifi connection", e);
+                            }
                         }
-
-                        try {
-                            Thread.sleep(WIFI_RECHECK_WAIT_MILLIS);
-                        } catch (InterruptedException e) {
-                            Log.wtf(LOG_TAG, "Interrupted while waiting for Wifi connection", e);
-                        }
-                    }
-                } while (!connected);
-            }
-        }
-
-         Log.d(LOG_TAG, "Connected: " + connected);
-
-        //noinspection PointlessBooleanExpression
-        if(connected || DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
-            if (!checkUserAccount()) {
-                notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_error);
-            } else {
-                //Download
-                final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
-                final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
-                registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-                String title = startDownload(this, intent.getIntExtra(EXTRA_DAY, 0), intent.getIntExtra(EXTRA_MONTH, 0), intent.getIntExtra(EXTRA_YEAR, 0));
-
-                try {
-                    downloadDoneSignal.await();
-                    notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_av_download);
-                } catch (InterruptedException e) {
-                    Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
+                    } while (!connected);
                 }
-                unregisterReceiver(receiver);
             }
-        }
 
-        //noinspection PointlessBooleanExpression,ConstantConditions
-        if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
-            myWifiLock.release();
-        }
+            Log.d(LOG_TAG, "Connected: " + connected);
 
-        AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
+            //noinspection PointlessBooleanExpression
+            if(connected || DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
+                if (!checkUserAccount()) {
+                    Log.i(LOG_TAG, "Invalid username/password");
+                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_error);
+                } else {
+                    //Download
+                    Log.i(LOG_TAG, "Triggering download");
+                    final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
+                    final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
+                    registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+                    try {
+                        String title = startDownload(this, intent.getIntExtra(EXTRA_DAY, 0), intent.getIntExtra(EXTRA_MONTH, 0), intent.getIntExtra(EXTRA_YEAR, 0));
+                        downloadDoneSignal.await();
+                        Log.i(LOG_TAG, "Download completed");
+                        notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_av_download);
+                    } catch (InterruptedException e) {
+                        Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
+                    } finally {
+                        unregisterReceiver(receiver);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + e.getMessage(), R.drawable.ic_stat_error);
+        } finally {
+            Log.d(LOG_TAG, "Releasing wifilock and wakelock");
+
+            if(myWifiLock != null) {
+                myWifiLock.release();
+            }
+
+            AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
+        }
     }
 
     private void notifyUser(CharSequence contentTitle, CharSequence contentText, int icon) {
@@ -162,11 +172,22 @@ public class IssueDownloadService extends IntentService {
 
         String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
         String title = "Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year);
+        String filename = title + ".pdf";
+
+        if(BuildConfig.DEBUG) {
+            File extFilesDir = getExternalFilesDir(null);
+            Log.d(LOG_TAG, "Filename: " + new File(extFilesDir, filename).toString());
+            Log.d(LOG_TAG, Environment.getExternalStorageState());
+            Log.d(LOG_TAG, Environment.getExternalStorageDirectory().toString());
+        }
+
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(Uri.parse(url))
                 .setTitle(title)
                 .setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                .setDestinationInExternalFilesDir(context, Environment.DIRECTORY_DOWNLOADS, title + ".pdf");
+                .setDestinationInExternalFilesDir(context, null, filename);
+
+
         //noinspection PointlessBooleanExpression,ConstantConditions
         if(!DebugConstants.DISABLE_WIFI_ENFORCEMENT) {
             pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);

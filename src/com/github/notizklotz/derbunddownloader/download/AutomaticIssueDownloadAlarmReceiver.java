@@ -39,7 +39,7 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d(LOG_TAG, "I woke up this morning and got ready to start the service");
+        Log.i(LOG_TAG, "I woke up this morning and got ready to start the service");
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
         updateLastWakeupTimestamp(sharedPref);
