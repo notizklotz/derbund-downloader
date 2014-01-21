@@ -28,6 +28,7 @@ public class Settings {
     public static final String KEY_USERNAME = "username";
     public static final String KEY_PASSWORD = "password";
     public static final String KEY_LAST_WAKEUP = "last_wakeup";
+    public static final String KEY_WIFI_ONLY_ENABLED = "wifi_only";
 
     private Settings() {
 
@@ -41,4 +42,7 @@ public class Settings {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_PASSWORD, null);
     }
 
+    public static boolean isWifiOnly(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Settings.KEY_WIFI_ONLY_ENABLED, true);
+    }
 }

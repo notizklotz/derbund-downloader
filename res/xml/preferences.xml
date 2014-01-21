@@ -30,6 +30,12 @@
         android:persistent="true"
         android:inputType="textPassword" />
     <CheckBoxPreference
+        android:key="wifi_only"
+        android:title="@string/wifi_only"
+        android:summary="@string/wifi_only_summary"
+        android:defaultValue="true"
+        android:persistent="true" />
+    <CheckBoxPreference
         android:key="auto_download_enabled"
         android:title="@string/auto_download"
         android:defaultValue="true"
