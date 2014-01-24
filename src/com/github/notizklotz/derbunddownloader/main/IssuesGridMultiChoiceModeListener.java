@@ -20,11 +20,9 @@ package com.github.notizklotz.derbunddownloader.main;
 
 import android.app.DownloadManager;
 import android.content.Context;
-import android.view.ActionMode;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.view.*;
 import android.widget.AbsListView;
+import android.widget.CheckBox;
 import android.widget.GridView;
 import com.github.notizklotz.derbunddownloader.R;
 
@@ -41,6 +39,11 @@ class IssuesGridMultiChoiceModeListener implements AbsListView.MultiChoiceModeLi
     @Override
     public void onItemCheckedStateChanged(ActionMode mode, int position,
                                           long id, boolean checked) {
+        View view = gridView.getChildAt(position);
+        CheckBox issueSelectCheckBox = (CheckBox) view.findViewById(R.id.issueSelectCheckBox);
+        if(issueSelectCheckBox.isChecked() != checked) {
+            issueSelectCheckBox.setChecked(checked);
+        }
     }
 
     @Override

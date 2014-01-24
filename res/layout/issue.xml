@@ -47,14 +47,23 @@
             android:layout_height="wrap_content"
             android:textColor="#ffffffff"
             android:textSize="20sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:text="xx.xx.xxxx"/>
 
         <TextView
             android:id="@+id/stateTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#ffffffff"
-            android:layout_below="@id/dateTextView" />
+            android:layout_below="@id/dateTextView"
+            android:text="status"/>
+
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/issueSelectCheckBox"
+            android:layout_centerInParent="true"
+            android:layout_alignRight="@+id/dateTextView"/>
     </RelativeLayout>
 
 </FrameLayout>

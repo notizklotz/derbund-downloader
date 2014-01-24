@@ -31,10 +31,8 @@ import android.preference.PreferenceManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.GridView;
-import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
+import android.view.ViewGroup;
+import android.widget.*;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -81,14 +79,29 @@ public class MainActivity extends Activity {
         final GridView gridView = (GridView) findViewById(R.id.gridview);
         gridView.setEmptyView(findViewById(R.id.empty_grid_view));
         gridView.setOnItemClickListener(new IssuesGridOnItemClickListener());
-        gridView.setSelector(R.drawable.selector);
-        gridView.setChoiceMode(GridView.CHOICE_MODE_MULTIPLE_MODAL);
         gridView.setMultiChoiceModeListener(new IssuesGridMultiChoiceModeListener(this, gridView));
 
         SimpleCursorAdapter issueListAdapter = new SimpleCursorAdapter(this,
                 R.layout.issue, null,
                 new String[]{DownloadManager.COLUMN_DESCRIPTION, DownloadManager.COLUMN_STATUS},
-                new int[]{R.id.dateTextView, R.id.stateTextView}, 0);
+                new int[]{R.id.dateTextView, R.id.stateTextView}, 0) {
+
+
+            @Override
+            public View getView(final int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+
+                CheckBox issueSelectCheckBox = (CheckBox) view.findViewById(R.id.issueSelectCheckBox);
+                issueSelectCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                    @Override
+                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                        gridView.setItemChecked(position, isChecked);
+                    }
+                });
+
+                return view;
+            }
+        };
         issueListAdapter.setViewBinder(new IssuesGridViewBinder(this));
 
         gridView.setAdapter(issueListAdapter);
