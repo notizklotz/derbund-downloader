@@ -58,12 +58,13 @@
             android:layout_below="@id/dateTextView"
             android:text="status"/>
 
-        <CheckBox
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/issueSelectCheckBox"
-            android:layout_centerInParent="true"
-            android:layout_alignRight="@+id/dateTextView"/>
+        <ImageButton
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:id="@+id/issueDeleteButton"
+            android:layout_alignRight="@+id/dateTextView"
+            android:background="@android:color/transparent"
+            android:src="@drawable/ic_stat_content_discard"/>
     </RelativeLayout>
 
 </FrameLayout>

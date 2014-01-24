@@ -91,11 +91,11 @@ public class MainActivity extends Activity {
             public View getView(final int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
 
-                CheckBox issueSelectCheckBox = (CheckBox) view.findViewById(R.id.issueSelectCheckBox);
-                issueSelectCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                ImageButton deleteButton = (ImageButton) view.findViewById(R.id.issueDeleteButton);
+                deleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
-                    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                        gridView.setItemChecked(position, isChecked);
+                    public void onClick(View v) {
+                        gridView.setItemChecked(position, true);
                     }
                 });
 
