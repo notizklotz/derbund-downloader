@@ -19,11 +19,9 @@
   -->
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-             xmlns:tools="http://schemas.android.com/tools"
              android:layout_width="@dimen/issuesgrid_issue_width"
     android:layout_height="@dimen/issuesgrid_issue_height"
-    android:background="?android:attr/activatedBackgroundIndicator"
-    tools:ignore="Overdraw">
+    android:background="?android:attr/activatedBackgroundIndicator">
 
     <ImageView
         android:layout_width="match_parent"
@@ -47,22 +45,23 @@
             android:layout_height="wrap_content"
             android:textColor="#ffffffff"
             android:textSize="20sp"
-            android:textStyle="bold"
-            android:text="xx.xx.xxxx"/>
+            android:textStyle="bold"/>
 
         <TextView
             android:id="@+id/stateTextView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="#ffffffff"
-            android:layout_below="@id/dateTextView"
-            android:text="status"/>
+            android:layout_below="@id/dateTextView"/>
 
-        <ImageButton
+        <ImageView
+            android:id="@+id/issueDeleteButton"
+            android:contentDescription="@string/delete"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:id="@+id/issueDeleteButton"
-            android:layout_alignRight="@+id/dateTextView"
+            android:padding="8dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerInParent="true"
             android:background="@android:color/transparent"
             android:src="@drawable/ic_stat_content_discard"/>
     </RelativeLayout>

@@ -32,7 +32,10 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.AdapterView;
+import android.widget.GridView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -91,7 +94,7 @@ public class MainActivity extends Activity {
             public View getView(final int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
 
-                ImageButton deleteButton = (ImageButton) view.findViewById(R.id.issueDeleteButton);
+                View deleteButton = view.findViewById(R.id.issueDeleteButton);
                 deleteButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
