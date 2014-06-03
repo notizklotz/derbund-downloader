@@ -35,7 +35,10 @@
         android:columnWidth="@dimen/issuesgrid_issue_width"
         android:verticalSpacing="10dp"
         android:horizontalSpacing="10dp"
-        android:gravity="center" />
+        android:gravity="center"
+        android:choiceMode="multipleChoiceModal"
+        android:longClickable="true"
+        android:listSelector="@drawable/selector"/>
 
     <TextView
         android:id="@+id/empty_grid_view"
