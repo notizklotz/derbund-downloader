@@ -25,9 +25,9 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.CalendarView;
 import android.widget.DatePicker;
 import android.widget.Toast;
+
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadService;
 
