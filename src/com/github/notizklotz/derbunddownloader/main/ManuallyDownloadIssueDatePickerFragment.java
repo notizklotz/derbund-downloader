@@ -50,10 +50,6 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         final DatePicker datePicker = datePickerDialog.getDatePicker();
         assert datePicker != null;
 
-        CalendarView calendarView = datePicker.getCalendarView();
-        if (calendarView != null) {
-            calendarView.setFirstDayOfWeek(Calendar.MONDAY);
-        }
         datePicker.setMaxDate(System.currentTimeMillis());
 
         //Override the OK button instead of using the OnDateSetListener callback due to bug https://code.google.com/p/android/issues/detail?id=34833
