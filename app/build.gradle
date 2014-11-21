@@ -1,0 +1,36 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 18
+    buildToolsVersion "21.1.1"
+
+    defaultConfig {
+        applicationId "com.github.notizklotz.derbunddownloader"
+        minSdkVersion 15
+        targetSdkVersion 18
+        versionCode 10
+        versionName "1.1"
+    }
+    buildTypes {
+        release {
+            runProguard false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_6
+        targetCompatibility JavaVersion.VERSION_1_6
+    }
+
+    packagingOptions {
+        exclude('META-INF/notice.txt')
+        exclude('META-INF/license.txt')
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile 'com.android.support:support-v4:21.0.2'
+    compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
+}
+
