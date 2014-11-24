@@ -18,11 +18,13 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.os.Bundle;
 
 import org.androidannotations.annotations.EActivity;
 
+@SuppressLint("Registered")
 @EActivity
 public class SettingsActivity extends Activity {
     @Override

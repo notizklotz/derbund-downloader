@@ -18,6 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.IntentService;
 import android.app.Notification;
@@ -53,6 +54,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
+@SuppressLint("Registered")
 @EIntentService
 public class IssueDownloadService extends IntentService {
 
@@ -60,10 +62,12 @@ public class IssueDownloadService extends IntentService {
     private static final int WIFI_RECHECK_WAIT_MILLIS = 5 * 1000;
     private static final int WIFI_CHECK_MAX_MILLIS = 30 * 1000;
     private static final String WORKER_THREAD_NAME = "IssueDownloadService";
+    @SuppressWarnings("WeakerAccess")
     @SystemService
     ConnectivityManager connectivityManager;
     @SystemService
     WifiManager wifiManager;
+    @SuppressWarnings("WeakerAccess")
     @SystemService
     DownloadManager downloadManager;
     private WifiManager.WifiLock myWifiLock;

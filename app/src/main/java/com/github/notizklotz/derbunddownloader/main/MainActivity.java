@@ -18,6 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.main;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.DownloadManager;
 import android.content.Intent;
@@ -48,6 +49,7 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 
+@SuppressLint("Registered")
 @EActivity(R.layout.activity_main)
 @OptionsMenu(R.menu.main)
 public class MainActivity extends Activity {
@@ -55,6 +57,7 @@ public class MainActivity extends Activity {
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
 
+    @SuppressWarnings("WeakerAccess")
     @ViewById(R.id.gridview)
     GridView gridView;
 
