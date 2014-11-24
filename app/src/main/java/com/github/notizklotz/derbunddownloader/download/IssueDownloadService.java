@@ -39,8 +39,8 @@ import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.common.DateFormatterUtils;
-import com.github.notizklotz.derbunddownloader.main.MainActivity;
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+import com.github.notizklotz.derbunddownloader.main.MainActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import org.androidannotations.annotations.EIntentService;
@@ -202,8 +202,8 @@ public class IssueDownloadService extends IntentService {
         // The stack builder object will contain an artificial back stack for thestarted Activity.
         // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
         mBuilder.setContentIntent(android.support.v4.app.TaskStackBuilder.create(getApplicationContext()).
-                addParentStack(MainActivity.class).
-                addNextIntent(new Intent(getApplicationContext(), MainActivity.class)).
+                addParentStack(MainActivity_.class).
+                addNextIntent(new Intent(getApplicationContext(), MainActivity_.class)).
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -212,8 +212,8 @@ public class IssueDownloadService extends IntentService {
     }
 
     private String startDownload(Context context, int day, int month, int year, boolean wifiOnly) {
-        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateFormatterUtils.toDDMMYYYYString(day, month, year);
-        String title = "Der Bund ePaper " + DateFormatterUtils.toDD_MM_YYYYString(day, month, year);
+        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateHandlingUtils.toDDMMYYYYString(day, month, year);
+        String title = "Der Bund ePaper " + DateHandlingUtils.toDD_MM_YYYYString(day, month, year);
         String filename = title + ".pdf";
 
         if (BuildConfig.DEBUG) {
@@ -225,7 +225,7 @@ public class IssueDownloadService extends IntentService {
 
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(Uri.parse(url))
                 .setTitle(title)
-                .setDescription(DateFormatterUtils.toDD_MM_YYYYString(day, month, year))
+                .setDescription(DateHandlingUtils.toDD_MM_YYYYString(day, month, year))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                 .setDestinationInExternalFilesDir(context, null, filename);
 

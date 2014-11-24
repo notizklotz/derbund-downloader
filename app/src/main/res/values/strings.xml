@@ -51,4 +51,6 @@
     <string name="wifi_only">Nur über WLAN herunterladen</string>
     <string name="wifi_only_summary">Verhindert das Herunterladen über die Mobilfunkverbindung. Eine Ausgabe der Zeitung ist ca. 50MB gross. Das Deaktivieren dieser Option kann somit ohne Abo mit unbegrenztem Datenvolumen hohe Kosten verursachen!</string>
     <string name="delete">Löschen</string>
+    <string name="next_wakeup">Nächster Aufwachzeitpunkt</string>
+    <string name="debugging">Informationen</string>
 </resources>

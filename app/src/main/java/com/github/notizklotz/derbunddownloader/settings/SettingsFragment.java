@@ -18,20 +18,13 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
-import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmReceiver;
-
-import java.util.Calendar;
+import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmManager_;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -63,43 +56,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updateSummaries(sharedPreferences);
-        updateAutomaticDownloadAlarm(sharedPreferences);
-    }
-
-    private void updateAutomaticDownloadAlarm(SharedPreferences sharedPreferences) {
-        Activity activity = getActivity();
-        assert activity != null;
-
-        AlarmManager alarms = (AlarmManager) activity.getSystemService(Context.ALARM_SERVICE);
-        Context applicationContext = activity.getApplicationContext();
-        assert applicationContext != null;
-
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                applicationContext, 0,
-                new Intent(applicationContext, AutomaticIssueDownloadAlarmReceiver.class),
-                PendingIntent.FLAG_CANCEL_CURRENT);
-
-        if (sharedPreferences.getBoolean(Settings.KEY_AUTO_DOWNLOAD_ENABLED, false)) {
-            String auto_download_time = sharedPreferences.getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
-            if (auto_download_time != null) {
-                Calendar now = Calendar.getInstance();
-
-                Integer[] time = TimePickerPreference.toHourMinuteIntegers(auto_download_time);
-                Calendar updateTime = Calendar.getInstance();
-                updateTime.clear();
-                //noinspection MagicConstant
-                updateTime.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH), time[0], time[1]);
-
-                if (updateTime.before(now)) {
-                    updateTime.roll(Calendar.DAY_OF_MONTH, true);
-                }
-
-                alarms.setRepeating(AlarmManager.RTC_WAKEUP, updateTime.getTimeInMillis(), AlarmManager.INTERVAL_DAY, pendingIntent);
-            }
-
-        } else {
-            alarms.cancel(pendingIntent);
-        }
+        AutomaticIssueDownloadAlarmManager_.getInstance_(this.getActivity()).updateAlarm();
     }
 
     private void updateSummaries(SharedPreferences sharedPreferences) {
@@ -107,12 +64,15 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         updateUsername(sharedPreferences);
         updateLogin(sharedPreferences);
         updateLastWakeup(sharedPreferences);
+        updateNextWakeup(sharedPreferences);
+    }
+
+    private void updateNextWakeup(SharedPreferences sharedPreferences) {
+        getPreferenceScreen().findPreference(Settings.KEY_NEXT_WAKEUP).setSummary(sharedPreferences.getString(Settings.KEY_NEXT_WAKEUP, this.getString(R.string.last_wakeup_never)));
     }
 
     private void updateLastWakeup(SharedPreferences sharedPreferences) {
-        Preference lastWakeupPreference = getPreferenceScreen().findPreference(Settings.KEY_LAST_WAKEUP);
-        assert lastWakeupPreference != null;
-        lastWakeupPreference.setSummary(sharedPreferences.getString(Settings.KEY_LAST_WAKEUP,
+        getPreferenceScreen().findPreference(Settings.KEY_LAST_WAKEUP).setSummary(sharedPreferences.getString(Settings.KEY_LAST_WAKEUP,
                 this.getString(R.string.last_wakeup_never)));
     }
 

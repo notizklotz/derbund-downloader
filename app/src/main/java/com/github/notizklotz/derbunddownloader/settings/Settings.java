@@ -28,6 +28,7 @@ public class Settings {
     public static final String KEY_USERNAME = "username";
     public static final String KEY_PASSWORD = "password";
     public static final String KEY_LAST_WAKEUP = "last_wakeup";
+    public static final String KEY_NEXT_WAKEUP = "next_wakeup";
     private static final String KEY_WIFI_ONLY_ENABLED = "wifi_only";
 
     private Settings() {

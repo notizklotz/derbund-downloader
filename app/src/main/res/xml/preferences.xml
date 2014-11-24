@@ -19,39 +19,53 @@
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <EditTextPreference
-        android:key="username"
-        android:title="Benutzername (E-Mail Adresse)"
-        android:persistent="true"
-        android:inputType="textEmailAddress" />
-    <EditTextPreference
-        android:key="password"
-        android:title="Passwort"
-        android:persistent="true"
-        android:inputType="textPassword" />
-    <CheckBoxPreference
-        android:key="wifi_only"
-        android:title="@string/wifi_only"
-        android:summary="@string/wifi_only_summary"
-        android:defaultValue="true"
-        android:persistent="true" />
-    <CheckBoxPreference
-        android:key="auto_download_enabled"
-        android:title="@string/auto_download"
-        android:defaultValue="true"
-        android:persistent="true" />
-    <com.github.notizklotz.derbunddownloader.settings.TimePickerPreference
-        android:key="auto_download_time"
-        android:dependency="auto_download_enabled"
-        android:title="@string/auto_download_time"
-        android:defaultValue="06:00"
-        android:persistent="true" />
-    <EditTextPreference
-        android:key="last_wakeup"
-        android:dependency="auto_download_enabled"
-        android:title="@string/last_wakeup"
-        android:persistent="true"
-        android:inputType="none"
-        android:selectable="false"
-        android:editable="false"/>
+    <PreferenceCategory
+        android:key="pref_key_main_settings"
+        android:title="@string/action_settings">
+        <EditTextPreference
+            android:inputType="textEmailAddress"
+            android:key="username"
+            android:persistent="true"
+            android:title="Benutzername (E-Mail Adresse)" />
+        <EditTextPreference
+            android:inputType="textPassword"
+            android:key="password"
+            android:persistent="true"
+            android:title="Passwort" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="wifi_only"
+            android:persistent="true"
+            android:summary="@string/wifi_only_summary"
+            android:title="@string/wifi_only" />
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:key="auto_download_enabled"
+            android:persistent="true"
+            android:title="@string/auto_download" />
+        <com.github.notizklotz.derbunddownloader.settings.TimePickerPreference
+            android:defaultValue="06:00"
+            android:dependency="auto_download_enabled"
+            android:key="auto_download_time"
+            android:persistent="true"
+            android:title="@string/auto_download_time" />
+    </PreferenceCategory>
+    <PreferenceCategory
+        android:key="pref_key_debugging"
+        android:title="@string/debugging">
+        <EditTextPreference
+            android:editable="false"
+            android:inputType="none"
+            android:key="last_wakeup"
+            android:persistent="true"
+            android:selectable="false"
+            android:title="@string/last_wakeup" />
+        <EditTextPreference
+            android:editable="false"
+            android:inputType="none"
+            android:key="next_wakeup"
+            android:persistent="true"
+            android:selectable="false"
+            android:title="@string/next_wakeup" />
+    </PreferenceCategory>
 </PreferenceScreen>

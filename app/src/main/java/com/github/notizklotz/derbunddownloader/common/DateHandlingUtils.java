@@ -18,13 +18,21 @@
 
 package com.github.notizklotz.derbunddownloader.common;
 
-public class DateFormatterUtils {
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
+
+public class DateHandlingUtils {
 
     private static final String FORMAT_HH_MM = "%02d:%02d";
     private static final String FORMAT_DDMMYYYY = "%02d%02d%04d";
     private static final String FORMAT_DD_MM_YYYY = "%02d.%02d.%04d";
+    private static final Locale SERVER_LOCALE = new Locale("de", "CH");
+    private static final TimeZone SERVER_TIMEZONE = TimeZone.getTimeZone("Europe/Zurich");
 
-    private DateFormatterUtils() {
+    private DateHandlingUtils() {
     }
 
     public static String toDDMMYYYYString(int day, int month, int year) {
@@ -35,7 +43,15 @@ public class DateFormatterUtils {
         return String.format(FORMAT_DD_MM_YYYY, day, month, year);
     }
 
-    public static String toHH_MM(int hours, int minutes) {
+    public static String toHH_MMString(int hours, int minutes) {
         return String.format(FORMAT_HH_MM, hours, minutes);
+    }
+
+    public static String toFullStringDefaultTimezone(long millis) {
+        return new SimpleDateFormat("dd.MM.yyyy HH:mm:ss ZZZZ", SERVER_LOCALE).format(new Date(millis));
+    }
+
+    public static Calendar createServerCalendar() {
+        return Calendar.getInstance(SERVER_TIMEZONE, SERVER_LOCALE);
     }
 }

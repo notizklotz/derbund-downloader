@@ -25,11 +25,10 @@ import android.preference.PreferenceManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
-import java.text.DateFormat;
 import java.util.Calendar;
-import java.util.Date;
 
 /**
  * Triggered by an alarm to automatically download the issue of today.
@@ -44,23 +43,24 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
 
         updateLastWakeupTimestamp(sharedPref);
+        scheduleNextWakeup(context);
         callDownloadService(context);
     }
 
-    private void callDownloadService(Context context) {
-        final Calendar c = Calendar.getInstance();
-        if (!(c.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
-            int day = c.get(Calendar.DAY_OF_MONTH);
-            int month = c.get(Calendar.MONTH) + 1;
-            int year = c.get(Calendar.YEAR);
+    private void scheduleNextWakeup(Context context) {
+        AutomaticIssueDownloadAlarmManager_.getInstance_(context).updateAlarm();
+    }
 
-            startWakefulService(context, IssueDownloadService_.intent(context).downloadIssue(day, month, year).get());
-        }
+    private void callDownloadService(Context context) {
+        final Calendar c = DateHandlingUtils.createServerCalendar();
+        int day = c.get(Calendar.DAY_OF_MONTH);
+        int month = c.get(Calendar.MONTH) + 1;
+        int year = c.get(Calendar.YEAR);
+
+        startWakefulService(context, IssueDownloadService_.intent(context).downloadIssue(day, month, year).get());
     }
 
     private void updateLastWakeupTimestamp(SharedPreferences sharedPref) {
-        SharedPreferences.Editor prefEditor = sharedPref.edit();
-        prefEditor.putString(Settings.KEY_LAST_WAKEUP, DateFormat.getDateTimeInstance().format(new Date()));
-        prefEditor.apply();
+        sharedPref.edit().putString(Settings.KEY_LAST_WAKEUP, DateHandlingUtils.toFullStringDefaultTimezone(System.currentTimeMillis())).apply();
     }
 }
