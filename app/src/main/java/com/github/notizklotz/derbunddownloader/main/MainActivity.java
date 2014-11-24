@@ -20,7 +20,6 @@ package com.github.notizklotz.derbunddownloader.main;
 
 import android.app.Activity;
 import android.app.DownloadManager;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -28,27 +27,39 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
+
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsActivity;
+import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
+
+import org.androidannotations.annotations.AfterViews;
+import org.androidannotations.annotations.EActivity;
+import org.androidannotations.annotations.OptionsItem;
+import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.ViewById;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
 
-@SuppressWarnings("WeakerAccess")
+@EActivity(R.layout.activity_main)
+@OptionsMenu(R.menu.main)
 public class MainActivity extends Activity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
+
+    @ViewById(R.id.gridview)
+    GridView gridView;
+
+    @ViewById(R.id.empty_grid_view)
+    View emptyGridView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,11 +70,7 @@ public class MainActivity extends Activity {
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
 
-        setContentView(R.layout.activity_main);
-
-        PreferenceManager.setDefaultValues(getNullSafeApplicationContext(), R.xml.preferences, false);
-
-        setupIssuesGrid();
+        PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
     }
 
     @Override
@@ -72,15 +79,16 @@ public class MainActivity extends Activity {
 
         String username = Settings.getUsername(getApplicationContext());
         String password = Settings.getPassword(getApplicationContext());
-        if(!(StringUtils.hasText(username) && StringUtils.hasText(password))) {
-            startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-            Toast.makeText(getNullSafeApplicationContext(), getString(R.string.please_login), Toast.LENGTH_LONG).show();
+
+        if (!(StringUtils.hasText(username) && StringUtils.hasText(password))) {
+            SettingsActivity_.intent(this).start();
+            Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_LONG).show();
         }
     }
 
-    private void setupIssuesGrid() {
-        final GridView gridView = (GridView) findViewById(R.id.gridview);
-        gridView.setEmptyView(findViewById(R.id.empty_grid_view));
+    @AfterViews
+    void setupIssuesGrid() {
+        gridView.setEmptyView(emptyGridView);
         gridView.setOnItemClickListener(new IssuesGridOnItemClickListener());
         gridView.setMultiChoiceModeListener(new IssuesGridMultiChoiceModeListener(this, gridView));
 
@@ -123,36 +131,18 @@ public class MainActivity extends Activity {
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent);
         } else {
-            Toast.makeText(getNullSafeApplicationContext(), R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
+            Toast.makeText(this, R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
         }
     }
 
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+    @OptionsItem(R.id.action_download)
+    void menuItemDownloadSelected() {
+        new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.action_download:
-                new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
-                return true;
-            case R.id.action_settings:
-                startActivity(new Intent(getApplicationContext(), SettingsActivity.class));
-            default:
-                return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private Context getNullSafeApplicationContext() {
-        Context applicationContext = getApplicationContext();
-        if(applicationContext != null) {
-            return applicationContext;
-        } else {
-            throw new IllegalStateException("Application context was null");
-        }
+    @OptionsItem(R.id.action_settings)
+    void menuItemSettingsSelected() {
+        SettingsActivity_.intent(this).start();
     }
 
     private class IssuesGridOnItemClickListener implements AdapterView.OnItemClickListener {

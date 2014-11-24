@@ -24,6 +24,7 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
+
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import java.text.DateFormat;
@@ -53,13 +54,7 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
             int month = c.get(Calendar.MONTH) + 1;
             int year = c.get(Calendar.YEAR);
 
-            Intent service = new Intent(context, IssueDownloadService.class);
-            service.putExtra(IssueDownloadService.EXTRA_DAY, day);
-            service.putExtra(IssueDownloadService.EXTRA_MONTH, month);
-            service.putExtra(IssueDownloadService.EXTRA_YEAR, year);
-
-            //noinspection deprecation
-            startWakefulService(context, service);
+            startWakefulService(context, IssueDownloadService_.intent(context).downloadIssue(day, month, year).get());
         }
     }
 

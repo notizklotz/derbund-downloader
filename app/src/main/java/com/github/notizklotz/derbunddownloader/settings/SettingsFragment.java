@@ -27,12 +27,12 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmReceiver;
 
 import java.util.Calendar;
 
-@SuppressWarnings("WeakerAccess")
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
     @Override
@@ -113,7 +113,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         Preference lastWakeupPreference = getPreferenceScreen().findPreference(Settings.KEY_LAST_WAKEUP);
         assert lastWakeupPreference != null;
         lastWakeupPreference.setSummary(sharedPreferences.getString(Settings.KEY_LAST_WAKEUP,
-                    this.getString(R.string.last_wakeup_never)));
+                this.getString(R.string.last_wakeup_never)));
     }
 
     private void updateLogin(SharedPreferences sharedPreferences) {
@@ -121,8 +121,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         assert passwordPreference != null;
         if (sharedPreferences.contains(Settings.KEY_PASSWORD)) {
             passwordPreference.setSummary("****");
-        }
-        else {
+        } else {
             passwordPreference.setSummary(this.getString(R.string.password_summary));
         }
     }

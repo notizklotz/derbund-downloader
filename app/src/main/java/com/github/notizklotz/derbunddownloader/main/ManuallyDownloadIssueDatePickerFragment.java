@@ -23,13 +23,12 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.download.IssueDownloadService;
+import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
 
 import java.util.Calendar;
 
@@ -73,11 +72,7 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         if (selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
-            Intent downloadIntent = new Intent(getActivity(), IssueDownloadService.class);
-            downloadIntent.putExtra(IssueDownloadService.EXTRA_DAY, dayOfMonth);
-            downloadIntent.putExtra(IssueDownloadService.EXTRA_MONTH, monthOfYear + 1);
-            downloadIntent.putExtra(IssueDownloadService.EXTRA_YEAR, year);
-            getActivity().startService(downloadIntent);
+            IssueDownloadService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear + 1, year).start();
         }
     }
 

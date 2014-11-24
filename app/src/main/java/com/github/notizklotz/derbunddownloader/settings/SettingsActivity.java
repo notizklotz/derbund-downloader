@@ -21,6 +21,9 @@ package com.github.notizklotz.derbunddownloader.settings;
 import android.app.Activity;
 import android.os.Bundle;
 
+import org.androidannotations.annotations.EActivity;
+
+@EActivity
 public class SettingsActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
