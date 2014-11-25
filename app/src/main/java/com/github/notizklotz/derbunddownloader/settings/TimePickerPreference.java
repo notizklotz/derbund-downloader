@@ -27,6 +27,8 @@ import android.widget.TimePicker;
 
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 
+import org.springframework.util.StringUtils;
+
 @SuppressWarnings("WeakerAccess")
 public class TimePickerPreference extends DialogPreference {
 
@@ -38,6 +40,10 @@ public class TimePickerPreference extends DialogPreference {
     }
 
     public static Integer[] toHourMinuteIntegers(String timeString) {
+        if (!StringUtils.hasText(timeString)) {
+            throw new IllegalArgumentException("timeString must not be blank");
+        }
+
         String[] values = timeString.split(":|/");
         Integer hour = Integer.valueOf(values[0]);
         Integer minute = Integer.valueOf(values[1]);

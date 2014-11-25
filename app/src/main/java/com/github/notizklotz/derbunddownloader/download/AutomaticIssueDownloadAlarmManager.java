@@ -26,13 +26,13 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.preference.PreferenceManager;
 
-import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.TimePickerPreference;
 
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
+import org.springframework.util.StringUtils;
 
 import java.util.Calendar;
 
@@ -52,39 +52,53 @@ public class AutomaticIssueDownloadAlarmManager {
                 new Intent(applicationContext, AutomaticIssueDownloadAlarmReceiver.class),
                 PendingIntent.FLAG_CANCEL_CURRENT);
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
-        if (sharedPreferences.getBoolean(Settings.KEY_AUTO_DOWNLOAD_ENABLED, false)) {
-            String auto_download_time = sharedPreferences.getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
-            if (auto_download_time != null) {
-                Integer[] time = TimePickerPreference.toHourMinuteIntegers(auto_download_time);
-                Calendar alarmTrigger = Calendar.getInstance();
-                alarmTrigger.clear();
-
-                Calendar now = Calendar.getInstance();
-                //noinspection MagicConstant
-                alarmTrigger.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH), time[0], time[1]);
-
-                //Make sure trigger is in the future
-                if (now.after(alarmTrigger)) {
-                    alarmTrigger.roll(Calendar.DAY_OF_MONTH, true);
-                }
-
-                //Do not schedule Sundays as the newspaper is not issued on Sundays
-                if (!(alarmTrigger.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
-                    alarmTrigger.roll(Calendar.DAY_OF_MONTH, true);
-                }
-
-                // Make sure wakeup trigger is exact.
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-                    alarmManager.setExact(AlarmManager.RTC_WAKEUP, alarmTrigger.getTimeInMillis(), pendingIntent);
-                } else {
-                    alarmManager.set(AlarmManager.RTC_WAKEUP, alarmTrigger.getTimeInMillis(), pendingIntent);
-                }
-
-                sharedPreferences.edit().putString(Settings.KEY_NEXT_WAKEUP, DateHandlingUtils.toFullStringDefaultTimezone(alarmTrigger.getTimeInMillis())).apply();
-            }
+        if (Settings.isAutoDownloadEnabled(context)) {
+            registerAlarm(pendingIntent);
         } else {
-            alarmManager.cancel(pendingIntent);
-            sharedPreferences.edit().remove(Settings.KEY_NEXT_WAKEUP).apply();
+            cancelAlarm(pendingIntent, sharedPreferences);
         }
+    }
+
+    private void registerAlarm(PendingIntent pendingIntent) {
+        String autoDownloadTime = Settings.getAutoDownloadTime(context);
+        if (!StringUtils.hasText(autoDownloadTime)) {
+            throw new IllegalStateException("AutoDownloadTime is not set");
+        }
+
+        final Integer[] hourMinute = TimePickerPreference.toHourMinuteIntegers(autoDownloadTime);
+        final Calendar nextAlarm = calculateNextAlarm(hourMinute[0], hourMinute[1]);
+
+        // Make sure wakeup trigger is exact across all API versions.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            alarmManager.setExact(AlarmManager.RTC_WAKEUP, nextAlarm.getTimeInMillis(), pendingIntent);
+        } else {
+            alarmManager.set(AlarmManager.RTC_WAKEUP, nextAlarm.getTimeInMillis(), pendingIntent);
+        }
+
+        Settings.updateNextWakeup(context, nextAlarm.getTime());
+    }
+
+    private Calendar calculateNextAlarm(int hourOfDay, int minute) {
+        final Calendar nextAlarm = Calendar.getInstance();
+        nextAlarm.clear();
+        final Calendar now = Calendar.getInstance();
+
+        nextAlarm.set(now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH), hourOfDay, minute);
+
+        //Make sure trigger is in the future
+        if (now.after(nextAlarm)) {
+            nextAlarm.roll(Calendar.DAY_OF_MONTH, true);
+        }
+
+        //Do not schedule Sundays as the newspaper is not issued on Sundays
+        if (!(nextAlarm.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
+            nextAlarm.roll(Calendar.DAY_OF_MONTH, true);
+        }
+        return nextAlarm;
+    }
+
+    private void cancelAlarm(PendingIntent pendingIntent, SharedPreferences sharedPreferences) {
+        alarmManager.cancel(pendingIntent);
+        sharedPreferences.edit().remove(Settings.KEY_NEXT_WAKEUP).apply();
     }
 }

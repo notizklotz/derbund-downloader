@@ -35,22 +35,38 @@ public class DateHandlingUtils {
     private DateHandlingUtils() {
     }
 
+    /**
+     * Formats a date as in this example: "31122014".
+     */
     public static String toDDMMYYYYString(int day, int month, int year) {
         return String.format(FORMAT_DDMMYYYY, day, month, year);
     }
 
+    /**
+     * Formats a date as in this example: "31.12.2014".
+     */
     public static String toDD_MM_YYYYString(int day, int month, int year) {
         return String.format(FORMAT_DD_MM_YYYY, day, month, year);
     }
 
+    /**
+     * Formats time as in this example: "12:59".
+     */
     public static String toHH_MMString(int hours, int minutes) {
         return String.format(FORMAT_HH_MM, hours, minutes);
     }
 
-    public static String toFullStringDefaultTimezone(long millis) {
-        return new SimpleDateFormat("dd.MM.yyyy HH:mm:ss ZZZZ", SERVER_LOCALE).format(new Date(millis));
+    /**
+     * Creates a formatted full date/time string as in this example: "31.12.2014 12:59:59 GMT+2".
+     * The device's current default timezone is used for timezone calculations.
+     */
+    public static String toFullStringDefaultTimezone(Date date) {
+        return new SimpleDateFormat("dd.MM.yyyy HH:mm:ss ZZZZ", SERVER_LOCALE).format(date);
     }
 
+    /**
+     * Creates a {@link java.util.Calendar} instance using the server's timezone and locale (Switzerland).
+     */
     public static Calendar createServerCalendar() {
         return Calendar.getInstance(SERVER_TIMEZONE, SERVER_LOCALE);
     }

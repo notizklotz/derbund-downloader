@@ -29,6 +29,7 @@ import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Triggered by an alarm to automatically download the issue of today.
@@ -61,6 +62,6 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
     }
 
     private void updateLastWakeupTimestamp(SharedPreferences sharedPref) {
-        sharedPref.edit().putString(Settings.KEY_LAST_WAKEUP, DateHandlingUtils.toFullStringDefaultTimezone(System.currentTimeMillis())).apply();
+        sharedPref.edit().putString(Settings.KEY_LAST_WAKEUP, DateHandlingUtils.toFullStringDefaultTimezone(new Date())).apply();
     }
 }

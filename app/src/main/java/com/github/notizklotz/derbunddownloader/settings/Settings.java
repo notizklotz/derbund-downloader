@@ -21,6 +21,10 @@ package com.github.notizklotz.derbunddownloader.settings;
 import android.content.Context;
 import android.preference.PreferenceManager;
 
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+
+import java.util.Date;
+
 public class Settings {
 
     public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
@@ -45,5 +49,21 @@ public class Settings {
 
     public static boolean isWifiOnly(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Settings.KEY_WIFI_ONLY_ENABLED, true);
+    }
+
+    public static boolean isAutoDownloadEnabled(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Settings.KEY_AUTO_DOWNLOAD_ENABLED, false);
+    }
+
+    public static String getAutoDownloadTime(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
+    }
+
+    public static String getNextWakeup(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_NEXT_WAKEUP, null);
+    }
+
+    public static void updateNextWakeup(Context context, Date nextWakeup) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(Settings.KEY_NEXT_WAKEUP, DateHandlingUtils.toFullStringDefaultTimezone(nextWakeup)).apply();
     }
 }
