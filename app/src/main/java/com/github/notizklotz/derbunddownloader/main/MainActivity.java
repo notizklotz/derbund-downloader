@@ -28,6 +28,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -37,6 +38,7 @@ import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmManager_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 
@@ -56,6 +58,7 @@ public class MainActivity extends Activity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
+    private static final String KEY_ALARM_MIGRATED = "KEY_ALARM_MIGRATED";
 
     @SuppressWarnings("WeakerAccess")
     @ViewById(R.id.gridview)
@@ -74,6 +77,12 @@ public class MainActivity extends Activity {
         }
 
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
+
+        if (!PreferenceManager.getDefaultSharedPreferences(this).contains(KEY_ALARM_MIGRATED)) {
+            Log.i(getClass().getSimpleName(), "Migrating alarms");
+            AutomaticIssueDownloadAlarmManager_.getInstance_(this).updateAlarm();
+            PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean(KEY_ALARM_MIGRATED, true).apply();
+        }
     }
 
     @Override

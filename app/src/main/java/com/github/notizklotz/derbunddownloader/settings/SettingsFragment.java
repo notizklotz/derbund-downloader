@@ -52,11 +52,13 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
-    @SuppressWarnings({"PointlessBooleanExpression", "ConstantConditions"})
     @Override
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updateSummaries(sharedPreferences);
-        AutomaticIssueDownloadAlarmManager_.getInstance_(this.getActivity()).updateAlarm();
+
+        if (Settings.KEY_AUTO_DOWNLOAD_ENABLED.equals(key) || Settings.KEY_AUTO_DOWNLOAD_TIME.equals(key)) {
+            AutomaticIssueDownloadAlarmManager_.getInstance_(this.getActivity()).updateAlarm();
+        }
     }
 
     private void updateSummaries(SharedPreferences sharedPreferences) {

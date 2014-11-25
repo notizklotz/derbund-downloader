@@ -46,16 +46,19 @@ public class AutomaticIssueDownloadAlarmManager {
     Context context;
 
     public void updateAlarm() {
-        final Context applicationContext = context.getApplicationContext();
+        //Update enforces reusing of an existing PendingIntent instance so AlarmManager.cancel(pi)
+        //actually cancels the alarm. FLAG_CANCEL_CURRENT cancels the PendingIndent but then there's no
+        //way to cancel the alarm programmatically. However, the Intent won't be executed anyway because
+        //the fired alarm can't executed the cancelled PendingIntent.
         final PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                applicationContext, 0,
-                new Intent(applicationContext, AutomaticIssueDownloadAlarmReceiver.class),
-                PendingIntent.FLAG_CANCEL_CURRENT);
+                context,
+                0,
+                new Intent(context, AutomaticIssueDownloadAlarmReceiver.class),
+                PendingIntent.FLAG_UPDATE_CURRENT);
         final SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context);
+        cancelAlarm(pendingIntent, sharedPreferences);
         if (Settings.isAutoDownloadEnabled(context)) {
             registerAlarm(pendingIntent);
-        } else {
-            cancelAlarm(pendingIntent, sharedPreferences);
         }
     }
 
@@ -91,7 +94,7 @@ public class AutomaticIssueDownloadAlarmManager {
         }
 
         //Do not schedule Sundays as the newspaper is not issued on Sundays
-        if (!(nextAlarm.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
+        if ((nextAlarm.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
             nextAlarm.roll(Calendar.DAY_OF_MONTH, true);
         }
         return nextAlarm;
