@@ -33,7 +33,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
-import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -218,9 +217,9 @@ public class IssueDownloadService extends IntentService {
 
         if (BuildConfig.DEBUG) {
             File extFilesDir = getExternalFilesDir(null);
-            Log.d(LOG_TAG, "Filename: " + new File(extFilesDir, filename).toString());
-            Log.d(LOG_TAG, Environment.getExternalStorageState());
-            Log.d(LOG_TAG, Environment.getExternalStorageDirectory().toString());
+            File file = new File(extFilesDir, filename);
+            Log.d(LOG_TAG, "Filename: " + file.toString());
+            Log.d(LOG_TAG, "Can write? " + (extFilesDir != null && extFilesDir.canWrite()));
         }
 
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(Uri.parse(url))
