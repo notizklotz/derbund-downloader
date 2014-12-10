@@ -1,4 +1,4 @@
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Der Bund ePaper Downloader - App to download ePaper issues of the Der Bund newspaper
   ~ Copyright (C) 2013 Adrian Gygax
   ~
@@ -17,9 +17,8 @@
   -->
 
 <resources>
-    <dimen name="activity_horizontal_margin">16dp</dimen>
-    <dimen name="activity_vertical_margin">16dp</dimen>
-    <dimen name="issuesgrid_issue_width">400dp</dimen>
-    <dimen name="issuesgrid_issue_height">400dp</dimen>
-    <integer name="issuesgrid_numcolumns">-1</integer>
+
+    <dimen name="image_thumbnail_size">298dp</dimen>
+    <dimen name="image_thumbnail_spacing">2dp</dimen>
+
 </resources>

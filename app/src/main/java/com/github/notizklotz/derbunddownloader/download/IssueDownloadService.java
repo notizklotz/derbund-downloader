@@ -39,7 +39,7 @@ import android.util.Log;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
-import com.github.notizklotz.derbunddownloader.main.MainActivity_;
+import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import org.androidannotations.annotations.EIntentService;
@@ -201,8 +201,8 @@ public class IssueDownloadService extends IntentService {
         // The stack builder object will contain an artificial back stack for thestarted Activity.
         // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
         mBuilder.setContentIntent(android.support.v4.app.TaskStackBuilder.create(getApplicationContext()).
-                addParentStack(MainActivity_.class).
-                addNextIntent(new Intent(getApplicationContext(), MainActivity_.class)).
+                addParentStack(DownloadedIssuesActivity_.class).
+                addNextIntent(new Intent(getApplicationContext(), DownloadedIssuesActivity_.class)).
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);

@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.main;
+package com.github.notizklotz.derbunddownloader.issuesgrid;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -52,9 +52,9 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 
 @SuppressLint("Registered")
-@EActivity(R.layout.activity_main)
+@EActivity(R.layout.activity_downloaded_issues)
 @OptionsMenu(R.menu.main)
-public class MainActivity extends Activity {
+public class DownloadedIssuesActivity extends Activity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
