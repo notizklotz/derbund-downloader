@@ -18,6 +18,8 @@
 
 
 
+
+
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 def AAVersion = '3.2'
@@ -54,7 +56,7 @@ android {
     buildTypes {
         //noinspection GroovyAssignabilityCheck
         release {
-            runProguard false
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
