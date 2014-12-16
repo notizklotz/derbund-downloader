@@ -16,9 +16,11 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
-<resources>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/container"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".settings.SettingsActivity">
 
-    <dimen name="image_thumbnail_size">296dp</dimen>
-    <dimen name="image_thumbnail_spacing">4dp</dimen>
-
-</resources>
+</FrameLayout>

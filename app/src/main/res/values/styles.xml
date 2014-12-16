@@ -18,5 +18,11 @@
 
 <resources>
 
+    <style name="Theme.DerBund" parent="Theme.AppCompat">
+        <!-- customize the color palette -->
+        <item name="colorPrimary">@color/myPrimaryColor</item>
+        <item name="colorPrimaryDark">@color/myPrimaryDarkColor</item>
+        <item name="colorAccent">@color/myAccentColor</item>
+    </style>
 
 </resources>

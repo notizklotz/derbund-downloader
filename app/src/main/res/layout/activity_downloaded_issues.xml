@@ -34,6 +34,7 @@
         android:listSelector="@drawable/selector"
         android:longClickable="true"
         android:numColumns="auto_fit"
+        android:padding="@dimen/image_thumbnail_spacing"
         android:stretchMode="columnWidth"
         android:verticalSpacing="@dimen/image_thumbnail_spacing" />
 

@@ -19,21 +19,23 @@
 package com.github.notizklotz.derbunddownloader.settings;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.os.Bundle;
+import android.support.v7.app.ActionBarActivity;
+
+import com.github.notizklotz.derbunddownloader.R;
 
 import org.androidannotations.annotations.EActivity;
 
 @SuppressLint("Registered")
-@EActivity
-public class SettingsActivity extends Activity {
+@EActivity(R.layout.activity_settings)
+public class SettingsActivity extends ActionBarActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()
-                .replace(android.R.id.content, new SettingsFragment())
+                .replace(R.id.container, new SettingsFragment())
                 .commit();
     }
 

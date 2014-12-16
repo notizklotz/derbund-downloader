@@ -17,8 +17,7 @@
   -->
 
 <resources>
-
-    <dimen name="image_thumbnail_size">296dp</dimen>
-    <dimen name="image_thumbnail_spacing">4dp</dimen>
-
+    <color name="myPrimaryColor">#0085ab</color>
+    <color name="myPrimaryDarkColor">#006B89</color>
+    <color name="myAccentColor">#ff9800</color>
 </resources>
