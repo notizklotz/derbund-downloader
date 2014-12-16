@@ -105,7 +105,7 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
         gridView.setMultiChoiceModeListener(new IssuesGridMultiChoiceModeListener(this, gridView));
 
         SimpleCursorAdapter issueListAdapter = new SimpleCursorAdapter(this,
-                R.layout.issue, null,
+                R.layout.include_issue, null,
                 new String[]{DownloadManager.COLUMN_DESCRIPTION, DownloadManager.COLUMN_STATUS},
                 new int[]{R.id.dateTextView, R.id.stateTextView}, 0) {
 
