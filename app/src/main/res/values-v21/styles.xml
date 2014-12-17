@@ -1,4 +1,4 @@
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Der Bund ePaper Downloader - App to download ePaper issues of the Der Bund newspaper
   ~ Copyright (C) 2013 Adrian Gygax
   ~
@@ -18,12 +18,14 @@
 
 <resources>
 
-    <style name="Theme.DerBund.Base" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">@color/myPrimaryColor</item>
-        <item name="colorPrimaryDark">@color/myPrimaryDarkColor</item>
-        <item name="colorAccent">@color/themeAccentColor</item>
-        <item name="android:windowBackground">@color/myWindowBackground</item>
+    <style name="Theme.DerBund" parent="Theme.DerBund.Base">
+        <item name="android:alertDialogTheme">@style/Theme.DerBund.AlertDialog</item>
     </style>
 
-    <style name="Theme.DerBund" parent="Theme.DerBund.Base" />
+    <style name="Theme.DerBund.AlertDialog" parent="android:Theme.Material.Light.Dialog.Alert">
+        <item name="android:colorPrimary">@color/myPrimaryColor</item>
+        <item name="android:colorPrimaryDark">@color/myPrimaryDarkColor</item>
+        <item name="android:colorAccent">@color/themeAccentColor</item>
+    </style>
+
 </resources>

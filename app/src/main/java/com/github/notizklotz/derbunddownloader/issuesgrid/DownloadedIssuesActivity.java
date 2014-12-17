@@ -46,6 +46,7 @@ import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
 import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
+import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.ViewById;
 import org.springframework.util.StringUtils;
 
@@ -66,6 +67,9 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
 
     @ViewById(R.id.empty_grid_view)
     View emptyGridView;
+
+    @SystemService
+    DownloadManager downloadManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,9 +106,8 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
     void setupIssuesGrid() {
         gridView.setEmptyView(emptyGridView);
         gridView.setOnItemClickListener(new IssuesGridOnItemClickListener());
-        gridView.setMultiChoiceModeListener(new IssuesGridMultiChoiceModeListener(this, gridView));
 
-        SimpleCursorAdapter issueListAdapter = new SimpleCursorAdapter(this,
+        final SimpleCursorAdapter issueListAdapter = new SimpleCursorAdapter(this,
                 R.layout.include_issue, null,
                 new String[]{DownloadManager.COLUMN_DESCRIPTION, DownloadManager.COLUMN_STATUS},
                 new int[]{R.id.dateTextView, R.id.stateTextView}, 0) {
@@ -113,20 +116,12 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
             @Override
             public View getView(final int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
-
                 View deleteButton = view.findViewById(R.id.issueDeleteButton);
-                deleteButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        gridView.setItemChecked(position, true);
-                    }
-                });
-
+                deleteButton.setOnClickListener(new IssueDeleteButtonOnClickListener(position));
                 return view;
             }
         };
         issueListAdapter.setViewBinder(new IssuesGridViewBinder(this));
-
         gridView.setAdapter(issueListAdapter);
 
         getLoaderManager().initLoader(1, null, new IssuesGridLoaderCallbacks(this, issueListAdapter));
@@ -145,6 +140,11 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
         } else {
             Toast.makeText(this, R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
         }
+    }
+
+    public void deleteIssue(long id) {
+        downloadManager.remove(id);
+        Toast.makeText(this, "Ausgabe entfernt", Toast.LENGTH_SHORT).show();
     }
 
     @OptionsItem(R.id.action_download)
@@ -168,6 +168,21 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
                     openPDF(uri);
                 }
             }
+        }
+    }
+
+    private class IssueDeleteButtonOnClickListener implements View.OnClickListener {
+        private final int position;
+
+        public IssueDeleteButtonOnClickListener(int position) {
+            this.position = position;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Cursor item = (Cursor) gridView.getAdapter().getItem(position);
+            long itemID = item.getLong(item.getColumnIndex(DownloadManager.COLUMN_ID));
+            ConfirmIssueDeleteDialogFragment.createDialogFragment(itemID).show(getFragmentManager(), "issueDelete");
         }
     }
 
