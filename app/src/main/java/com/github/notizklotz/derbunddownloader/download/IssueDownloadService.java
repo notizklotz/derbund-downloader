@@ -33,6 +33,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
@@ -230,6 +231,9 @@ public class IssueDownloadService extends IntentService {
 
         if (wifiOnly) {
             pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                pdfDownloadRequest.setAllowedOverMetered(false);
+            }
         }
         downloadManager.enqueue(pdfDownloadRequest);
 
