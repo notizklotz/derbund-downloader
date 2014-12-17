@@ -27,26 +27,10 @@ import java.util.TimeZone;
 public class DateHandlingUtils {
 
     private static final String FORMAT_HH_MM = "%02d:%02d";
-    private static final String FORMAT_DDMMYYYY = "%02d%02d%04d";
-    private static final String FORMAT_DD_MM_YYYY = "%02d.%02d.%04d";
     private static final Locale SERVER_LOCALE = new Locale("de", "CH");
     private static final TimeZone SERVER_TIMEZONE = TimeZone.getTimeZone("Europe/Zurich");
 
     private DateHandlingUtils() {
-    }
-
-    /**
-     * Formats a date as in this example: "31122014".
-     */
-    public static String toDDMMYYYYString(int day, int month, int year) {
-        return String.format(FORMAT_DDMMYYYY, day, month, year);
-    }
-
-    /**
-     * Formats a date as in this example: "31.12.2014".
-     */
-    public static String toDD_MM_YYYYString(int day, int month, int year) {
-        return String.format(FORMAT_DD_MM_YYYY, day, month, year);
     }
 
     /**

@@ -33,14 +33,17 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.GridView;
+import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmManager_;
+import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
+import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -118,6 +121,11 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
                 View view = super.getView(position, convertView, parent);
                 View deleteButton = view.findViewById(R.id.issueDeleteButton);
                 deleteButton.setOnClickListener(new IssueDeleteButtonOnClickListener(position));
+
+                // Load the thumbnail image
+                ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
+                Uri uri = Uri.parse(getCursor().getString(getCursor().getColumnIndex(DownloadManager.COLUMN_URI)));
+                Picasso.with(image.getContext()).load(IssueDownloadService_.getThumbnailUriForPDFUri(uri)).placeholder(R.drawable.issue_placeholder).into(image);
                 return view;
             }
         };
