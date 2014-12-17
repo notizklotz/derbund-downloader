@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.main;
+package com.github.notizklotz.derbunddownloader.issuesgrid;
 
 import android.app.DownloadManager;
 import android.app.LoaderManager;

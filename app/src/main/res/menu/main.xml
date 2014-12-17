@@ -16,15 +16,16 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_download"
         android:icon="@drawable/ic_action_av_download"
         android:title="@string/action_download"
-        android:showAsAction="ifRoom|withText" />
+        app:showAsAction="ifRoom|withText" />
     <item
         android:id="@+id/action_settings"
-        android:title="@string/action_settings"
         android:orderInCategory="100"
-        android:showAsAction="never" />
+        android:title="@string/action_settings"
+        app:showAsAction="never" />
 </menu>

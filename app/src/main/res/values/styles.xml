@@ -18,5 +18,12 @@
 
 <resources>
 
+    <style name="Theme.DerBund.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorPrimary">@color/myPrimaryColor</item>
+        <item name="colorPrimaryDark">@color/myPrimaryDarkColor</item>
+        <item name="colorAccent">@color/themeAccentColor</item>
+        <item name="android:windowBackground">@color/myWindowBackground</item>
+    </style>
 
+    <style name="Theme.DerBund" parent="Theme.DerBund.Base" />
 </resources>

@@ -33,14 +33,16 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
+import android.os.Build;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
-import com.github.notizklotz.derbunddownloader.main.MainActivity_;
+import com.github.notizklotz.derbunddownloader.common.LocalDate;
+import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
+import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.EIntentService;
 import org.androidannotations.annotations.ServiceAction;
@@ -61,6 +63,11 @@ public class IssueDownloadService extends IntentService {
     private static final int WIFI_RECHECK_WAIT_MILLIS = 5 * 1000;
     private static final int WIFI_CHECK_MAX_MILLIS = 30 * 1000;
     private static final String WORKER_THREAD_NAME = "IssueDownloadService";
+    private static final String ISSUE_PDF_URL_TEMPLATE = "http://epaper.derbund.ch/getFile.php?ausgabe=%02d%02d%04d";
+    private static final String ISSUE_THUMBNAIL_URL_TEMPLATE = "http://epaper.derbund.ch/jpg/%04d-BVBU-001-%02d%02d.pdf.jpg";
+    private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
+    private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
+    private static final String ISSUE_DESCRIPTION_TEMPLATE = "%02d.%02d.%04d";
     @SuppressWarnings("WeakerAccess")
     @SystemService
     ConnectivityManager connectivityManager;
@@ -75,6 +82,20 @@ public class IssueDownloadService extends IntentService {
 
     public IssueDownloadService() {
         super(WORKER_THREAD_NAME);
+    }
+
+    private static String expandTemplateWithDate(String template, LocalDate localDate) {
+        return String.format(template, localDate.getDay(), localDate.getMonth(), localDate.getYear());
+    }
+
+    public static Uri getThumbnailUriForPDFUri(Uri pdfUri) {
+        String ddmmyyyy = pdfUri.getQueryParameter("ausgabe");
+
+        int day = Integer.parseInt(ddmmyyyy.substring(0, 2));
+        int month = Integer.parseInt(ddmmyyyy.substring(2, 4));
+        int year = Integer.parseInt(ddmmyyyy.substring(4, 8));
+
+        return Uri.parse(String.format(ISSUE_THUMBNAIL_URL_TEMPLATE, year, day, month));
     }
 
     @ServiceAction
@@ -100,12 +121,15 @@ public class IssueDownloadService extends IntentService {
                 if (!checkUserAccount()) {
                     notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_error);
                 } else {
+                    final LocalDate issueDate = new LocalDate(day, month, year);
+                    fetchThumbnail(issueDate);
+
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                     receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
                     registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
                     try {
-                        String title = startDownload(this, day, month, year, wifiOnly);
+                        String title = startDownload(issueDate, wifiOnly);
                         downloadDoneSignal.await();
                         notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_av_download);
                     } catch (InterruptedException e) {
@@ -201,8 +225,8 @@ public class IssueDownloadService extends IntentService {
         // The stack builder object will contain an artificial back stack for thestarted Activity.
         // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
         mBuilder.setContentIntent(android.support.v4.app.TaskStackBuilder.create(getApplicationContext()).
-                addParentStack(MainActivity_.class).
-                addNextIntent(new Intent(getApplicationContext(), MainActivity_.class)).
+                addParentStack(DownloadedIssuesActivity_.class).
+                addNextIntent(new Intent(getApplicationContext(), DownloadedIssuesActivity_.class)).
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -210,11 +234,14 @@ public class IssueDownloadService extends IntentService {
         mNotifyMgr.notify(1, mBuilder.getNotification());
     }
 
-    private String startDownload(Context context, int day, int month, int year, boolean wifiOnly) {
-        String url = "http://epaper.derbund.ch/getFile.php?ausgabe=" + DateHandlingUtils.toDDMMYYYYString(day, month, year);
-        String title = "Der Bund ePaper " + DateHandlingUtils.toDD_MM_YYYYString(day, month, year);
-        String filename = title + ".pdf";
+    private void fetchThumbnail(LocalDate issueDate) {
+        Uri uri = Uri.parse(String.format(ISSUE_THUMBNAIL_URL_TEMPLATE, issueDate.getYear(), issueDate.getDay(), issueDate.getMonth()));
+        Picasso.with(this).load(uri).fetch();
+    }
 
+    private String startDownload(LocalDate issueDate, boolean wifiOnly) {
+        final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
+        final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
         if (BuildConfig.DEBUG) {
             File extFilesDir = getExternalFilesDir(null);
             File file = new File(extFilesDir, filename);
@@ -222,14 +249,18 @@ public class IssueDownloadService extends IntentService {
             Log.d(LOG_TAG, "Can write? " + (extFilesDir != null && extFilesDir.canWrite()));
         }
 
-        DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(Uri.parse(url))
+        Uri issueUrl = Uri.parse(expandTemplateWithDate(ISSUE_PDF_URL_TEMPLATE, issueDate));
+        DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
                 .setTitle(title)
-                .setDescription(DateHandlingUtils.toDD_MM_YYYYString(day, month, year))
+                .setDescription(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                .setDestinationInExternalFilesDir(context, null, filename);
+                .setDestinationInExternalFilesDir(this, null, filename);
 
         if (wifiOnly) {
             pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                pdfDownloadRequest.setAllowedOverMetered(false);
+            }
         }
         downloadManager.enqueue(pdfDownloadRequest);
 
