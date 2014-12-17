@@ -20,21 +20,11 @@ package com.github.notizklotz.derbunddownloader.common;
 
 import android.test.AndroidTestCase;
 
-import junit.framework.Assert;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
 public class DateHandlingUtilsTest extends AndroidTestCase {
-
-    public void testToDDMMYYYYString() {
-        Assert.assertEquals("01022000", DateHandlingUtils.toDDMMYYYYString(1, 2, 2000));
-    }
-
-    public void testToDD_MM_YYYYString() {
-        assertEquals("01.02.2000", DateHandlingUtils.toDD_MM_YYYYString(1, 2, 2000));
-    }
 
     public void testToFullStringDefaultTimezone() {
         assertEquals("Unexpected device timezone", "America/New_York", TimeZone.getDefault().getID());
