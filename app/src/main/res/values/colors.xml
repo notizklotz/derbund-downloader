@@ -19,6 +19,6 @@
 <resources>
     <color name="myPrimaryColor">#0085ab</color>
     <color name="myPrimaryDarkColor">#006B89</color>
-    <color name="themeAccentColor">#ff9800</color>
-    <color name="myWindowBackground">#DEDEDE</color>
+    <color name="themeAccentColor">#0085ab</color>
+    <color name="myWindowBackground">#CECECE</color>
 </resources>

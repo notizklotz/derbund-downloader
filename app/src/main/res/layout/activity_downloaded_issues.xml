@@ -30,7 +30,6 @@
         android:columnWidth="@dimen/image_thumbnail_size"
         android:gravity="center"
         android:horizontalSpacing="@dimen/image_thumbnail_spacing"
-        android:listSelector="@drawable/selector"
         android:numColumns="auto_fit"
         android:padding="@dimen/image_thumbnail_spacing"
         android:stretchMode="columnWidth"
