@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><!--
+<!--
   ~ Der Bund ePaper Downloader - App to download ePaper issues of the Der Bund newspaper
   ~ Copyright (C) 2013 Adrian Gygax
   ~
@@ -16,11 +16,20 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
-<resources>
-    <color name="myPrimaryColor">#0085ab</color>
-    <color name="myPrimaryDarkColor">#006B89</color>
-    <color name="themeAccentColor">#0085ab</color>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <color name="grid_state_pressed">#1a0085ab</color>
-    <color name="grid_state_focused">#800085ab</color>
-</resources>
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="@color/grid_state_pressed" />
+        </shape>
+    </item>
+
+    <item android:state_focused="true">
+        <shape>
+            <solid android:color="@color/grid_state_focused" />
+        </shape>
+    </item>
+
+    <item android:drawable="@android:color/transparent" />
+
+</selector>
