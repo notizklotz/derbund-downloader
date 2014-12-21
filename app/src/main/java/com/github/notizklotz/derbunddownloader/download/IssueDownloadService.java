@@ -107,19 +107,19 @@ public class IssueDownloadService extends IntentService {
             if (wifiOnly) {
                 connected = waitForWifiConnection();
                 if (!connected) {
-                    notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), R.drawable.ic_stat_error);
+                    notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), R.drawable.ic_stat_newspaper);
                 }
             } else {
                 NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
                 connected = activeNetworkInfo != null && activeNetworkInfo.isConnected();
                 if (!connected) {
-                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_error);
+                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_newspaper);
                 }
             }
 
             if (connected) {
                 if (!checkUserAccount()) {
-                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_error);
+                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_newspaper);
                 } else {
                     final LocalDate issueDate = new LocalDate(day, month, year);
                     fetchThumbnail(issueDate);
@@ -131,14 +131,14 @@ public class IssueDownloadService extends IntentService {
                     try {
                         String title = startDownload(issueDate, wifiOnly);
                         downloadDoneSignal.await();
-                        notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_av_download);
+                        notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_newspaper);
                     } catch (InterruptedException e) {
                         Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
                     }
                 }
             }
         } catch (Exception e) {
-            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage(), R.drawable.ic_stat_error);
+            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage(), R.drawable.ic_stat_newspaper);
         } finally {
             cleanup();
         }
@@ -156,7 +156,7 @@ public class IssueDownloadService extends IntentService {
             //Wait for Wifi coming up
             long firstCheckMillis = System.currentTimeMillis();
             if (!wifiManager.isWifiEnabled()) {
-                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), R.drawable.ic_stat_error);
+                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), R.drawable.ic_stat_newspaper);
             } else {
                 do {
                     NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
