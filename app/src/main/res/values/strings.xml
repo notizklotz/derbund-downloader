@@ -49,7 +49,7 @@
     <string name="download_service_error">Fehler beim Herunterladen</string>
     <string name="download_service_error_text">Es ist ein Problem aufgetreten: </string>
     <string name="wifi_only">Nur über WLAN herunterladen</string>
-    <string name="wifi_only_summary">Verhindert das Herunterladen über die Mobilfunkverbindung. Eine Ausgabe der Zeitung ist ca. 50MB gross. Das Deaktivieren dieser Option kann somit ohne Abo mit unbegrenztem Datenvolumen hohe Kosten verursachen!</string>
+    <string name="wifi_only_summary">Verhindert das Herunterladen über die Mobilfunkverbindung um Kosten zu sparen. Eine Ausgabe der Zeitung ist ca. 50MB gross.</string>
     <string name="delete">Entfernen</string>
     <string name="next_wakeup">Nächster Aufwachzeitpunkt</string>
     <string name="debugging">Informationen</string>
