@@ -18,10 +18,9 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    android:orientation="vertical">
+    android:layout_height="wrap_content">
 
     <ImageView
         android:id="@+id/issueImageView"
@@ -35,9 +34,10 @@
     <RelativeLayout
         android:layout_width="fill_parent"
         android:layout_height="68dp"
-        android:background="#333">
+        android:layout_gravity="bottom"
+        android:background="#CC000000">
 
-        <LinearLayout
+    <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
@@ -74,4 +74,4 @@
             android:src="@drawable/ic_delete_white_24dp" />
     </RelativeLayout>
 
-</LinearLayout>
+</FrameLayout>
