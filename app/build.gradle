@@ -30,6 +30,8 @@
 
 
 
+
+
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 def AAVersion = '3.2'
@@ -59,8 +61,8 @@ android {
         applicationId "com.github.notizklotz.derbunddownloader"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 14
-        versionName "2.0"
+        versionCode 15
+        versionName "2.1"
     }
 
     buildTypes {
