@@ -51,6 +51,7 @@
     <string name="wifi_only">Nur über WLAN herunterladen</string>
     <string name="wifi_only_summary">Verhindert das Herunterladen über die Mobilfunkverbindung um Kosten zu sparen. Eine Ausgabe der Zeitung ist ca. 50MB gross.</string>
     <string name="delete">Entfernen</string>
+    <string name="action_delete_all">Alle entfernen</string>
     <string name="next_wakeup">Nächster Aufwachzeitpunkt</string>
     <string name="debugging">Informationen</string>
 </resources>

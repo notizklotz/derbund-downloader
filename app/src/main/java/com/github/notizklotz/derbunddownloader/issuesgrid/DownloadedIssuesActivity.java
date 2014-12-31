@@ -24,6 +24,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
@@ -155,6 +156,15 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
         Toast.makeText(this, "Ausgabe entfernt", Toast.LENGTH_SHORT).show();
     }
 
+    @OptionsItem(R.id.action_deleteAll)
+    void showDeleteAllIssuesDialog() {
+        ConfirmAllIssuesDeleteDialogFragment.createDialogFragment().show(getFragmentManager(), "issueDelete");
+    }
+
+    void deleteAllIssues() {
+        new DeleteAllIssuesTask().execute();
+    }
+
     @OptionsItem(R.id.action_download)
     void menuItemDownloadSelected() {
         new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
@@ -191,6 +201,28 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
             Cursor item = (Cursor) gridView.getAdapter().getItem(position);
             long itemID = item.getLong(item.getColumnIndex(DownloadManager.COLUMN_ID));
             ConfirmIssueDeleteDialogFragment.createDialogFragment(itemID).show(getFragmentManager(), "issueDelete");
+        }
+    }
+
+    private class DeleteAllIssuesTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            Cursor cursor = downloadManager.query(new DownloadManager.Query());
+
+            try {
+                if (cursor.moveToFirst()) {
+                    while (!cursor.isAfterLast()) {
+                        long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
+                        downloadManager.remove(itemID);
+                        cursor.moveToNext();
+                    }
+                }
+            } finally {
+                cursor.close();
+            }
+
+            return null;
         }
     }
 
