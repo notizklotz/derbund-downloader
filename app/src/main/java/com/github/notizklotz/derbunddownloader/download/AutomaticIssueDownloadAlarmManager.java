@@ -90,12 +90,11 @@ public class AutomaticIssueDownloadAlarmManager {
 
         //Make sure trigger is in the future
         if (now.after(nextAlarm)) {
-            nextAlarm.roll(Calendar.DAY_OF_MONTH, true);
+            nextAlarm.add(Calendar.DAY_OF_MONTH, 1);
         }
-
         //Do not schedule Sundays as the newspaper is not issued on Sundays
         if ((nextAlarm.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY)) {
-            nextAlarm.roll(Calendar.DAY_OF_MONTH, true);
+            nextAlarm.add(Calendar.DAY_OF_MONTH, 1);
         }
         return nextAlarm;
     }
