@@ -25,7 +25,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -52,7 +52,7 @@
      inkscape:window-maximized="1"
      inkscape:current-layer="svg2" />
   <path
-     d="M 411.92765,136.81524 H 352.22073 V 47.254856 H 262.66035 V 136.81524 H 202.95344 L 307.44054,241.30235 411.92765,136.81524 z M 202.95344,271.15581 v 29.85346 H 411.92765 V 271.15581 H 202.95344 z"
+     d="M 414.22874,180.53601 H 354.52182 V 90.975628 H 264.96144 V 180.53601 H 205.25453 L 309.74163,285.02312 414.22874,180.53601 z M 205.25453,314.87658 v 29.85346 H 414.22874 V 314.87658 H 205.25453 z"
      id="path4"
      inkscape:connector-curvature="0"
      style="fill:#0085ab" />
@@ -64,23 +64,23 @@
   <text
      xml:space="preserve"
      style="font-size:72px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#0085ab;fill-opacity:1;stroke:none;font-family:DejaVu Serif;-inkscape-font-specification:DejaVu Serif"
-     x="367.02435"
-     y="67.394478"
+     x="369.32544"
+     y="111.11525"
      id="text3013"
      sodipodi:linespacing="125%"><tspan
        sodipodi:role="line"
        id="tspan3015"
-       x="367.02435"
-       y="67.394478">Der Bund</tspan></text>
+       x="369.32544"
+       y="111.11525">Der Bund</tspan></text>
   <text
      xml:space="preserve"
      style="font-size:40px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:0px;word-spacing:0px;fill:#0085ab;fill-opacity:1;stroke:none;font-family:DejaVu Sans;-inkscape-font-specification:DejaVu Sans"
-     x="371.62656"
-     y="121.47014"
+     x="373.92764"
+     y="165.1909"
      id="text3785"
      sodipodi:linespacing="125%"><tspan
        sodipodi:role="line"
        id="tspan3787"
-       x="371.62656"
-       y="121.47014">ePaper Downloader</tspan></text>
+       x="373.92764"
+       y="165.1909">ePaper Downloader</tspan></text>
 </svg>
