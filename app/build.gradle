@@ -16,24 +16,6 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 def AAVersion = '3.2'
@@ -56,8 +38,8 @@ apt {
 }
 
 android {
-    compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    compileSdkVersion 23
+    buildToolsVersion "23.0.1"
 
     defaultConfig {
         applicationId "com.github.notizklotz.derbunddownloader"
@@ -66,9 +48,7 @@ android {
         versionCode 16
         versionName "2.1"
     }
-
     buildTypes {
-        //noinspection GroovyAssignabilityCheck
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
@@ -78,11 +58,6 @@ android {
         sourceCompatibility JavaVersion.VERSION_1_6
         targetCompatibility JavaVersion.VERSION_1_6
     }
-
-    packagingOptions {
-        exclude('META-INF/notice.txt')
-        exclude('META-INF/license.txt')
-    }
 }
 
 dependencies {
@@ -91,10 +66,10 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
     compile "org.androidannotations:androidannotations-api:$AAVersion"
-    compile "com.squareup.picasso:picasso:2.4.0"
-    androidTestCompile "org.mockito:mockito-core:1.10.13"
-    androidTestCompile "com.google.dexmaker:dexmaker:1.1"
-    androidTestCompile "com.google.dexmaker:dexmaker-mockito:1.1"
+    compile 'com.squareup.picasso:picasso:2.4.0'
+    androidTestCompile 'org.mockito:mockito-core:1.10.13'
+    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
+    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
     apt "org.androidannotations:androidannotations:$AAVersion"
 }
 
