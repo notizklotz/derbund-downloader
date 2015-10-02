@@ -44,7 +44,7 @@ android {
     defaultConfig {
         applicationId "com.github.notizklotz.derbunddownloader"
         minSdkVersion 15
-        targetSdkVersion 21
+        targetSdkVersion 23
         versionCode 16
         versionName "2.1"
     }
@@ -67,8 +67,8 @@ android {
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:21.0.3'
-    compile 'com.android.support:appcompat-v7:21.0.3'
+    compile 'com.android.support:support-v4:23.0.1'
+    compile 'com.android.support:appcompat-v7:23.0.1'
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
     compile "org.androidannotations:androidannotations-api:$AAVersion"
     compile 'com.squareup.picasso:picasso:2.4.0'
