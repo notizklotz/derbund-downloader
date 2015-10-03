@@ -1,4 +1,4 @@
-Der Bund ePaper Downloader
+Der Bund ePaper Downloader [![Build Status](https://travis-ci.org/notizklotz/derbund-downloader.svg?branch=master)](https://travis-ci.org/notizklotz/derbund-downloader)
 ==========================
 
 Android application to download ePaper issues of the Swiss newspaper "Der Bund".
