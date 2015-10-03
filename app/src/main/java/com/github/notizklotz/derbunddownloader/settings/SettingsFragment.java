@@ -56,7 +56,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updateSummaries(sharedPreferences);
 
-        if (Settings.KEY_AUTO_DOWNLOAD_ENABLED.equals(key) || Settings.KEY_AUTO_DOWNLOAD_TIME.equals(key)) {
+        if (SettingsImpl.KEY_AUTO_DOWNLOAD_ENABLED.equals(key) || SettingsImpl.KEY_AUTO_DOWNLOAD_TIME.equals(key)) {
             AutomaticIssueDownloadAlarmManager_.getInstance_(this.getActivity()).updateAlarm();
         }
     }
@@ -70,18 +70,18 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     }
 
     private void updateNextWakeup(SharedPreferences sharedPreferences) {
-        getPreferenceScreen().findPreference(Settings.KEY_NEXT_WAKEUP).setSummary(sharedPreferences.getString(Settings.KEY_NEXT_WAKEUP, this.getString(R.string.last_wakeup_never)));
+        getPreferenceScreen().findPreference(SettingsImpl.KEY_NEXT_WAKEUP).setSummary(sharedPreferences.getString(SettingsImpl.KEY_NEXT_WAKEUP, this.getString(R.string.last_wakeup_never)));
     }
 
     private void updateLastWakeup(SharedPreferences sharedPreferences) {
-        getPreferenceScreen().findPreference(Settings.KEY_LAST_WAKEUP).setSummary(sharedPreferences.getString(Settings.KEY_LAST_WAKEUP,
+        getPreferenceScreen().findPreference(SettingsImpl.KEY_LAST_WAKEUP).setSummary(sharedPreferences.getString(SettingsImpl.KEY_LAST_WAKEUP,
                 this.getString(R.string.last_wakeup_never)));
     }
 
     private void updateLogin(SharedPreferences sharedPreferences) {
-        Preference passwordPreference = getPreferenceScreen().findPreference(Settings.KEY_PASSWORD);
+        Preference passwordPreference = getPreferenceScreen().findPreference(SettingsImpl.KEY_PASSWORD);
         assert passwordPreference != null;
-        if (sharedPreferences.contains(Settings.KEY_PASSWORD)) {
+        if (sharedPreferences.contains(SettingsImpl.KEY_PASSWORD)) {
             passwordPreference.setSummary("****");
         } else {
             passwordPreference.setSummary(this.getString(R.string.password_summary));
@@ -89,14 +89,14 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     }
 
     private void updateUsername(SharedPreferences sharedPreferences) {
-        Preference usernamePreference = getPreferenceScreen().findPreference(Settings.KEY_USERNAME);
+        Preference usernamePreference = getPreferenceScreen().findPreference(SettingsImpl.KEY_USERNAME);
         assert usernamePreference != null;
-        usernamePreference.setSummary(sharedPreferences.getString(Settings.KEY_USERNAME, this.getString(R.string.username_summary)));
+        usernamePreference.setSummary(sharedPreferences.getString(SettingsImpl.KEY_USERNAME, this.getString(R.string.username_summary)));
     }
 
     private void updateAutoDownloadTime(SharedPreferences sharedPreferences) {
-        String auto_download_time = sharedPreferences.getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
-        Preference auto_download_time_preference = getPreferenceScreen().findPreference(Settings.KEY_AUTO_DOWNLOAD_TIME);
+        String auto_download_time = sharedPreferences.getString(SettingsImpl.KEY_AUTO_DOWNLOAD_TIME, null);
+        Preference auto_download_time_preference = getPreferenceScreen().findPreference(SettingsImpl.KEY_AUTO_DOWNLOAD_TIME);
         if (auto_download_time_preference != null) {
             auto_download_time_preference.setSummary(auto_download_time);
         }

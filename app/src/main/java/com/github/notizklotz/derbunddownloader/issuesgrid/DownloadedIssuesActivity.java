@@ -44,7 +44,7 @@ import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAl
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
-import com.github.notizklotz.derbunddownloader.settings.SettingsService;
+import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.AfterViews;
@@ -77,8 +77,8 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
     @SystemService
     DownloadManager downloadManager;
 
-    @Bean(Settings.class)
-    SettingsService settingsService;
+    @Bean(SettingsImpl.class)
+    Settings settings;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -102,8 +102,8 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
     protected void onStart() {
         super.onStart();
 
-        String username = settingsService.getUsername();
-        String password = settingsService.getPassword();
+        String username = settings.getUsername();
+        String password = settings.getPassword();
 
         if (!(StringUtils.hasText(username) && StringUtils.hasText(password))) {
             SettingsActivity_.intent(this).start();

@@ -20,48 +20,44 @@ package com.github.notizklotz.derbunddownloader.download;
 
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
+import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 
-import java.util.Calendar;
-import java.util.Date;
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EReceiver;
+import org.joda.time.DateTime;
+import org.joda.time.Instant;
+import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * Triggered by an alarm to automatically download the issue of today.
  */
+@EReceiver
 public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceiver {
 
-    private static final String LOG_TAG = AutomaticIssueDownloadAlarmReceiver.class.getSimpleName();
+    @Bean(SettingsImpl.class)
+    Settings settings;
+
+    @Bean
+    AutomaticIssueDownloadAlarmManager automaticIssueDownloadAlarmManager;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i(LOG_TAG, "I woke up this morning and got ready to start the service");
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        Log.i("AutomaticIssueDownload", "Starting service @ " + ISODateTimeFormat.dateTime().print(Instant.now()));
 
-        updateLastWakeupTimestamp(sharedPref);
-        scheduleNextWakeup(context);
+        settings.setLastWakeup(DateHandlingUtils.toFullStringUserTimezone(DateTime.now()));
+        automaticIssueDownloadAlarmManager.updateAlarm();
         callDownloadService(context);
     }
 
-    private void scheduleNextWakeup(Context context) {
-        AutomaticIssueDownloadAlarmManager_.getInstance_(context).updateAlarm();
-    }
-
     private void callDownloadService(Context context) {
-        final Calendar c = DateHandlingUtils.createServerCalendar();
-        int day = c.get(Calendar.DAY_OF_MONTH);
-        int month = c.get(Calendar.MONTH) + 1;
-        int year = c.get(Calendar.YEAR);
-
-        startWakefulService(context, IssueDownloadService_.intent(context).downloadIssue(day, month, year).get());
+        DateTime now = DateTime.now(DateHandlingUtils.SERVER_TIMEZONE_JODA);
+        Intent intent = IssueDownloadService_.intent(context).downloadIssue(now.getDayOfMonth(), now.getMonthOfYear(), now.getYear()).get();
+        startWakefulService(context, intent);
     }
 
-    private void updateLastWakeupTimestamp(SharedPreferences sharedPref) {
-        sharedPref.edit().putString(Settings.KEY_LAST_WAKEUP, DateHandlingUtils.toFullStringUserTimezone(new Date())).apply();
-    }
 }

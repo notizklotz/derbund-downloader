@@ -21,7 +21,7 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 
-import com.github.notizklotz.derbunddownloader.settings.SettingsService;
+import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import org.joda.time.DateTime;
 import org.junit.Assert;
@@ -41,13 +41,13 @@ public class AutomaticIssueDownloadAlarmManagerTest {
     public void setUp() throws Exception {
         automaticIssueDownloadAlarmManager = AutomaticIssueDownloadAlarmManager_.getInstance_(Mockito.mock(Context.class));
         automaticIssueDownloadAlarmManager.alarmScheduler = Mockito.mock(AlarmScheduler.class);
-        automaticIssueDownloadAlarmManager.settingsService = Mockito.mock(SettingsService.class);
+        automaticIssueDownloadAlarmManager.settings = Mockito.mock(Settings.class);
     }
 
     @Test
     public void updateAlarmAutoDownloadDisabled() throws Exception {
         //Prepare
-        Mockito.when(automaticIssueDownloadAlarmManager.settingsService.isAutoDownloadEnabled()).thenReturn(false);
+        Mockito.when(automaticIssueDownloadAlarmManager.settings.isAutoDownloadEnabled()).thenReturn(false);
 
         //Execute
         automaticIssueDownloadAlarmManager.updateAlarm();
@@ -59,7 +59,7 @@ public class AutomaticIssueDownloadAlarmManagerTest {
     @Test
     public void updateAlarmAutoDownloadEnabledButNoTimeGiven() throws Exception {
         //Prepare
-        Mockito.when(automaticIssueDownloadAlarmManager.settingsService.isAutoDownloadEnabled()).thenReturn(true);
+        Mockito.when(automaticIssueDownloadAlarmManager.settings.isAutoDownloadEnabled()).thenReturn(true);
 
         //Execute
         automaticIssueDownloadAlarmManager.updateAlarm();
@@ -71,8 +71,8 @@ public class AutomaticIssueDownloadAlarmManagerTest {
     @Test
     public void updateAlarmAutoDownloadEnabled() throws Exception {
         //Prepare
-        Mockito.when(automaticIssueDownloadAlarmManager.settingsService.isAutoDownloadEnabled()).thenReturn(true);
-        Mockito.when(automaticIssueDownloadAlarmManager.settingsService.getAutoDownloadTime()).thenReturn("10:11");
+        Mockito.when(automaticIssueDownloadAlarmManager.settings.isAutoDownloadEnabled()).thenReturn(true);
+        Mockito.when(automaticIssueDownloadAlarmManager.settings.getAutoDownloadTime()).thenReturn("10:11");
 
         //Execute
         automaticIssueDownloadAlarmManager.updateAlarm();

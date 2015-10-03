@@ -30,21 +30,23 @@ import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
 
-import java.util.Calendar;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
+import org.joda.time.LocalDate;
 
 @SuppressWarnings("WeakerAccess")
 public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        final Calendar c = Calendar.getInstance();
         Activity activity = getActivity();
         if (activity == null) {
             throw new IllegalStateException("Activity is null");
         }
 
+        DateTime now = DateTime.now();
         DatePickerDialog datePickerDialog = new DatePickerDialog(activity, null,
-                c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH));
+                now.getYear(), now.getMonthOfYear() - 1, now.getDayOfMonth());
 
         final DatePicker datePicker = datePickerDialog.getDatePicker();
         assert datePicker != null;
@@ -55,7 +57,7 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         datePickerDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, activity.getText(R.string.action_download), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                onDateSet(datePicker.getYear(), datePicker.getMonth(), datePicker.getDayOfMonth());
+                onDateSet(datePicker.getYear(), datePicker.getMonth() + 1, datePicker.getDayOfMonth());
             }
         });
 
@@ -66,13 +68,11 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         final Activity activity = getActivity();
         assert activity != null;
 
-        Calendar selectedDate = Calendar.getInstance();
-        //noinspection MagicConstant
-        selectedDate.set(year, monthOfYear, dayOfMonth);
-        if (selectedDate.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY) {
+        LocalDate selectedDate = new LocalDate(year, monthOfYear, dayOfMonth);
+        if (selectedDate.getDayOfWeek() == DateTimeConstants.SUNDAY) {
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
-            IssueDownloadService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear + 1, year).start();
+            IssueDownloadService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
         }
     }
 

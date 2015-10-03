@@ -20,11 +20,9 @@ package com.github.notizklotz.derbunddownloader.common;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.junit.Test;
-
-import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
 
 import static org.junit.Assert.assertEquals;
 
@@ -33,13 +31,7 @@ public class DateHandlingUtilsTest {
 
     @Test
     public void testToFullStringDefaultTimezone() {
-        assertEquals("31.12.1969 19:00:00 EST", DateHandlingUtils.toFullString(new Date(0), TimeZone.getTimeZone("America/New_York")));
+        assertEquals("31.12.1969 19:00:00 EST", DateHandlingUtils.toFullString(new DateTime(0), DateTimeZone.forID("America/New_York")));
     }
 
-    @Test
-    public void testCreateServerCalendar() {
-        Calendar serverCalendar = DateHandlingUtils.createServerCalendar();
-        assertEquals("Europe/Zurich", serverCalendar.getTimeZone().getID());
-        assertEquals(Calendar.MONDAY, serverCalendar.getFirstDayOfWeek());
-    }
 }

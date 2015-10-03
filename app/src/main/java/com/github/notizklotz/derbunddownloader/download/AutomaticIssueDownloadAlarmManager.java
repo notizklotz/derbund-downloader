@@ -20,7 +20,7 @@ package com.github.notizklotz.derbunddownloader.download;
 
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsService;
+import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.github.notizklotz.derbunddownloader.settings.TimePickerPreference;
 
 import org.androidannotations.annotations.Bean;
@@ -32,8 +32,8 @@ import org.springframework.util.StringUtils;
 @EBean
 public class AutomaticIssueDownloadAlarmManager {
 
-    @Bean(Settings.class)
-    SettingsService settingsService;
+    @Bean(SettingsImpl.class)
+    Settings settings;
 
     @Bean(AlarmSchedulerImpl.class)
     AlarmScheduler alarmScheduler;
@@ -41,8 +41,8 @@ public class AutomaticIssueDownloadAlarmManager {
     public void updateAlarm() {
         DateTime trigger = null;
 
-        boolean autoDownloadEnabled = settingsService.isAutoDownloadEnabled();
-        String autoDownloadTime = settingsService.getAutoDownloadTime();
+        boolean autoDownloadEnabled = settings.isAutoDownloadEnabled();
+        String autoDownloadTime = settings.getAutoDownloadTime();
         if (autoDownloadEnabled && StringUtils.hasText(autoDownloadTime)) {
             final Integer[] hourMinute = TimePickerPreference.toHourMinuteIntegers(autoDownloadTime);
             trigger = calculateNextAlarm(DateTime.now(), hourMinute[0], hourMinute[1]);
@@ -50,7 +50,7 @@ public class AutomaticIssueDownloadAlarmManager {
 
         alarmScheduler.schedule(AutomaticIssueDownloadAlarmReceiver.class, trigger);
 
-        settingsService.updateNextWakeup(trigger != null ? trigger.toDate() : null);
+        settings.updateNextWakeup(trigger != null ? DateHandlingUtils.toFullStringUserTimezone(trigger) : null);
     }
 
     protected DateTime calculateNextAlarm(DateTime now, int hourOfDay, int minute) {

@@ -18,20 +18,17 @@
 
 package com.github.notizklotz.derbunddownloader.common;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.format.DateTimeFormat;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
-import java.util.TimeZone;
 
 public class DateHandlingUtils {
 
     public static final DateTimeZone SERVER_TIMEZONE_JODA = DateTimeZone.forID("Europe/Zurich");
     private static final String FORMAT_HH_MM = "%02d:%02d";
     private static final Locale SERVER_LOCALE = new Locale("de", "CH");
-    private static final TimeZone SERVER_TIMEZONE = TimeZone.getTimeZone("Europe/Zurich");
 
     private DateHandlingUtils() {
     }
@@ -47,20 +44,12 @@ public class DateHandlingUtils {
      * Creates a formatted full date/time string as in this example: "31.12.2014 12:59:59 GMT+2".
      * The device's current default timezone is used for timezone calculations.
      */
-    public static String toFullStringUserTimezone(Date date) {
-        return toFullString(date, TimeZone.getDefault());
+    public static String toFullStringUserTimezone(DateTime date) {
+        return toFullString(date, DateTimeZone.getDefault());
     }
 
-    public static String toFullString(Date date, TimeZone timeZone) {
-        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss z", SERVER_LOCALE);
-        simpleDateFormat.setTimeZone(timeZone);
-        return simpleDateFormat.format(date);
+    public static String toFullString(DateTime date, DateTimeZone timeZone) {
+        return DateTimeFormat.forPattern("dd.MM.yyyy HH:mm:ss z").withLocale(SERVER_LOCALE).withZone(timeZone).print(date);
     }
 
-    /**
-     * Creates a {@link java.util.Calendar} instance using the server's timezone and locale (Switzerland).
-     */
-    public static Calendar createServerCalendar() {
-        return Calendar.getInstance(SERVER_TIMEZONE, SERVER_LOCALE);
-    }
 }

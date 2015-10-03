@@ -18,64 +18,28 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
+public interface Settings {
+    String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
+    String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
+    String KEY_USERNAME = "username";
+    String KEY_PASSWORD = "password";
+    String KEY_LAST_WAKEUP = "last_wakeup";
+    String KEY_NEXT_WAKEUP = "next_wakeup";
+    String KEY_WIFI_ONLY_ENABLED = "wifi_only";
 
-import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+    String getUsername();
 
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
+    String getPassword();
 
-import java.util.Date;
+    boolean isWifiOnly();
 
-@EBean(scope = EBean.Scope.Singleton)
-public class Settings implements SettingsService {
+    boolean isAutoDownloadEnabled();
 
-    @RootContext
-    Context context;
+    String getAutoDownloadTime();
 
-    @Override
-    public String getUsername() {
-        return getDefaultSharedPreferences().getString(Settings.KEY_USERNAME, null);
-    }
+    String getNextWakeup();
 
+    void updateNextWakeup(String nextWakeup);
 
-    @Override
-    public String getPassword() {
-        return getDefaultSharedPreferences().getString(Settings.KEY_PASSWORD, null);
-    }
-
-    @Override
-    public boolean isWifiOnly() {
-        return getDefaultSharedPreferences().getBoolean(SettingsService.KEY_WIFI_ONLY_ENABLED, true);
-    }
-
-    @Override
-    public boolean isAutoDownloadEnabled() {
-        return getDefaultSharedPreferences().getBoolean(Settings.KEY_AUTO_DOWNLOAD_ENABLED, false);
-    }
-
-    @Override
-    public String getAutoDownloadTime() {
-        return getDefaultSharedPreferences().getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
-    }
-
-    @Override
-    public String getNextWakeup() {
-        return getDefaultSharedPreferences().getString(Settings.KEY_NEXT_WAKEUP, null);
-    }
-
-    @Override
-    public void updateNextWakeup(Date nextWakeup) {
-        if (nextWakeup == null) {
-            getDefaultSharedPreferences().edit().remove(Settings.KEY_NEXT_WAKEUP).apply();
-        } else {
-            getDefaultSharedPreferences().edit().putString(Settings.KEY_NEXT_WAKEUP, DateHandlingUtils.toFullStringUserTimezone(nextWakeup)).apply();
-        }
-    }
-
-    private SharedPreferences getDefaultSharedPreferences() {
-        return PreferenceManager.getDefaultSharedPreferences(context);
-    }
+    void setLastWakeup(String s);
 }

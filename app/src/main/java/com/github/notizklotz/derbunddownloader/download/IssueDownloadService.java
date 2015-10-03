@@ -39,16 +39,16 @@ import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.common.LocalDate;
 import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsService;
+import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EIntentService;
 import org.androidannotations.annotations.ServiceAction;
 import org.androidannotations.annotations.SystemService;
+import org.joda.time.LocalDate;
 import org.springframework.util.Assert;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestClientException;
@@ -82,8 +82,8 @@ public class IssueDownloadService extends IntentService {
     @SystemService
     DownloadManager downloadManager;
 
-    @Bean(Settings.class)
-    SettingsService settingsService;
+    @Bean(SettingsImpl.class)
+    Settings settings;
 
     private WifiManager.WifiLock myWifiLock;
     private Intent intent;
@@ -94,7 +94,7 @@ public class IssueDownloadService extends IntentService {
     }
 
     private static String expandTemplateWithDate(String template, LocalDate localDate) {
-        return String.format(template, localDate.getDay(), localDate.getMonth(), localDate.getYear());
+        return String.format(template, localDate.getDayOfMonth(), localDate.getMonthOfYear(), localDate.getYear());
     }
 
     public static Uri getThumbnailUriForPDFUri(Uri pdfUri) {
@@ -112,7 +112,7 @@ public class IssueDownloadService extends IntentService {
         Log.i(LOG_TAG, "Handling download intent");
         try {
             boolean connected;
-            final boolean wifiOnly = settingsService.isWifiOnly();
+            final boolean wifiOnly = settings.isWifiOnly();
             if (wifiOnly) {
                 connected = waitForWifiConnection();
                 if (!connected) {
@@ -244,7 +244,7 @@ public class IssueDownloadService extends IntentService {
     }
 
     private void fetchThumbnail(LocalDate issueDate) {
-        Uri uri = Uri.parse(String.format(ISSUE_THUMBNAIL_URL_TEMPLATE, issueDate.getYear(), issueDate.getDay(), issueDate.getMonth()));
+        Uri uri = Uri.parse(String.format(ISSUE_THUMBNAIL_URL_TEMPLATE, issueDate.getYear(), issueDate.getDayOfMonth(), issueDate.getMonthOfYear()));
         Picasso.with(this).load(uri).fetch();
     }
 
@@ -283,8 +283,8 @@ public class IssueDownloadService extends IntentService {
 
         try {
             final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-            final String username = sharedPref.getString(Settings.KEY_USERNAME, "");
-            final String password = sharedPref.getString(Settings.KEY_PASSWORD, "");
+            final String username = sharedPref.getString(SettingsImpl.KEY_USERNAME, "");
+            final String password = sharedPref.getString(SettingsImpl.KEY_PASSWORD, "");
 
             RestTemplate restTemplate = new RestTemplate(true);
             LinkedMultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();
