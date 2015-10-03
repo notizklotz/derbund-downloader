@@ -29,6 +29,7 @@ import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EReceiver;
+import org.androidannotations.annotations.Trace;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
 import org.joda.time.format.ISODateTimeFormat;
@@ -46,6 +47,7 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
     AutomaticIssueDownloadAlarmManager automaticIssueDownloadAlarmManager;
 
     @Override
+    @Trace
     public void onReceive(Context context, Intent intent) {
         Log.i("AutomaticIssueDownload", "Starting service @ " + ISODateTimeFormat.dateTime().print(Instant.now()));
 
