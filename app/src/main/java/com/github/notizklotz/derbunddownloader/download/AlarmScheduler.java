@@ -16,24 +16,19 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.github.notizklotz.derbunddownloader.download;
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.4.0-beta4'
+import android.content.BroadcastReceiver;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+import org.joda.time.DateTime;
 
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
-    }
-}
+public interface AlarmScheduler {
 
-allprojects {
-    repositories {
-        jcenter()
-    }
+    /**
+     * @param broadcastReceiver Callback to be executed.
+     * @param trigger           Instant when the callback has to be executed. If null any existing callback is canceled without scheduling a new one.
+     */
+    void schedule(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver, @Nullable DateTime trigger);
 }

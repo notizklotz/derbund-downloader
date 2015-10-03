@@ -16,24 +16,17 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-// Top-level build file where you can add configuration options common to all sub-projects/modules.
+package com.github.notizklotz.derbunddownloader;
 
-buildscript {
-    repositories {
-        jcenter()
-    }
-    dependencies {
-        classpath 'com.android.tools.build:gradle:1.4.0-beta4'
+import android.app.Application;
 
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+import net.danlew.android.joda.JodaTimeAndroid;
 
-        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.4'
-    }
-}
+public class DerBundDownloaderApplication extends Application {
 
-allprojects {
-    repositories {
-        jcenter()
+    @Override
+    public void onCreate() {
+        super.onCreate();
+        JodaTimeAndroid.init(this);
     }
 }

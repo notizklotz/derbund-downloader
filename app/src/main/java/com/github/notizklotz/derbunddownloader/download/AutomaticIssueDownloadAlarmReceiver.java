@@ -62,6 +62,6 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
     }
 
     private void updateLastWakeupTimestamp(SharedPreferences sharedPref) {
-        sharedPref.edit().putString(Settings.KEY_LAST_WAKEUP, DateHandlingUtils.toFullStringDefaultTimezone(new Date())).apply();
+        sharedPref.edit().putString(Settings.KEY_LAST_WAKEUP, DateHandlingUtils.toFullStringUserTimezone(new Date())).apply();
     }
 }

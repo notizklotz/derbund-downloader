@@ -19,51 +19,63 @@
 package com.github.notizklotz.derbunddownloader.settings;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+
 import java.util.Date;
 
-public class Settings {
+@EBean(scope = EBean.Scope.Singleton)
+public class Settings implements SettingsService {
 
-    public static final String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
-    public static final String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
-    public static final String KEY_USERNAME = "username";
-    public static final String KEY_PASSWORD = "password";
-    public static final String KEY_LAST_WAKEUP = "last_wakeup";
-    public static final String KEY_NEXT_WAKEUP = "next_wakeup";
-    private static final String KEY_WIFI_ONLY_ENABLED = "wifi_only";
+    @RootContext
+    Context context;
 
-    private Settings() {
-
+    @Override
+    public String getUsername() {
+        return getDefaultSharedPreferences().getString(Settings.KEY_USERNAME, null);
     }
 
-    public static String getUsername(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_USERNAME, null);
+
+    @Override
+    public String getPassword() {
+        return getDefaultSharedPreferences().getString(Settings.KEY_PASSWORD, null);
     }
 
-    public static String getPassword(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_PASSWORD, null);
+    @Override
+    public boolean isWifiOnly() {
+        return getDefaultSharedPreferences().getBoolean(SettingsService.KEY_WIFI_ONLY_ENABLED, true);
     }
 
-    public static boolean isWifiOnly(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Settings.KEY_WIFI_ONLY_ENABLED, true);
+    @Override
+    public boolean isAutoDownloadEnabled() {
+        return getDefaultSharedPreferences().getBoolean(Settings.KEY_AUTO_DOWNLOAD_ENABLED, false);
     }
 
-    public static boolean isAutoDownloadEnabled(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(Settings.KEY_AUTO_DOWNLOAD_ENABLED, false);
+    @Override
+    public String getAutoDownloadTime() {
+        return getDefaultSharedPreferences().getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
     }
 
-    public static String getAutoDownloadTime(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_AUTO_DOWNLOAD_TIME, null);
+    @Override
+    public String getNextWakeup() {
+        return getDefaultSharedPreferences().getString(Settings.KEY_NEXT_WAKEUP, null);
     }
 
-    public static String getNextWakeup(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(Settings.KEY_NEXT_WAKEUP, null);
+    @Override
+    public void updateNextWakeup(Date nextWakeup) {
+        if (nextWakeup == null) {
+            getDefaultSharedPreferences().edit().remove(Settings.KEY_NEXT_WAKEUP).apply();
+        } else {
+            getDefaultSharedPreferences().edit().putString(Settings.KEY_NEXT_WAKEUP, DateHandlingUtils.toFullStringUserTimezone(nextWakeup)).apply();
+        }
     }
 
-    public static void updateNextWakeup(Context context, Date nextWakeup) {
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(Settings.KEY_NEXT_WAKEUP, DateHandlingUtils.toFullStringDefaultTimezone(nextWakeup)).apply();
+    private SharedPreferences getDefaultSharedPreferences() {
+        return PreferenceManager.getDefaultSharedPreferences(context);
     }
 }

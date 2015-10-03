@@ -18,6 +18,8 @@
 
 package com.github.notizklotz.derbunddownloader.common;
 
+import org.joda.time.DateTimeZone;
+
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
@@ -26,6 +28,7 @@ import java.util.TimeZone;
 
 public class DateHandlingUtils {
 
+    public static final DateTimeZone SERVER_TIMEZONE_JODA = DateTimeZone.forID("Europe/Zurich");
     private static final String FORMAT_HH_MM = "%02d:%02d";
     private static final Locale SERVER_LOCALE = new Locale("de", "CH");
     private static final TimeZone SERVER_TIMEZONE = TimeZone.getTimeZone("Europe/Zurich");
@@ -44,8 +47,14 @@ public class DateHandlingUtils {
      * Creates a formatted full date/time string as in this example: "31.12.2014 12:59:59 GMT+2".
      * The device's current default timezone is used for timezone calculations.
      */
-    public static String toFullStringDefaultTimezone(Date date) {
-        return new SimpleDateFormat("dd.MM.yyyy HH:mm:ss ZZZZ", SERVER_LOCALE).format(date);
+    public static String toFullStringUserTimezone(Date date) {
+        return toFullString(date, TimeZone.getDefault());
+    }
+
+    public static String toFullString(Date date, TimeZone timeZone) {
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss z", SERVER_LOCALE);
+        simpleDateFormat.setTimeZone(timeZone);
+        return simpleDateFormat.format(date);
     }
 
     /**

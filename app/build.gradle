@@ -18,22 +18,13 @@
 
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
-def AAVersion = '3.2'
+def AAVersion = '3.3.2'
 
 apt {
     arguments {
         //noinspection GroovyAssignabilityCheck
         androidManifestFile variant.outputs[0].processResources.manifestFile
-        // if you have multiple outputs (when using splits), you may want to have other index than 0
-
         resourcePackageName 'com.github.notizklotz.derbunddownloader'
-
-        // If you're using Android NBS flavors you should use the following line instead of hard-coded packageName
-        // resourcePackageName android.defaultConfig.packageName
-
-        // You can set optional annotation processing options here, like these commented options:
-        // logLevel 'INFO'
-        // logFile '/var/log/aa.log'
     }
 }
 
@@ -54,27 +45,33 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
-    }
 
     packagingOptions {
         exclude('META-INF/notice.txt')
         exclude('META-INF/license.txt')
     }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_6
+        targetCompatibility JavaVersion.VERSION_1_6
+    }
 }
 
 dependencies {
+    final SUPPORT_LIBRARY_VERSION = '23.0.1'
+
     compile fileTree(include: ['*.jar'], dir: 'libs')
-    compile 'com.android.support:support-v4:23.0.1'
-    compile 'com.android.support:appcompat-v7:23.0.1'
+    compile "com.android.support:support-v4:$SUPPORT_LIBRARY_VERSION"
+    compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
+    compile "com.android.support:support-annotations:$SUPPORT_LIBRARY_VERSION"
     compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
     compile "org.androidannotations:androidannotations-api:$AAVersion"
     compile 'com.squareup.picasso:picasso:2.4.0'
-    androidTestCompile 'org.mockito:mockito-core:1.10.13'
-    androidTestCompile 'com.google.dexmaker:dexmaker:1.1'
-    androidTestCompile 'com.google.dexmaker:dexmaker-mockito:1.1'
+    compile 'net.danlew:android.joda:2.8.2'
+    testCompile 'junit:junit:4.12'
+    testCompile 'org.mockito:mockito-core:1.10.19'
+    //Original Joda Time is needed for testing as it contains time zone data
+    testCompile 'joda-time:joda-time:2.8.2'
     apt "org.androidannotations:androidannotations:$AAVersion"
 }
 

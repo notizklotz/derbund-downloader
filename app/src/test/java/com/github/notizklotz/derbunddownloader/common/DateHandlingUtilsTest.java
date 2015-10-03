@@ -18,19 +18,25 @@
 
 package com.github.notizklotz.derbunddownloader.common;
 
-import android.test.AndroidTestCase;
+import android.test.suitebuilder.annotation.SmallTest;
+
+import org.junit.Test;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
-public class DateHandlingUtilsTest extends AndroidTestCase {
+import static org.junit.Assert.assertEquals;
 
+@SmallTest
+public class DateHandlingUtilsTest {
+
+    @Test
     public void testToFullStringDefaultTimezone() {
-        assertEquals("Unexpected device timezone", "America/New_York", TimeZone.getDefault().getID());
-        assertEquals("31.12.1969 19:00:00 GMT-05:00", DateHandlingUtils.toFullStringDefaultTimezone(new Date(0)));
+        assertEquals("31.12.1969 19:00:00 EST", DateHandlingUtils.toFullString(new Date(0), TimeZone.getTimeZone("America/New_York")));
     }
 
+    @Test
     public void testCreateServerCalendar() {
         Calendar serverCalendar = DateHandlingUtils.createServerCalendar();
         assertEquals("Europe/Zurich", serverCalendar.getTimeZone().getID());

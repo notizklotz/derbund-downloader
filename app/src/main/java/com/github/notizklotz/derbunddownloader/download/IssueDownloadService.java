@@ -42,8 +42,10 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.LocalDate;
 import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
+import com.github.notizklotz.derbunddownloader.settings.SettingsService;
 import com.squareup.picasso.Picasso;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EIntentService;
 import org.androidannotations.annotations.ServiceAction;
 import org.androidannotations.annotations.SystemService;
@@ -68,14 +70,21 @@ public class IssueDownloadService extends IntentService {
     private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
     private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
     private static final String ISSUE_DESCRIPTION_TEMPLATE = "%02d.%02d.%04d";
+
     @SuppressWarnings("WeakerAccess")
     @SystemService
     ConnectivityManager connectivityManager;
+
     @SystemService
     WifiManager wifiManager;
+
     @SuppressWarnings("WeakerAccess")
     @SystemService
     DownloadManager downloadManager;
+
+    @Bean(Settings.class)
+    SettingsService settingsService;
+
     private WifiManager.WifiLock myWifiLock;
     private Intent intent;
     private DownloadCompletedBroadcastReceiver receiver;
@@ -103,7 +112,7 @@ public class IssueDownloadService extends IntentService {
         Log.i(LOG_TAG, "Handling download intent");
         try {
             boolean connected;
-            final boolean wifiOnly = Settings.isWifiOnly(getApplicationContext());
+            final boolean wifiOnly = settingsService.isWifiOnly();
             if (wifiOnly) {
                 connected = waitForWifiConnection();
                 if (!connected) {
