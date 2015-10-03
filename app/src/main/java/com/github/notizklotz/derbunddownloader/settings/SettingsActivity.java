@@ -20,7 +20,7 @@ package com.github.notizklotz.derbunddownloader.settings;
 
 import android.annotation.SuppressLint;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 
 import com.github.notizklotz.derbunddownloader.R;
 
@@ -28,7 +28,7 @@ import org.androidannotations.annotations.EActivity;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_settings)
-public class SettingsActivity extends ActionBarActivity {
+public class SettingsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -58,6 +58,7 @@ public class TimePickerPreference extends DialogPreference {
         return tp;
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected void onBindDialogView(@SuppressWarnings("NullableProblems") View view) {
         super.onBindDialogView(view);
@@ -78,7 +79,7 @@ public class TimePickerPreference extends DialogPreference {
     protected void onDialogClosed(boolean positiveResult) {
         if (positiveResult) {
             tp.clearFocus();  // to get value of number if edited in text field, and clicking OK without clicking outside the field first (bug in NumberPicker)
-            String newtime = DateHandlingUtils.toHH_MMString(tp.getCurrentHour(), tp.getCurrentMinute());
+            @SuppressWarnings("deprecation") String newtime = DateHandlingUtils.toHH_MMString(tp.getCurrentHour(), tp.getCurrentMinute());
             if (callChangeListener(newtime)) {
                 setTime(newtime);
             }

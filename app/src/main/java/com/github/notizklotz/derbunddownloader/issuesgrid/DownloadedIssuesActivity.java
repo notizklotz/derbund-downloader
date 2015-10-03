@@ -28,7 +28,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
@@ -61,7 +61,7 @@ import java.io.File;
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_downloaded_issues)
 @OptionsMenu(R.menu.main)
-public class DownloadedIssuesActivity extends ActionBarActivity {
+public class DownloadedIssuesActivity extends AppCompatActivity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";

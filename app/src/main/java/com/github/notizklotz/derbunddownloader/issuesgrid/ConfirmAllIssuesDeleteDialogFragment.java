@@ -29,8 +29,7 @@ import com.github.notizklotz.derbunddownloader.R;
 public class ConfirmAllIssuesDeleteDialogFragment extends DialogFragment {
 
     static ConfirmAllIssuesDeleteDialogFragment createDialogFragment() {
-        ConfirmAllIssuesDeleteDialogFragment confirmIssueDeleteDialogFragment = new ConfirmAllIssuesDeleteDialogFragment();
-        return confirmIssueDeleteDialogFragment;
+        return new ConfirmAllIssuesDeleteDialogFragment();
     }
 
     @Override

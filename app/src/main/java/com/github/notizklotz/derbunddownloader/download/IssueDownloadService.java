@@ -71,14 +71,12 @@ public class IssueDownloadService extends IntentService {
     private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
     private static final String ISSUE_DESCRIPTION_TEMPLATE = "%02d.%02d.%04d";
 
-    @SuppressWarnings("WeakerAccess")
     @SystemService
     ConnectivityManager connectivityManager;
 
     @SystemService
     WifiManager wifiManager;
 
-    @SuppressWarnings("WeakerAccess")
     @SystemService
     DownloadManager downloadManager;
 
@@ -116,19 +114,19 @@ public class IssueDownloadService extends IntentService {
             if (wifiOnly) {
                 connected = waitForWifiConnection();
                 if (!connected) {
-                    notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), R.drawable.ic_stat_newspaper);
+                    notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text));
                 }
             } else {
                 NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
                 connected = activeNetworkInfo != null && activeNetworkInfo.isConnected();
                 if (!connected) {
-                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), R.drawable.ic_stat_newspaper);
+                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text));
                 }
             }
 
             if (connected) {
                 if (!checkUserAccount()) {
-                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_newspaper);
+                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text));
                 } else {
                     final LocalDate issueDate = new LocalDate(day, month, year);
                     fetchThumbnail(issueDate);
@@ -140,14 +138,14 @@ public class IssueDownloadService extends IntentService {
                     try {
                         String title = startDownload(issueDate, wifiOnly);
                         downloadDoneSignal.await();
-                        notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_newspaper);
+                        notifyUser(title, getString(R.string.download_completed));
                     } catch (InterruptedException e) {
                         Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
                     }
                 }
             }
         } catch (Exception e) {
-            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage(), R.drawable.ic_stat_newspaper);
+            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage());
         } finally {
             cleanup();
         }
@@ -165,13 +163,11 @@ public class IssueDownloadService extends IntentService {
             //Wait for Wifi coming up
             long firstCheckMillis = System.currentTimeMillis();
             if (!wifiManager.isWifiEnabled()) {
-                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), R.drawable.ic_stat_newspaper);
+                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text));
             } else {
                 do {
-                    NetworkInfo networkInfo = connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-                    assert networkInfo != null;
-                    connected = networkInfo.isConnected();
-
+                    final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+                    connected = networkInfo != null && networkInfo.getType() == ConnectivityManager.TYPE_WIFI && networkInfo.isConnected();
                     if (!connected) {
                         Log.d(LOG_TAG, "Wifi connection is not yet ready. Wait and recheck");
 
@@ -221,10 +217,10 @@ public class IssueDownloadService extends IntentService {
         this.intent = intent;
     }
 
-    private void notifyUser(CharSequence contentTitle, CharSequence contentText, int icon) {
+    private void notifyUser(CharSequence contentTitle, CharSequence contentText) {
         Notification.Builder mBuilder =
                 new Notification.Builder(getApplicationContext())
-                        .setSmallIcon(icon)
+                        .setSmallIcon(R.drawable.ic_stat_newspaper)
                         .setContentTitle(contentTitle)
                         .setContentText(contentText)
                         .setTicker(contentTitle)
