@@ -88,12 +88,36 @@ public class AutomaticIssueDownloadAlarmManagerTest {
     @Test
     public void calculateAlarmSameDay() {
         //Prepare
-        DateTime now = new DateTime(2015, 9, 1, 9, 0);
+        DateTime now = new DateTime(2015, 9, 1, 9, 30);
 
         //Execute
-        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 5);
+        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 35);
 
         //Test
-        assertEquals(now.plusMinutes(5), nextAlarm);
+        assertEquals(now.withMinuteOfHour(35), nextAlarm);
+    }
+
+    @Test
+    public void calculateAlarmNextDay() {
+        //Prepare
+        DateTime now = new DateTime(2015, 9, 1, 9, 30);
+
+        //Execute
+        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
+
+        //Test
+        assertEquals(now.withMinuteOfHour(20).withDayOfMonth(2), nextAlarm);
+    }
+
+    @Test
+    public void calculateAlarmMonthRollover() {
+        //Prepare
+        DateTime now = new DateTime(2015, 9, 30, 9, 30);
+
+        //Execute
+        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
+
+        //Test
+        assertEquals(now.plusDays(1).withMinuteOfHour(20), nextAlarm);
     }
 }
