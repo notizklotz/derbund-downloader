@@ -128,7 +128,7 @@ public class IssueDownloadService extends IntentService {
                 if (!checkUserAccount()) {
                     notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text));
                 } else {
-                    final LocalDate issueDate = new LocalDate(day, month, year);
+                    final LocalDate issueDate = new LocalDate(year, month, day);
                     fetchThumbnail(issueDate);
 
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
