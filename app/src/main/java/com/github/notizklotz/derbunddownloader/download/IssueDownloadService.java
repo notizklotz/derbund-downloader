@@ -21,7 +21,6 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -35,6 +34,7 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
@@ -218,25 +218,25 @@ public class IssueDownloadService extends IntentService {
     }
 
     private void notifyUser(CharSequence contentTitle, CharSequence contentText) {
-        Notification.Builder mBuilder =
-                new Notification.Builder(getApplicationContext())
-                        .setSmallIcon(R.drawable.ic_stat_newspaper)
-                        .setContentTitle(contentTitle)
-                        .setContentText(contentText)
-                        .setTicker(contentTitle)
-                        .setAutoCancel(true);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
+        builder
+                .setSmallIcon(R.drawable.ic_stat_newspaper)
+                .setContentTitle(contentTitle)
+                .setContentText(contentText)
+                .setTicker(contentTitle)
+                .setAutoCancel(true);
 
         //http://developer.android.com/guide/topics/ui/notifiers/notifications.html
         // The stack builder object will contain an artificial back stack for thestarted Activity.
         // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
-        mBuilder.setContentIntent(android.support.v4.app.TaskStackBuilder.create(getApplicationContext()).
+        builder.setContentIntent(android.support.v4.app.TaskStackBuilder.create(getApplicationContext()).
                 addParentStack(DownloadedIssuesActivity_.class).
                 addNextIntent(new Intent(getApplicationContext(), DownloadedIssuesActivity_.class)).
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         //noinspection deprecation
-        mNotifyMgr.notify(1, mBuilder.getNotification());
+        mNotifyMgr.notify(1, builder.build());
     }
 
     private void fetchThumbnail(LocalDate issueDate) {

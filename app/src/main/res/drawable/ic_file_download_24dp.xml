@@ -16,21 +16,12 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
-    <item
-        android:id="@+id/action_download"
-        android:icon="@drawable/ic_file_download_24dp"
-        android:title="@string/action_download"
-        app:showAsAction="ifRoom|withText" />
-    <item
-        android:id="@+id/action_deleteAll"
-        android:icon="@drawable/ic_delete_24dp"
-        android:title="@string/action_delete_all"
-        app:showAsAction="ifRoom|withText" />
-    <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never" />
-</menu>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportHeight="24.0"
+    android:viewportWidth="24.0">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M19,9h-4V3H9v6H5l7,7 7,-7zM5,18v2h14v-2H5z" />
+</vector>
