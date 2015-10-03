@@ -21,6 +21,7 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.IntentService;
+import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -34,6 +35,7 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
@@ -114,19 +116,19 @@ public class IssueDownloadService extends IntentService {
             if (wifiOnly) {
                 connected = waitForWifiConnection();
                 if (!connected) {
-                    notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text));
+                    notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), true);
                 }
             } else {
                 NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
                 connected = activeNetworkInfo != null && activeNetworkInfo.isConnected();
                 if (!connected) {
-                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text));
+                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), true);
                 }
             }
 
             if (connected) {
                 if (!checkUserAccount()) {
-                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text));
+                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), true);
                 } else {
                     final LocalDate issueDate = new LocalDate(year, month, day);
                     fetchThumbnail(issueDate);
@@ -138,14 +140,14 @@ public class IssueDownloadService extends IntentService {
                     try {
                         String title = startDownload(issueDate, wifiOnly);
                         downloadDoneSignal.await();
-                        notifyUser(title, getString(R.string.download_completed));
+                        notifyUser(title, getString(R.string.download_completed), false);
                     } catch (InterruptedException e) {
                         Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
                     }
                 }
             }
         } catch (Exception e) {
-            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage());
+            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage(), true);
         } finally {
             cleanup();
         }
@@ -163,7 +165,7 @@ public class IssueDownloadService extends IntentService {
             //Wait for Wifi coming up
             long firstCheckMillis = System.currentTimeMillis();
             if (!wifiManager.isWifiEnabled()) {
-                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text));
+                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), true);
             } else {
                 do {
                     final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
@@ -217,7 +219,7 @@ public class IssueDownloadService extends IntentService {
         this.intent = intent;
     }
 
-    private void notifyUser(CharSequence contentTitle, CharSequence contentText) {
+    private void notifyUser(CharSequence contentTitle, CharSequence contentText, boolean error) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
         builder
                 .setSmallIcon(R.drawable.ic_stat_newspaper)
@@ -225,17 +227,22 @@ public class IssueDownloadService extends IntentService {
                 .setContentText(contentText)
                 .setTicker(contentTitle)
                 .setAutoCancel(true);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            builder.setVisibility(Notification.VISIBILITY_PUBLIC);
+            if (error) {
+                builder.setCategory(Notification.CATEGORY_ERROR);
+            }
+        }
 
         //http://developer.android.com/guide/topics/ui/notifiers/notifications.html
         // The stack builder object will contain an artificial back stack for thestarted Activity.
         // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
-        builder.setContentIntent(android.support.v4.app.TaskStackBuilder.create(getApplicationContext()).
+        builder.setContentIntent(TaskStackBuilder.create(getApplicationContext()).
                 addParentStack(DownloadedIssuesActivity_.class).
                 addNextIntent(new Intent(getApplicationContext(), DownloadedIssuesActivity_.class)).
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        //noinspection deprecation
         mNotifyMgr.notify(1, builder.build());
     }
 
