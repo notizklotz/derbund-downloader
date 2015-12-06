@@ -41,10 +41,8 @@ import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmManager_;
-import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
-import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.EActivity;
@@ -125,8 +123,8 @@ public class DownloadedIssuesActivity extends ActionBarActivity {
 
                 // Load the thumbnail image
                 ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
-                Uri uri = Uri.parse(getCursor().getString(getCursor().getColumnIndex(DownloadManager.COLUMN_URI)));
-                Picasso.with(image.getContext()).load(IssueDownloadService_.getThumbnailUriForPDFUri(uri)).placeholder(R.drawable.issue_placeholder).into(image);
+                //Uri uri = Uri.parse(getCursor().getString(getCursor().getColumnIndex(DownloadManager.COLUMN_URI)));
+                //Picasso.with(image.getContext()).load(IssueDownloadService_.getThumbnailUriForPDFUri(uri)).placeholder(R.drawable.issue_placeholder).into(image);
                 return view;
             }
         };

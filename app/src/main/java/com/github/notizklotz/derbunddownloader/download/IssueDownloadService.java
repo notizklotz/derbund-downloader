@@ -42,17 +42,20 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.LocalDate;
 import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.EIntentService;
 import org.androidannotations.annotations.ServiceAction;
 import org.androidannotations.annotations.SystemService;
+import org.json.JSONObject;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.util.Assert;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
 @SuppressLint("Registered")
@@ -63,8 +66,6 @@ public class IssueDownloadService extends IntentService {
     private static final int WIFI_RECHECK_WAIT_MILLIS = 5 * 1000;
     private static final int WIFI_CHECK_MAX_MILLIS = 30 * 1000;
     private static final String WORKER_THREAD_NAME = "IssueDownloadService";
-    private static final String ISSUE_PDF_URL_TEMPLATE = "http://epaper.derbund.ch/getFile.php?ausgabe=%02d%02d%04d";
-    private static final String ISSUE_THUMBNAIL_URL_TEMPLATE = "http://epaper.derbund.ch/jpg/%04d-BVBU-001-%02d%02d.pdf.jpg";
     private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
     private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
     private static final String ISSUE_DESCRIPTION_TEMPLATE = "%02d.%02d.%04d";
@@ -88,16 +89,6 @@ public class IssueDownloadService extends IntentService {
         return String.format(template, localDate.getDay(), localDate.getMonth(), localDate.getYear());
     }
 
-    public static Uri getThumbnailUriForPDFUri(Uri pdfUri) {
-        String ddmmyyyy = pdfUri.getQueryParameter("ausgabe");
-
-        int day = Integer.parseInt(ddmmyyyy.substring(0, 2));
-        int month = Integer.parseInt(ddmmyyyy.substring(2, 4));
-        int year = Integer.parseInt(ddmmyyyy.substring(4, 8));
-
-        return Uri.parse(String.format(ISSUE_THUMBNAIL_URL_TEMPLATE, year, day, month));
-    }
-
     @ServiceAction
     public void downloadIssue(int day, int month, int year) {
         Log.i(LOG_TAG, "Handling download intent");
@@ -118,18 +109,19 @@ public class IssueDownloadService extends IntentService {
             }
 
             if (connected) {
-                if (!checkUserAccount()) {
+                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+                String downloadUrl = getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""));
+                if (downloadUrl == null) {
                     notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_newspaper);
                 } else {
                     final LocalDate issueDate = new LocalDate(day, month, year);
-                    fetchThumbnail(issueDate);
 
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                     receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
                     registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
                     try {
-                        String title = startDownload(issueDate, wifiOnly);
+                        String title = startDownload(downloadUrl, issueDate, wifiOnly);
                         downloadDoneSignal.await();
                         notifyUser(title, getString(R.string.download_completed), R.drawable.ic_stat_newspaper);
                     } catch (InterruptedException e) {
@@ -234,12 +226,7 @@ public class IssueDownloadService extends IntentService {
         mNotifyMgr.notify(1, mBuilder.getNotification());
     }
 
-    private void fetchThumbnail(LocalDate issueDate) {
-        Uri uri = Uri.parse(String.format(ISSUE_THUMBNAIL_URL_TEMPLATE, issueDate.getYear(), issueDate.getDay(), issueDate.getMonth()));
-        Picasso.with(this).load(uri).fetch();
-    }
-
-    private String startDownload(LocalDate issueDate, boolean wifiOnly) {
+    private String startDownload(String downloadUrl, LocalDate issueDate, boolean wifiOnly) {
         final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
         final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
         if (BuildConfig.DEBUG) {
@@ -249,7 +236,7 @@ public class IssueDownloadService extends IntentService {
             Log.d(LOG_TAG, "Can write? " + (extFilesDir != null && extFilesDir.canWrite()));
         }
 
-        Uri issueUrl = Uri.parse(expandTemplateWithDate(ISSUE_PDF_URL_TEMPLATE, issueDate));
+        Uri issueUrl = Uri.parse(downloadUrl);
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
                 .setTitle(title)
                 .setDescription(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate))
@@ -267,31 +254,44 @@ public class IssueDownloadService extends IntentService {
         return title;
     }
 
-    private boolean checkUserAccount() {
-        if (BuildConfig.DEBUG) {
-            Log.d(LOG_TAG, "Checking user account validity");
-        }
+    private String getPdfDownloadUrl(String username, String password) {
 
         try {
-            final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-            final String username = sharedPref.getString(Settings.KEY_USERNAME, "");
-            final String password = sharedPref.getString(Settings.KEY_PASSWORD, "");
-
             RestTemplate restTemplate = new RestTemplate(true);
-            LinkedMultiValueMap<String, String> form = new LinkedMultiValueMap<String, String>();
-            form.add("user", username);
-            form.add("password", password);
-            form.add("dologin", "1");
-            form.add("t", "");
 
-            String response = restTemplate.postForObject("http://epaper.derbund.ch", form, String.class);
-            boolean loginSuccessful = response.contains("flashcontent");
-            Log.d(LOG_TAG, "Login successful? " + loginSuccessful);
-            return loginSuccessful;
-        } catch (RestClientException e) {
-            Log.e(LOG_TAG, "Error while trying to login", e);
-            return false;
+            HttpHeaders loginRequestHeaders = new HttpHeaders();
+            loginRequestHeaders.add("Accept", "application/json");
+            loginRequestHeaders.add("Content-Type", "application/json;charset=UTF-8");
+            HttpEntity<String> stringHttpEntity = new HttpEntity<String>("{\"user\":\"" + username + "\",\"password\":\"" + password + "\",\"stayLoggedIn\":false,\"closeActiveSessions\":true}", loginRequestHeaders);
+            ResponseEntity<String> response = restTemplate.exchange("http://epaper.derbund.ch/index.cfm/authentication/login", HttpMethod.POST, stringHttpEntity, String.class);
+            String cookiesHeader = extractCookies(response.getHeaders());
+
+            HttpHeaders requestHeaders = new HttpHeaders();
+            requestHeaders.add("Cookie", cookiesHeader);
+            requestHeaders.add("Accept", "application/json");
+            requestHeaders.add("Content-Type", "application/json");
+            HttpEntity<String> request = new HttpEntity<String>("{\"editions\":[{\"defId\":\"46\",\"publicationDate\":\"2015-12-03\"}],\"isAttachment\":true,\"fileName\":\"Gesamtausgabe_Der_Bund_2015-12-03.pdf\"}", requestHeaders);
+
+            ResponseEntity<String> doc = restTemplate.exchange("http://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc", HttpMethod.POST, request, String.class);
+
+            return new JSONObject(doc.getBody()).getJSONArray("data").getJSONObject(0).getString("issuepdf");
+        } catch (Exception e) {
+            return null;
         }
+    }
+
+    private String extractCookies(HttpHeaders headers) {
+        StringBuilder sb = new StringBuilder();
+        List<String> cookiesList = headers.get("Set-Cookie");
+        if (cookiesList != null) {
+            for (int i = 0; i < cookiesList.size(); i++) {
+                sb.append(cookiesList.get(i).split(";")[0]);
+                if (i < cookiesList.size() - 1) {
+                    sb.append("; ");
+                }
+            }
+        }
+        return sb.toString();
     }
 
     private static class DownloadCompletedBroadcastReceiver extends BroadcastReceiver {
