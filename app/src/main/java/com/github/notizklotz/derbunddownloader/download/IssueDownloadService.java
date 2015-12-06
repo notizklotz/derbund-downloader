@@ -69,6 +69,8 @@ public class IssueDownloadService extends IntentService {
     private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
     private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
     private static final String ISSUE_DESCRIPTION_TEMPLATE = "%02d.%02d.%04d";
+    private static final String ISSUE_DATE__TEMPLATE = "%04d-%02d-%02d";
+
     @SuppressWarnings("WeakerAccess")
     @SystemService
     ConnectivityManager connectivityManager;
@@ -109,12 +111,12 @@ public class IssueDownloadService extends IntentService {
             }
 
             if (connected) {
+                final LocalDate issueDate = new LocalDate(day, month, year);
                 final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-                String downloadUrl = getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""));
+                String downloadUrl = getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
                 if (downloadUrl == null) {
                     notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), R.drawable.ic_stat_newspaper);
                 } else {
-                    final LocalDate issueDate = new LocalDate(day, month, year);
 
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                     receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
@@ -254,7 +256,7 @@ public class IssueDownloadService extends IntentService {
         return title;
     }
 
-    private String getPdfDownloadUrl(String username, String password) {
+    private String getPdfDownloadUrl(String username, String password, LocalDate issueDate) {
 
         try {
             RestTemplate restTemplate = new RestTemplate(true);
@@ -270,7 +272,8 @@ public class IssueDownloadService extends IntentService {
             requestHeaders.add("Cookie", cookiesHeader);
             requestHeaders.add("Accept", "application/json");
             requestHeaders.add("Content-Type", "application/json");
-            HttpEntity<String> request = new HttpEntity<String>("{\"editions\":[{\"defId\":\"46\",\"publicationDate\":\"2015-12-03\"}],\"isAttachment\":true,\"fileName\":\"Gesamtausgabe_Der_Bund_2015-12-03.pdf\"}", requestHeaders);
+            String issueDateString = String.format(ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonth(), issueDate.getDay());
+            HttpEntity<String> request = new HttpEntity<String>("{\"editions\":[{\"defId\":\"46\",\"publicationDate\":\"" + issueDateString + "\"}],\"isAttachment\":true,\"fileName\":\"Gesamtausgabe_Der_Bund_" + issueDateString + ".pdf\"}", requestHeaders);
 
             ResponseEntity<String> doc = restTemplate.exchange("http://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc", HttpMethod.POST, request, String.class);
 
