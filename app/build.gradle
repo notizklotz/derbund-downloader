@@ -16,24 +16,6 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
 def AAVersion = '3.2'
@@ -42,46 +24,36 @@ apt {
     arguments {
         //noinspection GroovyAssignabilityCheck
         androidManifestFile variant.outputs[0].processResources.manifestFile
-        // if you have multiple outputs (when using splits), you may want to have other index than 0
-
         resourcePackageName 'com.github.notizklotz.derbunddownloader'
-
-        // If you're using Android NBS flavors you should use the following line instead of hard-coded packageName
-        // resourcePackageName android.defaultConfig.packageName
-
-        // You can set optional annotation processing options here, like these commented options:
-        // logLevel 'INFO'
-        // logFile '/var/log/aa.log'
     }
 }
 
 android {
     compileSdkVersion 21
-    buildToolsVersion "21.1.2"
+    buildToolsVersion "23.0.2"
 
     defaultConfig {
         applicationId "com.github.notizklotz.derbunddownloader"
         minSdkVersion 15
         targetSdkVersion 21
-        versionCode 16
-        versionName "2.1"
+        versionCode 17
+        versionName "2.2"
     }
-
     buildTypes {
-        //noinspection GroovyAssignabilityCheck
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
-    }
 
     packagingOptions {
         exclude('META-INF/notice.txt')
         exclude('META-INF/license.txt')
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_6
+        targetCompatibility JavaVersion.VERSION_1_6
     }
 }
 
