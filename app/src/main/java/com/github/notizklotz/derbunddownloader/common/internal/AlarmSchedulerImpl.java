@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.download;
+package com.github.notizklotz.derbunddownloader.common.internal;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -25,7 +25,9 @@ import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.ApiLevelChecker;
+import com.github.notizklotz.derbunddownloader.common.PendingIntentFactory;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;

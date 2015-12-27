@@ -18,7 +18,9 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.github.notizklotz.derbunddownloader.settings.TimePickerPreference;
@@ -30,7 +32,7 @@ import org.joda.time.DateTimeConstants;
 import org.springframework.util.StringUtils;
 
 @EBean
-public class AutomaticIssueDownloadAlarmManager {
+public class AutomaticDownloadScheduler {
 
     @Bean(SettingsImpl.class)
     Settings settings;
@@ -48,7 +50,7 @@ public class AutomaticIssueDownloadAlarmManager {
             trigger = calculateNextAlarm(DateTime.now(), hourMinute[0], hourMinute[1]);
         }
 
-        alarmScheduler.schedule(AutomaticIssueDownloadAlarmReceiver.class, trigger);
+        alarmScheduler.schedule(AutomaticDownloadBroadcastReceiver.class, trigger);
 
         settings.updateNextWakeup(trigger != null ? DateHandlingUtils.toFullStringUserTimezone(trigger) : null);
     }

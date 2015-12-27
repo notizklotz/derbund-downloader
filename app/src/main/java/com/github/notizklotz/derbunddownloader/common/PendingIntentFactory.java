@@ -16,19 +16,13 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.download;
+package com.github.notizklotz.derbunddownloader.common;
 
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 
-import org.joda.time.DateTime;
 
-public interface AlarmScheduler {
-
-    /**
-     * @param broadcastReceiver Callback to be executed.
-     * @param trigger           Instant when the callback has to be executed. If null any existing callback is canceled without scheduling a new one.
-     */
-    void schedule(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver, @Nullable DateTime trigger);
+public interface PendingIntentFactory {
+    PendingIntent createPendingIntent(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver);
 }

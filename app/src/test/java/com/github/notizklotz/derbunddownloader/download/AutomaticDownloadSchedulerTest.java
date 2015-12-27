@@ -20,6 +20,7 @@ package com.github.notizklotz.derbunddownloader.download;
 
 import android.test.suitebuilder.annotation.SmallTest;
 
+import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
@@ -33,53 +34,53 @@ import org.mockito.Mockito;
 import static org.junit.Assert.assertEquals;
 
 @SmallTest
-public class AutomaticIssueDownloadAlarmManagerTest {
+public class AutomaticDownloadSchedulerTest {
 
-    private AutomaticIssueDownloadAlarmManager automaticIssueDownloadAlarmManager;
+    private AutomaticDownloadScheduler automaticDownloadScheduler;
 
     @Before
     public void setUp() throws Exception {
-        automaticIssueDownloadAlarmManager = new AutomaticIssueDownloadAlarmManager();
-        automaticIssueDownloadAlarmManager.alarmScheduler = Mockito.mock(AlarmScheduler.class);
-        automaticIssueDownloadAlarmManager.settings = Mockito.mock(Settings.class);
+        automaticDownloadScheduler = new AutomaticDownloadScheduler();
+        automaticDownloadScheduler.alarmScheduler = Mockito.mock(AlarmScheduler.class);
+        automaticDownloadScheduler.settings = Mockito.mock(Settings.class);
     }
 
     @Test
     public void updateAlarmAutoDownloadDisabled() throws Exception {
         //Prepare
-        Mockito.when(automaticIssueDownloadAlarmManager.settings.isAutoDownloadEnabled()).thenReturn(false);
+        Mockito.when(automaticDownloadScheduler.settings.isAutoDownloadEnabled()).thenReturn(false);
 
         //Execute
-        automaticIssueDownloadAlarmManager.updateAlarm();
+        automaticDownloadScheduler.updateAlarm();
 
         //Test
-        Mockito.verify(automaticIssueDownloadAlarmManager.alarmScheduler).schedule(AutomaticIssueDownloadAlarmReceiver.class, null);
+        Mockito.verify(automaticDownloadScheduler.alarmScheduler).schedule(AutomaticDownloadBroadcastReceiver.class, null);
     }
 
     @Test
     public void updateAlarmAutoDownloadEnabledButNoTimeGiven() throws Exception {
         //Prepare
-        Mockito.when(automaticIssueDownloadAlarmManager.settings.isAutoDownloadEnabled()).thenReturn(true);
+        Mockito.when(automaticDownloadScheduler.settings.isAutoDownloadEnabled()).thenReturn(true);
 
         //Execute
-        automaticIssueDownloadAlarmManager.updateAlarm();
+        automaticDownloadScheduler.updateAlarm();
 
         //Test
-        Mockito.verify(automaticIssueDownloadAlarmManager.alarmScheduler).schedule(AutomaticIssueDownloadAlarmReceiver.class, null);
+        Mockito.verify(automaticDownloadScheduler.alarmScheduler).schedule(AutomaticDownloadBroadcastReceiver.class, null);
     }
 
     @Test
     public void updateAlarmAutoDownloadEnabled() throws Exception {
         //Prepare
-        Mockito.when(automaticIssueDownloadAlarmManager.settings.isAutoDownloadEnabled()).thenReturn(true);
-        Mockito.when(automaticIssueDownloadAlarmManager.settings.getAutoDownloadTime()).thenReturn("10:11");
+        Mockito.when(automaticDownloadScheduler.settings.isAutoDownloadEnabled()).thenReturn(true);
+        Mockito.when(automaticDownloadScheduler.settings.getAutoDownloadTime()).thenReturn("10:11");
 
         //Execute
-        automaticIssueDownloadAlarmManager.updateAlarm();
+        automaticDownloadScheduler.updateAlarm();
 
         //Test
         ArgumentCaptor<DateTime> argument = ArgumentCaptor.forClass(DateTime.class);
-        Mockito.verify(automaticIssueDownloadAlarmManager.alarmScheduler).schedule(Mockito.eq(AutomaticIssueDownloadAlarmReceiver.class), argument.capture());
+        Mockito.verify(automaticDownloadScheduler.alarmScheduler).schedule(Mockito.eq(AutomaticDownloadBroadcastReceiver.class), argument.capture());
         Assert.assertNotNull(argument.getValue());
         assertEquals(10, argument.getValue().getHourOfDay());
         assertEquals(11, argument.getValue().getMinuteOfHour());
@@ -91,7 +92,7 @@ public class AutomaticIssueDownloadAlarmManagerTest {
         DateTime now = new DateTime(2015, 9, 1, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 35);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 35);
 
         //Test
         assertEquals(new DateTime(2015, 9, 1, 9, 35, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
@@ -103,7 +104,7 @@ public class AutomaticIssueDownloadAlarmManagerTest {
         DateTime now = new DateTime(2015, 9, 1, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 20);
 
         //Test
         assertEquals(new DateTime(2015, 9, 2, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
@@ -115,7 +116,7 @@ public class AutomaticIssueDownloadAlarmManagerTest {
         DateTime now = new DateTime(2015, 9, 30, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 20);
 
         //Test
         assertEquals(new DateTime(2015, 10, 1, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
@@ -127,7 +128,7 @@ public class AutomaticIssueDownloadAlarmManagerTest {
         DateTime now = new DateTime(2015, 12, 5, 18, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 20);
 
         //Test
         assertEquals(new DateTime(2015, 12, 7, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);

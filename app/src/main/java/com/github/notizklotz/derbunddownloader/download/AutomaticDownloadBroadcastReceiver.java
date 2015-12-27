@@ -37,20 +37,20 @@ import org.joda.time.format.ISODateTimeFormat;
  * Triggered by an alarm to automatically download the issue of today.
  */
 @EReceiver
-public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceiver {
+public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver {
 
     @Bean(SettingsImpl.class)
     Settings settings;
 
     @Bean
-    AutomaticIssueDownloadAlarmManager automaticIssueDownloadAlarmManager;
+    AutomaticDownloadScheduler automaticDownloadScheduler;
 
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i("AutomaticIssueDownload", "Starting service @ " + ISODateTimeFormat.dateTime().print(Instant.now()));
 
         settings.setLastWakeup(DateHandlingUtils.toFullStringUserTimezone(DateTime.now()));
-        automaticIssueDownloadAlarmManager.updateAlarm();
+        automaticDownloadScheduler.updateAlarm();
         callDownloadService(context);
     }
 

@@ -40,7 +40,7 @@ import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmManager_;
+import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
@@ -91,7 +91,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
         if (!PreferenceManager.getDefaultSharedPreferences(this).contains(KEY_ALARM_MIGRATED)) {
             Log.i(getClass().getSimpleName(), "Migrating alarms");
-            AutomaticIssueDownloadAlarmManager_.getInstance_(this).updateAlarm();
+            AutomaticDownloadScheduler_.getInstance_(this).updateAlarm();
             PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean(KEY_ALARM_MIGRATED, true).apply();
         }
     }

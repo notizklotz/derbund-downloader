@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.download;
+package com.github.notizklotz.derbunddownloader.common.internal;
 
 import android.annotation.TargetApi;
 import android.app.AlarmManager;
@@ -25,11 +25,16 @@ import android.content.BroadcastReceiver;
 import android.os.Build;
 
 import com.github.notizklotz.derbunddownloader.common.ApiLevelChecker;
+import com.github.notizklotz.derbunddownloader.common.PendingIntentFactory;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 public class AlarmSchedulerImplTest {
 

@@ -130,7 +130,7 @@ public class IssueDownloadService extends IntentService {
                     registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
                     try {
-                        String title = startDownload(downloadUrl, issueDate, wifiOnly);
+                        String title = enqueueDownloadRequest(downloadUrl, issueDate, wifiOnly);
                         downloadDoneSignal.await();
                         notifyUser(title, getString(R.string.download_completed), false);
                     } catch (InterruptedException e) {
@@ -195,7 +195,7 @@ public class IssueDownloadService extends IntentService {
         }
 
         if (intent != null) {
-            AutomaticIssueDownloadAlarmReceiver.completeWakefulIntent(intent);
+            AutomaticDownloadBroadcastReceiver.completeWakefulIntent(intent);
             intent = null;
         }
     }
@@ -238,7 +238,7 @@ public class IssueDownloadService extends IntentService {
         mNotifyMgr.notify(1, builder.build());
     }
 
-    private String startDownload(String downloadUrl, LocalDate issueDate, boolean wifiOnly) {
+    private String enqueueDownloadRequest(String downloadUrl, LocalDate issueDate, boolean wifiOnly) {
         final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
         final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
         if (BuildConfig.DEBUG) {

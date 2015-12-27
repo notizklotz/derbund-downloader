@@ -24,7 +24,7 @@ import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadAlarmManager_;
+import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler_;
 
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
@@ -57,7 +57,7 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         updateSummaries(sharedPreferences);
 
         if (SettingsImpl.KEY_AUTO_DOWNLOAD_ENABLED.equals(key) || SettingsImpl.KEY_AUTO_DOWNLOAD_TIME.equals(key)) {
-            AutomaticIssueDownloadAlarmManager_.getInstance_(this.getActivity()).updateAlarm();
+            AutomaticDownloadScheduler_.getInstance_(this.getActivity()).updateAlarm();
         }
     }
 

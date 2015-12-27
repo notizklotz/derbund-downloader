@@ -16,13 +16,31 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.download;
+package com.github.notizklotz.derbunddownloader.common.internal;
 
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 
+import com.github.notizklotz.derbunddownloader.common.PendingIntentFactory;
 
-public interface PendingIntentFactory {
-    PendingIntent createPendingIntent(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver);
+import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
+
+@EBean
+public class PendingIntentFactoryImpl implements PendingIntentFactory {
+
+    @RootContext
+    Context context;
+
+    @Override
+    public PendingIntent createPendingIntent(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
+        return PendingIntent.getBroadcast(
+                context,
+                0,
+                new Intent(context, broadcastReceiver),
+                PendingIntent.FLAG_UPDATE_CURRENT);
+    }
 }
