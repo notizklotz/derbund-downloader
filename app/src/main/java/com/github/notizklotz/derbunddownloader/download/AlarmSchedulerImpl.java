@@ -21,25 +21,28 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
+import com.github.notizklotz.derbunddownloader.common.ApiLevelChecker;
+
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
 import org.joda.time.DateTime;
 
 @EBean
 public class AlarmSchedulerImpl implements AlarmScheduler {
 
-    @RootContext
-    Context context;
+    @Bean(PendingIntentFactoryImpl.class)
+    PendingIntentFactory pendingIntentFactory;
 
     @SystemService
     AlarmManager alarmManager;
+
+    @Bean(ApiLevelChecker.class)
+    ApiLevelChecker apiLevelChecker;
 
     @Override
     public void schedule(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver, @Nullable DateTime trigger) {
@@ -47,20 +50,20 @@ public class AlarmSchedulerImpl implements AlarmScheduler {
         //actually cancels the alarm. FLAG_CANCEL_CURRENT cancels the PendingIndent but then there's no
         //way to cancel the alarm programmatically. However, the Intent won't be executed anyway because
         //the fired alarm can't executed the cancelled PendingIntent.
-        final PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context,
-                0,
-                new Intent(context, broadcastReceiver),
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        final PendingIntent pendingIntent = pendingIntentFactory.createPendingIntent(broadcastReceiver);
         alarmManager.cancel(pendingIntent);
 
         if (trigger != null) {
             // Make sure wakeup trigger is exact across all API versions.
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            if (apiLevelChecker.isApiLevelAvailable(Build.VERSION_CODES.M)) {
+                alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, trigger.getMillis(), pendingIntent);
+            } else if (apiLevelChecker.isApiLevelAvailable(Build.VERSION_CODES.KITKAT)) {
                 alarmManager.setExact(AlarmManager.RTC_WAKEUP, trigger.getMillis(), pendingIntent);
             } else {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, trigger.getMillis(), pendingIntent);
             }
         }
     }
+
+
 }
