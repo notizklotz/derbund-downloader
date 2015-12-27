@@ -26,7 +26,7 @@ import java.util.Locale;
 
 public class DateHandlingUtils {
 
-    public static final DateTimeZone SERVER_TIMEZONE_JODA = DateTimeZone.forID("Europe/Zurich");
+    public static final DateTimeZone TIMEZONE_SWITZERLAND = DateTimeZone.forID("Europe/Zurich");
     private static final String FORMAT_HH_MM = "%02d:%02d";
     private static final Locale SERVER_LOCALE = new Locale("de", "CH");
 

@@ -18,9 +18,9 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.content.Context;
 import android.test.suitebuilder.annotation.SmallTest;
 
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import org.joda.time.DateTime;
@@ -39,7 +39,7 @@ public class AutomaticIssueDownloadAlarmManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        automaticIssueDownloadAlarmManager = AutomaticIssueDownloadAlarmManager_.getInstance_(Mockito.mock(Context.class));
+        automaticIssueDownloadAlarmManager = new AutomaticIssueDownloadAlarmManager();
         automaticIssueDownloadAlarmManager.alarmScheduler = Mockito.mock(AlarmScheduler.class);
         automaticIssueDownloadAlarmManager.settings = Mockito.mock(Settings.class);
     }
@@ -88,36 +88,48 @@ public class AutomaticIssueDownloadAlarmManagerTest {
     @Test
     public void calculateAlarmSameDay() {
         //Prepare
-        DateTime now = new DateTime(2015, 9, 1, 9, 30);
+        DateTime now = new DateTime(2015, 9, 1, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
         DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 35);
 
         //Test
-        assertEquals(now.withMinuteOfHour(35), nextAlarm);
+        assertEquals(new DateTime(2015, 9, 1, 9, 35, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
     }
 
     @Test
     public void calculateAlarmNextDay() {
         //Prepare
-        DateTime now = new DateTime(2015, 9, 1, 9, 30);
+        DateTime now = new DateTime(2015, 9, 1, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
         DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
 
         //Test
-        assertEquals(now.withMinuteOfHour(20).withDayOfMonth(2), nextAlarm);
+        assertEquals(new DateTime(2015, 9, 2, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
     }
 
     @Test
     public void calculateAlarmMonthRollover() {
         //Prepare
-        DateTime now = new DateTime(2015, 9, 30, 9, 30);
+        DateTime now = new DateTime(2015, 9, 30, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
         DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
 
         //Test
-        assertEquals(now.plusDays(1).withMinuteOfHour(20), nextAlarm);
+        assertEquals(new DateTime(2015, 10, 1, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
+    }
+
+    @Test
+    public void calculateAlarmSkipSunday() {
+        //Prepare
+        DateTime now = new DateTime(2015, 12, 5, 18, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
+
+        //Execute
+        DateTime nextAlarm = automaticIssueDownloadAlarmManager.calculateNextAlarm(now, 9, 20);
+
+        //Test
+        assertEquals(new DateTime(2015, 12, 7, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
     }
 }

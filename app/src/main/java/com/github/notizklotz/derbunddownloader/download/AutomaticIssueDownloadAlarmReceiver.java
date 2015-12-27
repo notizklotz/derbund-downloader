@@ -55,7 +55,7 @@ public class AutomaticIssueDownloadAlarmReceiver extends WakefulBroadcastReceive
     }
 
     private void callDownloadService(Context context) {
-        DateTime now = DateTime.now(DateHandlingUtils.SERVER_TIMEZONE_JODA);
+        DateTime now = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
         Intent intent = IssueDownloadService_.intent(context).downloadIssue(now.getDayOfMonth(), now.getMonthOfYear(), now.getYear()).get();
         startWakefulService(context, intent);
     }

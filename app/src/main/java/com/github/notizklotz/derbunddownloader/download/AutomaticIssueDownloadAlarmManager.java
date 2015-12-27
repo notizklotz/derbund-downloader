@@ -54,14 +54,14 @@ public class AutomaticIssueDownloadAlarmManager {
     }
 
     protected DateTime calculateNextAlarm(DateTime now, int hourOfDay, int minute) {
-        DateTime nextAlarm = now.withHourOfDay(hourOfDay).withMinuteOfHour(minute);
+        DateTime nextAlarm = now.withTime(hourOfDay, minute, 0, 0);
 
         //Make sure trigger is in the future
         if (nextAlarm.isBefore(now)) {
             nextAlarm = nextAlarm.plusDays(1);
         }
         //Do not schedule on Sundays in Switzerland as the newspaper is not issued on Sundays
-        if ((nextAlarm.withZone(DateHandlingUtils.SERVER_TIMEZONE_JODA).getDayOfWeek() == DateTimeConstants.SUNDAY)) {
+        if ((nextAlarm.withZone(DateHandlingUtils.TIMEZONE_SWITZERLAND).getDayOfWeek() == DateTimeConstants.SUNDAY)) {
             nextAlarm = nextAlarm.plusDays(1);
         }
         return nextAlarm;
