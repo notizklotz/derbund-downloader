@@ -89,37 +89,37 @@ public class AutomaticDownloadSchedulerTest {
     @Test
     public void calculateAlarmSameDay() {
         //Prepare
-        DateTime now = new DateTime(2015, 9, 1, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
+        DateTime now = new DateTime(2015, 9, 1, 9, 29, 49, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 35);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 30);
 
         //Test
-        assertEquals(new DateTime(2015, 9, 1, 9, 35, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
+        assertEquals(new DateTime(2015, 9, 1, 9, 30, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
     }
 
     @Test
     public void calculateAlarmNextDay() {
         //Prepare
-        DateTime now = new DateTime(2015, 9, 1, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
+        DateTime now = new DateTime(2015, 9, 1, 9, 29, 51, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 20);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 30);
 
         //Test
-        assertEquals(new DateTime(2015, 9, 2, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
+        assertEquals(new DateTime(2015, 9, 2, 9, 30, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
     }
 
     @Test
     public void calculateAlarmMonthRollover() {
         //Prepare
-        DateTime now = new DateTime(2015, 9, 30, 9, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
+        DateTime now = new DateTime(2015, 9, 30, 9, 40, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 20);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 30);
 
         //Test
-        assertEquals(new DateTime(2015, 10, 1, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
+        assertEquals(new DateTime(2015, 10, 1, 9, 30, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
     }
 
     @Test
@@ -128,9 +128,9 @@ public class AutomaticDownloadSchedulerTest {
         DateTime now = new DateTime(2015, 12, 5, 18, 30, 15, 15, DateHandlingUtils.TIMEZONE_SWITZERLAND);
 
         //Execute
-        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 20);
+        DateTime nextAlarm = automaticDownloadScheduler.calculateNextAlarm(now, 9, 30);
 
         //Test
-        assertEquals(new DateTime(2015, 12, 7, 9, 20, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
+        assertEquals(new DateTime(2015, 12, 7, 9, 30, DateHandlingUtils.TIMEZONE_SWITZERLAND), nextAlarm);
     }
 }

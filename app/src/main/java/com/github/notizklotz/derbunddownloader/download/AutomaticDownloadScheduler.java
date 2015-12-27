@@ -58,8 +58,8 @@ public class AutomaticDownloadScheduler {
     protected DateTime calculateNextAlarm(DateTime now, int hourOfDay, int minute) {
         DateTime nextAlarm = now.withTime(hourOfDay, minute, 0, 0);
 
-        //Make sure trigger is in the future
-        if (nextAlarm.isBefore(now)) {
+        //Make sure trigger is in the future (incl. grace time)
+        if (nextAlarm.isBefore(now.plusSeconds(10))) {
             nextAlarm = nextAlarm.plusDays(1);
         }
         //Do not schedule on Sundays in Switzerland as the newspaper is not issued on Sundays
