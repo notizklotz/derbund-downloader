@@ -18,6 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.common.internal;
 
+import android.annotation.TargetApi;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -47,6 +48,7 @@ public class AlarmSchedulerImpl implements AlarmScheduler {
     ApiLevelChecker apiLevelChecker;
 
     @Override
+    @TargetApi(Build.VERSION_CODES.M)
     public void schedule(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver, @Nullable DateTime trigger) {
         //Update enforces reusing of an existing PendingIntent instance so AlarmManager.cancel(pi)
         //actually cancels the alarm. FLAG_CANCEL_CURRENT cancels the PendingIndent but then there's no
