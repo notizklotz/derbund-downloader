@@ -30,7 +30,7 @@ apt {
 
 android {
     compileSdkVersion 23
-    buildToolsVersion "23.0.2"
+    buildToolsVersion '23.0.2'
 
     defaultConfig {
         applicationId "com.github.notizklotz.derbunddownloader"
@@ -58,8 +58,7 @@ android {
 }
 
 dependencies {
-    final SUPPORT_LIBRARY_VERSION = '23.0.1'
-
+    final SUPPORT_LIBRARY_VERSION = '23.1.1'
     compile fileTree(include: ['*.jar'], dir: 'libs')
     compile "com.android.support:support-v4:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
