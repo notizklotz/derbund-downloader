@@ -44,6 +44,7 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
+import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EIntentService;
@@ -120,14 +121,17 @@ public class IssueDownloadService extends IntentService {
                 final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
                 try {
-                    Uri downloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
+                    Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
+                    Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
+
+                    Picasso.with(getApplicationContext()).load(thumbnailUrl).stableKey(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate)).fetch();
 
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                     receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
                     registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
                     try {
-                        String title = enqueueDownloadRequest(downloadUrl, issueDate, wifiOnly);
+                        String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, wifiOnly);
                         downloadDoneSignal.await();
                         notifyUser(title, getString(R.string.download_completed), false);
                     } catch (InterruptedException e) {
@@ -138,6 +142,7 @@ public class IssueDownloadService extends IntentService {
                 }
             }
         } catch (Exception e) {
+            Log.e(LOG_TAG, e.getMessage());
             notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage(), true);
         } finally {
             cleanup();
