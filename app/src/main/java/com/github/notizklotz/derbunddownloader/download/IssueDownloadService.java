@@ -116,7 +116,7 @@ public class IssueDownloadService extends IntentService {
             }
 
             if (connected) {
-                final LocalDate issueDate = new LocalDate(day, month, year);
+                final LocalDate issueDate = new LocalDate(year, month, day);
                 final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
 
                 try {
