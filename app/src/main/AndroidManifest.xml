@@ -57,7 +57,7 @@
             tools:ignore="UnusedAttribute" />
 
         <receiver
-            android:name=".download.AutomaticIssueDownloadAlarmReceiver_"
+            android:name=".download.AutomaticDownloadBroadcastReceiver_"
             android:exported="false" />
 
         <service

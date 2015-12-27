@@ -34,8 +34,8 @@
     <string name="no_pdf_reader">Bitte installieren Sie einen PDF Reader</string>
     <string name="username_summary">Bitte geben Sie ihren Benutzernamen ein</string>
     <string name="password_summary">Bitte geben Sie ihr Passwort ein</string>
-    <string name="download_login_failed">Der Bund Login fehlgeschlagen</string>
-    <string name="download_login_failed_text">Möglicherweise ist ihr Benutzeraccount nicht gültig</string>
+    <string name="download_login_failed">ePaper Login fehlgeschlagen</string>
+    <string name="download_login_failed_text">Ihre Benutzerdaten sind nicht gültig</string>
     <string name="download_wifi_connection_failed">WLAN-Verbindung fehlgeschlagen</string>
     <string name="download_wifi_connection_failed_text">Es konnte keine WLAN-Verbindung hergestellt werden. \"Der Bund\" wurde nicht heruntergeladen.</string>
     <string name="download_connection_failed_no_wifi_text">WLAN war nicht eingeschaltet. \"Der Bund\" wurde nicht heruntergeladen.</string>
