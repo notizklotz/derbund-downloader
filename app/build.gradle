@@ -65,7 +65,8 @@ dependencies {
     compile "com.android.support:support-v4:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:appcompat-v7:$SUPPORT_LIBRARY_VERSION"
     compile "com.android.support:support-annotations:$SUPPORT_LIBRARY_VERSION"
-    compile 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
+    compile "com.android.support:design:$SUPPORT_LIBRARY_VERSION"
+    compile "org.springframework.android:spring-android-rest-template:1.0.1.RELEASE"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
     compile "com.squareup.picasso:picasso:2.5.2"
     compile "net.danlew:android.joda:$JODA_TIME_VERSION"

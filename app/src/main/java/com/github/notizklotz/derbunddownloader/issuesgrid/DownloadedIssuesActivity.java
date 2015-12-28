@@ -28,6 +28,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
+import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -151,7 +152,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent);
         } else {
-            Toast.makeText(this, R.string.no_pdf_reader, Toast.LENGTH_LONG).show();
+            Snackbar.make(gridView, R.string.no_pdf_reader, Snackbar.LENGTH_LONG).show();
         }
     }
 
@@ -165,7 +166,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
             @Override
             protected void onPostExecute(Void aVoid) {
-                Toast.makeText(DownloadedIssuesActivity.this, R.string.issue_deleted, Toast.LENGTH_SHORT).show();
+                Snackbar.make(gridView, R.string.issue_deleted, Snackbar.LENGTH_SHORT).show();
             }
         }.execute();
     }

@@ -16,17 +16,18 @@
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
 
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:gravity="center"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     tools:context=".MainActivity">
 
     <GridView
         android:id="@+id/gridview"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:columnWidth="@dimen/image_thumbnail_width"
         android:drawSelectorOnTop="true"
         android:gravity="center"
@@ -35,15 +36,16 @@
         android:numColumns="auto_fit"
         android:padding="@dimen/grid_padding"
         android:stretchMode="columnWidth"
-        android:verticalSpacing="@dimen/image_thumbnail_spacing" />
+        android:verticalSpacing="@dimen/image_thumbnail_spacing"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
 
     <TextView
         android:id="@+id/empty_grid_view"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:gravity="center"
         android:padding="@dimen/activity_margin"
         android:text="@string/no_issues_downloaded"
         android:visibility="gone" />
 
-</RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>
