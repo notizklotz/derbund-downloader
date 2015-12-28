@@ -162,8 +162,12 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 downloadManager.remove(id);
                 return null;
             }
+
+            @Override
+            protected void onPostExecute(Void aVoid) {
+                Toast.makeText(DownloadedIssuesActivity.this, R.string.issue_deleted, Toast.LENGTH_SHORT).show();
+            }
         }.execute();
-        Toast.makeText(DownloadedIssuesActivity.this, "Ausgabe entfernt", Toast.LENGTH_SHORT).show();
     }
 
     @OptionsItem(R.id.action_deleteAll)
