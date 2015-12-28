@@ -27,7 +27,7 @@
         android:id="@+id/gridview"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:columnWidth="@dimen/image_thumbnail_size"
+        android:columnWidth="@dimen/image_thumbnail_width"
         android:drawSelectorOnTop="true"
         android:gravity="center"
         android:horizontalSpacing="@dimen/image_thumbnail_spacing"

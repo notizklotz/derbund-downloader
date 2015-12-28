@@ -124,7 +124,7 @@ public class IssueDownloadService extends IntentService {
                     Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
                     Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
 
-                    Picasso.with(getApplicationContext()).load(thumbnailUrl).stableKey(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate)).fetch();
+                    Picasso.with(getApplicationContext()).load(thumbnailUrl).stableKey(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate)).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).fetch();
 
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                     receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);

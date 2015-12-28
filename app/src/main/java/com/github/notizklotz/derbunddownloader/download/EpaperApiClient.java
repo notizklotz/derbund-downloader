@@ -114,7 +114,7 @@ public class EpaperApiClient {
 
         ResponseEntity<String> doc = new RestTemplate(true).exchange("http://epaper.derbund.ch/index.cfm/epaper/1.0/getFirstPage", HttpMethod.POST, request, String.class);
         try {
-            return Uri.parse(new JSONObject(doc.getBody()).getJSONObject("data").getJSONArray("pages").getJSONObject(0).getJSONObject("pageDocUrl").getJSONObject("THUMBNAIL").getString("url"));
+            return Uri.parse(new JSONObject(doc.getBody()).getJSONObject("data").getJSONArray("pages").getJSONObject(0).getJSONObject("pageDocUrl").getJSONObject("PREVIEW").getString("url"));
         } catch (JSONException e) {
             throw new EpaperApiInvalidResponseException(e);
         }
@@ -135,23 +135,4 @@ public class EpaperApiClient {
         return sb.toString();
     }
 
-    public static class PdfUriData {
-
-        private Uri pdfUri;
-
-        private Uri thumbnailUri;
-
-        public PdfUriData(Uri pdfUri, Uri thumbnailUri) {
-            this.pdfUri = pdfUri;
-            this.thumbnailUri = thumbnailUri;
-        }
-
-        public Uri getPdfUri() {
-            return pdfUri;
-        }
-
-        public Uri getThumbnailUri() {
-            return thumbnailUri;
-        }
-    }
 }

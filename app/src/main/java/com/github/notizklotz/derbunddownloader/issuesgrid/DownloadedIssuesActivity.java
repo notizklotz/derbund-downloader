@@ -130,7 +130,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 // Load the thumbnail image
                 ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
                 String description = getCursor().getString(getCursor().getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
-                Picasso.with(getApplicationContext()).load(description).stableKey(description).placeholder(R.drawable.issue_placeholder).into(image);
+                Picasso.with(getApplicationContext()).load(description).stableKey(description).placeholder(R.drawable.issue_placeholder).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).into(image);
                 return view;
             }
         };

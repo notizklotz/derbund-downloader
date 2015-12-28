@@ -17,5 +17,6 @@
   -->
 
 <resources>
-    <dimen name="image_thumbnail_size">221dp</dimen>
+    <dimen name="image_thumbnail_width">221dp</dimen>
+    <dimen name="image_thumbnail_height">325dp</dimen>
 </resources>
