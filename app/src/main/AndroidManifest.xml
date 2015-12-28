@@ -39,7 +39,8 @@
         android:fullBackupContent="@xml/backupscheme"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.DerBund">
+        android:theme="@style/Theme.DerBund"
+        tools:ignore="GoogleAppIndexingWarning">
         <activity
             android:name=".issuesgrid.DownloadedIssuesActivity_"
             android:label="@string/app_name">
