@@ -50,7 +50,7 @@ public class AutomaticDownloadScheduler {
             trigger = calculateNextAlarm(DateTime.now(), hourMinute[0], hourMinute[1]);
         }
 
-        alarmScheduler.schedule(AutomaticDownloadBroadcastReceiver.class, trigger);
+        alarmScheduler.schedule(AutomaticDownloadBroadcastReceiver_.class, trigger);
 
         settings.updateNextWakeup(trigger != null ? DateHandlingUtils.toFullStringUserTimezone(trigger) : null);
     }
