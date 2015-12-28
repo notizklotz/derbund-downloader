@@ -155,9 +155,15 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         }
     }
 
-    public void deleteIssue(long id) {
-        downloadManager.remove(id);
-        Toast.makeText(this, "Ausgabe entfernt", Toast.LENGTH_SHORT).show();
+    public void deleteIssue(final long id) {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                downloadManager.remove(id);
+                return null;
+            }
+        }.execute();
+        Toast.makeText(DownloadedIssuesActivity.this, "Ausgabe entfernt", Toast.LENGTH_SHORT).show();
     }
 
     @OptionsItem(R.id.action_deleteAll)
@@ -166,7 +172,26 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     void deleteAllIssues() {
-        new DeleteAllIssuesTask().execute();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                Cursor cursor = downloadManager.query(new DownloadManager.Query());
+
+                try {
+                    if (cursor.moveToFirst()) {
+                        while (!cursor.isAfterLast()) {
+                            long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
+                            downloadManager.remove(itemID);
+                            cursor.moveToNext();
+                        }
+                    }
+                } finally {
+                    cursor.close();
+                }
+
+                return null;
+            }
+        }.execute();
     }
 
     @OptionsItem(R.id.action_download)
@@ -205,28 +230,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             Cursor item = (Cursor) gridView.getAdapter().getItem(position);
             long itemID = item.getLong(item.getColumnIndex(DownloadManager.COLUMN_ID));
             ConfirmIssueDeleteDialogFragment.createDialogFragment(itemID).show(getFragmentManager(), "issueDelete");
-        }
-    }
-
-    private class DeleteAllIssuesTask extends AsyncTask<Void, Void, Void> {
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            Cursor cursor = downloadManager.query(new DownloadManager.Query());
-
-            try {
-                if (cursor.moveToFirst()) {
-                    while (!cursor.isAfterLast()) {
-                        long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
-                        downloadManager.remove(itemID);
-                        cursor.moveToNext();
-                    }
-                }
-            } finally {
-                cursor.close();
-            }
-
-            return null;
         }
     }
 
