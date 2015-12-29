@@ -239,11 +239,10 @@ public class IssueDownloadService extends IntentService {
         }
 
         if (StringUtils.hasText(errorDetails)) {
-            NotificationCompat.BigTextStyle inboxStyle =
+            NotificationCompat.BigTextStyle style =
                     new NotificationCompat.BigTextStyle();
-            inboxStyle.setBigContentTitle(contentTitle);
-            inboxStyle.bigText(errorDetails);
-            builder.setStyle(inboxStyle);
+            style.bigText(errorDetails);
+            builder.setStyle(style);
         }
 
         //http://developer.android.com/guide/topics/ui/notifiers/notifications.html
