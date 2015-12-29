@@ -25,6 +25,7 @@ import android.content.BroadcastReceiver;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.ApiLevelChecker;
@@ -49,7 +50,7 @@ public class AlarmSchedulerImpl implements AlarmScheduler {
 
     @Override
     @TargetApi(Build.VERSION_CODES.M)
-    public void schedule(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver, @Nullable DateTime trigger) {
+    public void scheduleExact(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver, @Nullable DateTime trigger) {
         //Update enforces reusing of an existing PendingIntent instance so AlarmManager.cancel(pi)
         //actually cancels the alarm. FLAG_CANCEL_CURRENT cancels the PendingIndent but then there's no
         //way to cancel the alarm programmatically. However, the Intent won't be executed anyway because
@@ -69,5 +70,12 @@ public class AlarmSchedulerImpl implements AlarmScheduler {
         }
     }
 
+    @Override
+    public void scheduleHalfdailyInexact(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
+        Log.d(AlarmSchedulerImpl.class.getSimpleName(), "Scheduling periodic half day alarm");
+        final PendingIntent pendingIntent = pendingIntentFactory.createPendingIntent(broadcastReceiver);
+        alarmManager.cancel(pendingIntent);
+        alarmManager.setInexactRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, 0, AlarmManager.INTERVAL_HALF_DAY, pendingIntent);
+    }
 
 }

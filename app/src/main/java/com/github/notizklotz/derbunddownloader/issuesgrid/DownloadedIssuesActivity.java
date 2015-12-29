@@ -30,7 +30,6 @@ import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -41,7 +40,9 @@ import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler_;
+import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
+import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
+import com.github.notizklotz.derbunddownloader.download.UpdateAutomaticDownloadAlarmBroadcastReceiver_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
@@ -65,7 +66,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
-    private static final String KEY_ALARM_MIGRATED = "KEY_ALARM_MIGRATED";
 
     @SuppressWarnings("WeakerAccess")
     @ViewById(R.id.gridview)
@@ -80,6 +80,9 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     @Bean(SettingsImpl.class)
     Settings settings;
 
+    @Bean(AlarmSchedulerImpl.class)
+    AlarmScheduler alarmScheduler;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,11 +94,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
 
-        if (!PreferenceManager.getDefaultSharedPreferences(this).contains(KEY_ALARM_MIGRATED)) {
-            Log.i(getClass().getSimpleName(), "Migrating alarms");
-            AutomaticDownloadScheduler_.getInstance_(this).updateAlarm();
-            PreferenceManager.getDefaultSharedPreferences(this).edit().putBoolean(KEY_ALARM_MIGRATED, true).apply();
-        }
+        alarmScheduler.scheduleHalfdailyInexact(UpdateAutomaticDownloadAlarmBroadcastReceiver_.class);
     }
 
     @Override

@@ -18,6 +18,8 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.util.Log;
+
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
@@ -41,6 +43,7 @@ public class AutomaticDownloadScheduler {
     AlarmScheduler alarmScheduler;
 
     public void updateAlarm() {
+        Log.d(AutomaticDownloadScheduler.class.getSimpleName(), "Updating automatic download alarm");
         DateTime trigger = null;
 
         boolean autoDownloadEnabled = settings.isAutoDownloadEnabled();
@@ -50,7 +53,7 @@ public class AutomaticDownloadScheduler {
             trigger = calculateNextAlarm(DateTime.now(), hourMinute[0], hourMinute[1]);
         }
 
-        alarmScheduler.schedule(AutomaticDownloadBroadcastReceiver_.class, trigger);
+        alarmScheduler.scheduleExact(AutomaticDownloadBroadcastReceiver_.class, trigger);
 
         settings.updateNextWakeup(trigger != null ? DateHandlingUtils.toFullStringUserTimezone(trigger) : null);
     }

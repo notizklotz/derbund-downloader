@@ -54,7 +54,7 @@ public class AutomaticDownloadSchedulerTest {
         automaticDownloadScheduler.updateAlarm();
 
         //Test
-        Mockito.verify(automaticDownloadScheduler.alarmScheduler).schedule(AutomaticDownloadBroadcastReceiver_.class, null);
+        Mockito.verify(automaticDownloadScheduler.alarmScheduler).scheduleExact(AutomaticDownloadBroadcastReceiver_.class, null);
     }
 
     @Test
@@ -66,7 +66,7 @@ public class AutomaticDownloadSchedulerTest {
         automaticDownloadScheduler.updateAlarm();
 
         //Test
-        Mockito.verify(automaticDownloadScheduler.alarmScheduler).schedule(AutomaticDownloadBroadcastReceiver_.class, null);
+        Mockito.verify(automaticDownloadScheduler.alarmScheduler).scheduleExact(AutomaticDownloadBroadcastReceiver_.class, null);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class AutomaticDownloadSchedulerTest {
 
         //Test
         ArgumentCaptor<DateTime> argument = ArgumentCaptor.forClass(DateTime.class);
-        Mockito.verify(automaticDownloadScheduler.alarmScheduler).schedule(Mockito.eq(AutomaticDownloadBroadcastReceiver_.class), argument.capture());
+        Mockito.verify(automaticDownloadScheduler.alarmScheduler).scheduleExact(Mockito.eq(AutomaticDownloadBroadcastReceiver_.class), argument.capture());
         Assert.assertNotNull(argument.getValue());
         assertEquals(10, argument.getValue().getHourOfDay());
         assertEquals(11, argument.getValue().getMinuteOfHour());

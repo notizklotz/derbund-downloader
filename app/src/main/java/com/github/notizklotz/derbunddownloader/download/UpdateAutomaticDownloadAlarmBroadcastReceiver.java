@@ -16,26 +16,23 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.common;
+package com.github.notizklotz.derbunddownloader.download;
 
 import android.content.BroadcastReceiver;
-import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
+import android.content.Context;
+import android.content.Intent;
 
-import org.joda.time.DateTime;
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EReceiver;
 
-public interface AlarmScheduler {
+@EReceiver
+public class UpdateAutomaticDownloadAlarmBroadcastReceiver extends BroadcastReceiver {
 
-    /**
-     * @param broadcastReceiver Callback to be executed.
-     * @param trigger           Instant when the callback has to be executed. If null any existing callback is canceled without scheduling a new one.
-     */
-    void scheduleExact(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver, @Nullable DateTime trigger);
+    @Bean
+    AutomaticDownloadScheduler automaticDownloadScheduler;
 
-    /**
-     * Schedules an alarm which triggers broadcastReceiver about every halfday.
-     *
-     * @param broadcastReceiver Callback to be executed.
-     */
-    void scheduleHalfdailyInexact(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver);
+    @Override
+    public void onReceive(Context context, Intent intent) {
+        automaticDownloadScheduler.updateAlarm();
+    }
 }

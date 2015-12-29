@@ -54,7 +54,7 @@ public class AlarmSchedulerImplTest {
     @Test
     public void testCancelAlarm() throws Exception {
         //Interaction
-        alarmScheduler.schedule(BroadcastReceiver.class, null);
+        alarmScheduler.scheduleExact(BroadcastReceiver.class, null);
 
         //Verification
         verify(alarmScheduler.alarmManager).cancel(pendingIntent);
@@ -65,7 +65,7 @@ public class AlarmSchedulerImplTest {
     public void testScheduleAlarmBelowKitkat() throws Exception {
         //Interaction
         DateTime trigger = new DateTime();
-        alarmScheduler.schedule(BroadcastReceiver.class, trigger);
+        alarmScheduler.scheduleExact(BroadcastReceiver.class, trigger);
 
         //Verification
         verify(alarmScheduler.alarmManager).cancel(pendingIntent);
@@ -79,7 +79,7 @@ public class AlarmSchedulerImplTest {
 
         //Interaction
         DateTime trigger = new DateTime();
-        alarmScheduler.schedule(BroadcastReceiver.class, trigger);
+        alarmScheduler.scheduleExact(BroadcastReceiver.class, trigger);
 
         //Verification
         verify(alarmScheduler.alarmManager).cancel(pendingIntent);
@@ -93,7 +93,7 @@ public class AlarmSchedulerImplTest {
 
         //Interaction
         DateTime trigger = new DateTime();
-        alarmScheduler.schedule(BroadcastReceiver.class, trigger);
+        alarmScheduler.scheduleExact(BroadcastReceiver.class, trigger);
 
         //Verification
         verify(alarmScheduler.alarmManager).cancel(pendingIntent);
