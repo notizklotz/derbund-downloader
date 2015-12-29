@@ -35,9 +35,9 @@ android {
     defaultConfig {
         applicationId "com.github.notizklotz.derbunddownloader"
         minSdkVersion 15
-        targetSdkVersion 23
-        versionCode 17
-        versionName "2.2"
+        targetSdkVersion 22
+        versionCode 18
+        versionName "2.3"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
