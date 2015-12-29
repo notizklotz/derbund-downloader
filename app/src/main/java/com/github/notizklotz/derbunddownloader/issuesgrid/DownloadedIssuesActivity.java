@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -100,6 +101,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
 
         alarmScheduler.scheduleHalfdailyInexact(UpdateAutomaticDownloadAlarmBroadcastReceiver_.class);
+
+        NotificationManagerCompat.from(this).cancelAll();
     }
 
     @Override
@@ -147,6 +150,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     private void openPDF(String uri) {
+        NotificationManagerCompat.from(this).cancelAll();
+
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setDataAndType(Uri.fromFile(new File(uri)), MEDIA_TYPE_PDF);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
