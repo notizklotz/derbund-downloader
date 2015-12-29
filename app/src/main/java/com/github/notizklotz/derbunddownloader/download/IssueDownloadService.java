@@ -41,6 +41,7 @@ import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
@@ -85,6 +86,9 @@ public class IssueDownloadService extends IntentService {
     @Bean(SettingsImpl.class)
     Settings settings;
 
+    @Bean
+    ThumbnailRegistry thumbnailRegistry;
+
     private WifiManager.WifiLock myWifiLock;
     private Intent intent;
     private DownloadCompletedBroadcastReceiver receiver;
@@ -124,7 +128,9 @@ public class IssueDownloadService extends IntentService {
                     Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
                     Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
 
-                    Picasso.with(getApplicationContext()).load(thumbnailUrl).stableKey(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate)).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).fetch();
+                    String stableKey = expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate);
+                    thumbnailRegistry.registerUri(stableKey, thumbnailUrl);
+                    Picasso.with(getApplicationContext()).load(thumbnailUrl).stableKey(stableKey).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).fetch();
 
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                     receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);

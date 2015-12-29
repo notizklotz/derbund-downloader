@@ -41,11 +41,13 @@ import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
+import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
 import com.github.notizklotz.derbunddownloader.download.UpdateAutomaticDownloadAlarmBroadcastReceiver_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
+import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.AfterViews;
@@ -82,6 +84,9 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
     @Bean(AlarmSchedulerImpl.class)
     AlarmScheduler alarmScheduler;
+
+    @Bean
+    ThumbnailRegistry thumbnailRegistry;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,7 +125,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 new String[]{DownloadManager.COLUMN_DESCRIPTION, DownloadManager.COLUMN_STATUS},
                 new int[]{R.id.dateTextView, R.id.stateTextView}, 0) {
 
-
             @Override
             public View getView(final int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
@@ -129,8 +133,10 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
                 // Load the thumbnail image
                 ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
-                String description = getCursor().getString(getCursor().getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
-                Picasso.with(getApplicationContext()).load(description).stableKey(description).placeholder(R.drawable.issue_placeholder).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).into(image);
+                String description = getDescriptionFromCursor(getCursor());
+
+                String originalThumbnailUri = thumbnailRegistry.getUri(description);
+                Picasso.with(getApplicationContext()).load(originalThumbnailUri).networkPolicy(NetworkPolicy.OFFLINE).stableKey(description).placeholder(R.drawable.issue_placeholder).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).into(image);
                 return view;
             }
         };
@@ -159,6 +165,11 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
+                Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
+                if (cursor.moveToFirst()) {
+                    thumbnailRegistry.clear(getDescriptionFromCursor(cursor));
+                }
+
                 downloadManager.remove(id);
                 return null;
             }
@@ -168,6 +179,10 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 Snackbar.make(gridView, R.string.issue_deleted, Snackbar.LENGTH_SHORT).show();
             }
         }.execute();
+    }
+
+    private static String getDescriptionFromCursor(Cursor cursor) {
+        return cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
     }
 
     @OptionsItem(R.id.action_deleteAll)
@@ -184,6 +199,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 try {
                     if (cursor.moveToFirst()) {
                         while (!cursor.isAfterLast()) {
+                            thumbnailRegistry.clear(getDescriptionFromCursor(cursor));
                             long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
                             downloadManager.remove(itemID);
                             cursor.moveToNext();
@@ -192,6 +208,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 } finally {
                     cursor.close();
                 }
+
+                thumbnailRegistry.clearAll();
 
                 return null;
             }
