@@ -162,21 +162,23 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     public void deleteIssue(final long id) {
-        new AsyncTask<Void, Void, Void>() {
+        new AsyncTask<Void, Void, String>() {
             @Override
-            protected Void doInBackground(Void... params) {
+            protected String doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
+                String descriptionFromCursor = "";
                 if (cursor.moveToFirst()) {
-                    thumbnailRegistry.clear(getDescriptionFromCursor(cursor));
+                    descriptionFromCursor = getDescriptionFromCursor(cursor);
+                    thumbnailRegistry.clear(descriptionFromCursor);
                 }
 
                 downloadManager.remove(id);
-                return null;
+                return descriptionFromCursor;
             }
 
             @Override
-            protected void onPostExecute(Void aVoid) {
-                Snackbar.make(gridView, R.string.issue_deleted, Snackbar.LENGTH_SHORT).show();
+            protected void onPostExecute(String aVoid) {
+                Snackbar.make(gridView, getText(R.string.issue_deleted) + " " + aVoid, Snackbar.LENGTH_SHORT).show();
             }
         }.execute();
     }
