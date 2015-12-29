@@ -18,8 +18,6 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.util.Log;
-
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
@@ -43,7 +41,6 @@ public class AutomaticDownloadScheduler {
     AlarmScheduler alarmScheduler;
 
     public void updateAlarm() {
-        Log.d(AutomaticDownloadScheduler.class.getSimpleName(), "Updating automatic download alarm");
         DateTime trigger = null;
 
         boolean autoDownloadEnabled = settings.isAutoDownloadEnabled();
