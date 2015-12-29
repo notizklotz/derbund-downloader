@@ -21,7 +21,6 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.IntentService;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -34,6 +33,7 @@ import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
@@ -253,8 +253,7 @@ public class IssueDownloadService extends IntentService {
                 addNextIntent(new Intent(getApplicationContext(), DownloadedIssuesActivity_.class)).
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
-        NotificationManager mNotifyMgr = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        mNotifyMgr.notify(1, builder.build());
+        NotificationManagerCompat.from(this).notify(1, builder.build());
     }
 
     private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {
