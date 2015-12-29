@@ -21,7 +21,6 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.IntentService;
-import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -53,6 +52,7 @@ import org.androidannotations.annotations.ServiceAction;
 import org.androidannotations.annotations.SystemService;
 import org.joda.time.LocalDate;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
@@ -149,7 +149,7 @@ public class IssueDownloadService extends IntentService {
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
-            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text) + " " + e.getMessage(), true);
+            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text), e.getMessage(), true);
         } finally {
             cleanup();
         }
@@ -222,6 +222,10 @@ public class IssueDownloadService extends IntentService {
     }
 
     private void notifyUser(CharSequence contentTitle, CharSequence contentText, boolean error) {
+        notifyUser(contentTitle, contentText, null, error);
+    }
+
+    private void notifyUser(CharSequence contentTitle, CharSequence contentText, CharSequence errorDetails, boolean error) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
         builder
                 .setSmallIcon(R.drawable.ic_stat_newspaper)
@@ -229,11 +233,17 @@ public class IssueDownloadService extends IntentService {
                 .setContentText(contentText)
                 .setTicker(contentTitle)
                 .setAutoCancel(true);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            builder.setVisibility(Notification.VISIBILITY_PUBLIC);
-            if (error) {
-                builder.setCategory(Notification.CATEGORY_ERROR);
-            }
+        builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
+        if (error) {
+            builder.setCategory(NotificationCompat.CATEGORY_ERROR);
+        }
+
+        if (StringUtils.hasText(errorDetails)) {
+            NotificationCompat.BigTextStyle inboxStyle =
+                    new NotificationCompat.BigTextStyle();
+            inboxStyle.setBigContentTitle(contentTitle);
+            inboxStyle.bigText(errorDetails);
+            builder.setStyle(inboxStyle);
         }
 
         //http://developer.android.com/guide/topics/ui/notifiers/notifications.html
