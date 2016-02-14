@@ -40,6 +40,7 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
+import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
@@ -48,6 +49,8 @@ import com.github.notizklotz.derbunddownloader.download.UpdateAutomaticDownloadA
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -89,6 +92,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     @Bean
     ThumbnailRegistry thumbnailRegistry;
 
+    private Tracker mTracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -99,6 +104,9 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         }
 
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
+
+        DerBundDownloaderApplication application = (DerBundDownloaderApplication) getApplication();
+        mTracker = application.getDefaultTracker();
 
         alarmScheduler.scheduleHalfdailyInexact(UpdateAutomaticDownloadAlarmBroadcastReceiver_.class);
 
@@ -167,6 +175,11 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     public void deleteIssue(final long id) {
+        mTracker.send(new HitBuilders.EventBuilder()
+                .setCategory("Issue")
+                .setAction("Delete")
+                .build());
+
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -198,6 +211,11 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     void deleteAllIssues() {
+        mTracker.send(new HitBuilders.EventBuilder()
+                .setCategory("Issue")
+                .setAction("DeleteAll")
+                .build());
+
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {

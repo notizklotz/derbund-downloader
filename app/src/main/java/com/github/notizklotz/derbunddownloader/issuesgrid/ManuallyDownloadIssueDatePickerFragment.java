@@ -27,8 +27,11 @@ import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
+import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
+import com.google.android.gms.analytics.HitBuilders;
+import com.google.android.gms.analytics.Tracker;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
@@ -67,10 +70,20 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         final Activity activity = getActivity();
         assert activity != null;
 
+        Tracker defaultTracker = ((DerBundDownloaderApplication) getActivity().getApplication()).getDefaultTracker();
+
         LocalDate selectedDate = new LocalDate(year, monthOfYear, dayOfMonth);
         if (selectedDate.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+            defaultTracker.send(new HitBuilders.EventBuilder()
+                    .setCategory("Issue")
+                    .setAction("DownloadSunday")
+                    .build());
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
+            defaultTracker.send(new HitBuilders.EventBuilder()
+                    .setCategory("Issue")
+                    .setAction("Download")
+                    .build());
             IssueDownloadService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
         }
     }
