@@ -21,6 +21,8 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+
 import org.androidannotations.annotations.EBean;
 import org.joda.time.LocalDate;
 import org.json.JSONException;
@@ -92,7 +94,7 @@ public class EpaperApiClient {
         requestHeaders.add("Cookie", cookiesHeader);
         requestHeaders.add("Accept", "application/json");
         requestHeaders.add("Content-Type", "application/json");
-        String issueDateString = String.format(ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
+        String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
         HttpEntity<String> request = new HttpEntity<String>("{\"editions\":[{\"defId\":\"46\",\"publicationDate\":\"" + issueDateString + "\"}],\"isAttachment\":true,\"fileName\":\"Gesamtausgabe_Der_Bund_" + issueDateString + ".pdf\"}", requestHeaders);
 
         ResponseEntity<String> doc = new RestTemplate(true).exchange("http://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc", HttpMethod.POST, request, String.class);
@@ -109,7 +111,7 @@ public class EpaperApiClient {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.add("Accept", "application/json");
         requestHeaders.add("Content-Type", "application/json");
-        String issueDateString = String.format(ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
+        String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
         HttpEntity<String> request = new HttpEntity<String>("{\"editions\":[{\"defId\":\"46\",\"publicationDate\":\"" + issueDateString + "\"}]}", requestHeaders);
 
         ResponseEntity<String> doc = new RestTemplate(true).exchange("http://epaper.derbund.ch/index.cfm/epaper/1.0/getFirstPage", HttpMethod.POST, request, String.class);

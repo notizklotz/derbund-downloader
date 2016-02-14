@@ -27,8 +27,8 @@ import java.util.Locale;
 public class DateHandlingUtils {
 
     public static final DateTimeZone TIMEZONE_SWITZERLAND = DateTimeZone.forID("Europe/Zurich");
+    public static final Locale SERVER_LOCALE = new Locale("de", "CH");
     private static final String FORMAT_HH_MM = "%02d:%02d";
-    private static final Locale SERVER_LOCALE = new Locale("de", "CH");
 
     private DateHandlingUtils() {
     }
@@ -37,7 +37,7 @@ public class DateHandlingUtils {
      * Formats time as in this example: "12:59".
      */
     public static String toHH_MMString(int hours, int minutes) {
-        return String.format(FORMAT_HH_MM, hours, minutes);
+        return String.format(SERVER_LOCALE, FORMAT_HH_MM, hours, minutes);
     }
 
     /**

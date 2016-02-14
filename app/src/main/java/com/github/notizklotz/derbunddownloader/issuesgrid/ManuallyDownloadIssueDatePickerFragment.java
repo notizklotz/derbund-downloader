@@ -49,7 +49,6 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
                 now.getYear(), now.getMonthOfYear() - 1, now.getDayOfMonth());
 
         final DatePicker datePicker = datePickerDialog.getDatePicker();
-        assert datePicker != null;
 
         datePicker.setMaxDate(System.currentTimeMillis());
 
