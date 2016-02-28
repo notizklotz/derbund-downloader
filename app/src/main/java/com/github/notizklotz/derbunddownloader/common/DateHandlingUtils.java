@@ -45,7 +45,11 @@ public class DateHandlingUtils {
      * The device's current default timezone is used for timezone calculations.
      */
     public static String toFullStringUserTimezone(DateTime date) {
-        return toFullString(date, DateTimeZone.getDefault());
+        return toFullString(date, getUserTimezone());
+    }
+
+    public static DateTimeZone getUserTimezone() {
+        return DateTimeZone.getDefault();
     }
 
     public static String toFullString(DateTime date, DateTimeZone timeZone) {

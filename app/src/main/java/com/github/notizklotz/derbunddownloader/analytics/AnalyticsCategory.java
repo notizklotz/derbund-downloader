@@ -16,24 +16,10 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader;
+package com.github.notizklotz.derbunddownloader.analytics;
 
-import android.app.Application;
+public enum AnalyticsCategory {
 
-import net.danlew.android.joda.JodaTimeAndroid;
+    Error, Download, Remove
 
-public class DerBundDownloaderApplication extends Application {
-
-    private static DerBundDownloaderApplication INSTANCE_;
-
-    public static DerBundDownloaderApplication getInstance() {
-        return INSTANCE_;
-    }
-
-    @Override
-    public void onCreate() {
-        INSTANCE_ = this;
-        super.onCreate();
-        JodaTimeAndroid.init(this);
-    }
 }

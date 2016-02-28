@@ -23,6 +23,8 @@ import android.content.Intent;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
@@ -31,6 +33,7 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EReceiver;
 import org.joda.time.DateTime;
 import org.joda.time.Instant;
+import org.joda.time.LocalDate;
 import org.joda.time.format.ISODateTimeFormat;
 
 /**
@@ -45,6 +48,9 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
     @Bean
     AutomaticDownloadScheduler automaticDownloadScheduler;
 
+    @Bean
+    AnalyticsTracker analyticsTracker;
+
     @Override
     public void onReceive(Context context, Intent intent) {
         Log.i("AutomaticIssueDownload", "Starting service @ " + ISODateTimeFormat.dateTime().print(Instant.now()));
@@ -56,7 +62,14 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
 
     private void callDownloadService(Context context) {
         DateTime now = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
-        Intent intent = IssueDownloadService_.intent(context).downloadIssue(now.getDayOfMonth(), now.getMonthOfYear(), now.getYear()).get();
+
+        int year = now.getYear();
+        int monthOfYear = now.getMonthOfYear();
+        int dayOfMonth = now.getDayOfMonth();
+
+        analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(new LocalDate(year, monthOfYear, dayOfMonth).toString()));
+
+        Intent intent = IssueDownloadService_.intent(context).downloadIssue(dayOfMonth, monthOfYear, year).get();
         startWakefulService(context, intent);
     }
 

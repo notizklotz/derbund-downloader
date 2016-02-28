@@ -41,6 +41,8 @@ import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
@@ -48,6 +50,7 @@ import com.github.notizklotz.derbunddownloader.download.UpdateAutomaticDownloadA
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
+import com.google.android.gms.analytics.HitBuilders;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -61,6 +64,8 @@ import org.androidannotations.annotations.ViewById;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
+
+import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_downloaded_issues)
@@ -89,6 +94,9 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     @Bean
     ThumbnailRegistry thumbnailRegistry;
 
+    @Bean
+    AnalyticsTracker analyticsTracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +124,12 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             SettingsActivity_.intent(this).start();
             Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        analyticsTracker.sendScreenView("Downloaded Issues", new HitBuilders.ScreenViewBuilder().setCustomMetric(4, gridView.getCount()));
+        super.onResume();
     }
 
     @AfterViews
@@ -162,11 +176,14 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent);
         } else {
+            analyticsTracker.send(createEventBuilder(AnalyticsCategory.Error).setAction("No PDF reader installed"));
             Snackbar.make(gridView, R.string.no_pdf_reader, Snackbar.LENGTH_LONG).show();
         }
     }
 
     public void deleteIssue(final long id) {
+        analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("single"));
+
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -202,12 +219,13 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query());
-
+                long count = 0;
                 try {
                     if (cursor.moveToFirst()) {
                         while (!cursor.isAfterLast()) {
                             thumbnailRegistry.clear(getDescriptionFromCursor(cursor));
                             long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
+                            count++;
                             downloadManager.remove(itemID);
                             cursor.moveToNext();
                         }
@@ -218,6 +236,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
                 thumbnailRegistry.clearAll();
 
+                analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("all").setValue(count));
+
                 return null;
             }
         }.execute();
@@ -225,7 +245,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
     @OptionsItem(R.id.action_download)
     void menuItemDownloadSelected() {
-        new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
+        ManuallyDownloadIssueDatePickerFragment_.builder().build().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
     }
 
     @OptionsItem(R.id.action_settings)

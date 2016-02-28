@@ -32,6 +32,7 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
+import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
@@ -40,10 +41,13 @@ import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
+import com.google.android.gms.analytics.HitBuilders;
 import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.Bean;
@@ -57,6 +61,8 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
 
+import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
+
 @SuppressLint("Registered")
 @EIntentService
 public class IssueDownloadService extends IntentService {
@@ -68,7 +74,6 @@ public class IssueDownloadService extends IntentService {
     private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
     private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
     private static final String ISSUE_DESCRIPTION_TEMPLATE = "%02d.%02d.%04d";
-
 
     @SuppressWarnings("WeakerAccess")
     @SystemService
@@ -88,6 +93,9 @@ public class IssueDownloadService extends IntentService {
 
     @Bean
     ThumbnailRegistry thumbnailRegistry;
+
+    @Bean
+    AnalyticsTracker analyticsTracker;
 
     private WifiManager.WifiLock myWifiLock;
     private Intent intent;
@@ -110,12 +118,18 @@ public class IssueDownloadService extends IntentService {
             if (wifiOnly) {
                 connected = waitForWifiConnection();
                 if (!connected) {
+                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi connection failed").setNonInteraction(true));
                     notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), true);
                 }
             } else {
                 NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
                 connected = activeNetworkInfo != null && activeNetworkInfo.isConnected();
                 if (!connected) {
+                    String connectionState = "No active network";
+                    if(activeNetworkInfo != null) {
+                        connectionState = activeNetworkInfo.getState().name();
+                    }
+                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("No connection on download").setLabel(connectionState).setNonInteraction(true));
                     notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), true);
                 }
             }
@@ -137,18 +151,27 @@ public class IssueDownloadService extends IntentService {
                     registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
                     try {
+                        long millisBeforeDownload = SystemClock.elapsedRealtime();
+
                         String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, wifiOnly);
                         downloadDoneSignal.await();
+
+                        long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload) / 1000;
+                        analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
+
                         notifyUser(title, getString(R.string.download_completed), false);
                     } catch (InterruptedException e) {
+                        analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));
                         Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
                     }
                 } catch (EpaperApiInvalidCredentialsException e) {
+                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
                     notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), true);
                 }
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
+            analyticsTracker.sendDefaultException(this, e);
             notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text), e.getMessage(), true);
         } finally {
             cleanup();
@@ -167,6 +190,7 @@ public class IssueDownloadService extends IntentService {
             //Wait for Wifi coming up
             long firstCheckMillis = System.currentTimeMillis();
             if (!wifiManager.isWifiEnabled()) {
+                analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi disabled").setNonInteraction(true));
                 notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), true);
             } else {
                 do {
@@ -183,6 +207,7 @@ public class IssueDownloadService extends IntentService {
                             Thread.sleep(WIFI_RECHECK_WAIT_MILLIS);
                         } catch (InterruptedException e) {
                             Log.wtf(LOG_TAG, "Interrupted while waiting for Wifi connection", e);
+                            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for Wifi connection").setFatal(false));
                         }
                     }
                 } while (!connected);
