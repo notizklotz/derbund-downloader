@@ -65,6 +65,8 @@ import org.springframework.util.StringUtils;
 
 import java.io.File;
 
+import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
+
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_downloaded_issues)
 @OptionsMenu(R.menu.main)
@@ -174,12 +176,13 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent);
         } else {
+            analyticsTracker.send(createEventBuilder(AnalyticsCategory.Error).setAction("No PDF reader installed"));
             Snackbar.make(gridView, R.string.no_pdf_reader, Snackbar.LENGTH_LONG).show();
         }
     }
 
     public void deleteIssue(final long id) {
-        analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Remove).setAction("single"));
+        analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("single"));
 
         new AsyncTask<Void, Void, String>() {
             @Override
@@ -233,7 +236,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
                 thumbnailRegistry.clearAll();
 
-                analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Remove).setAction("all").setValue(count));
+                analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("all").setValue(count));
 
                 return null;
             }
