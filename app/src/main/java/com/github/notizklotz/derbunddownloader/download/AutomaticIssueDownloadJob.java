@@ -18,6 +18,8 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.os.Build;
+import android.os.PowerManager;
 import android.support.annotation.NonNull;
 
 import com.evernote.android.job.Job;
@@ -35,6 +37,7 @@ import com.google.android.gms.analytics.HitBuilders;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.SystemService;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -47,6 +50,9 @@ import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker
 public class AutomaticIssueDownloadJob extends Job {
 
     public static final String TAG = "AutomaticIssueDownloadJob";
+
+    @SystemService
+    PowerManager powerManager;
 
     @Bean
     WifiCommandExecutor wifiCommandExecutor;
@@ -70,6 +76,12 @@ public class AutomaticIssueDownloadJob extends Job {
     @Override
     protected Result onRunJob(Params params) {
         settings.setLastWakeup(DateTime.now().toString());
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!powerManager.isIgnoringBatteryOptimizations(getContext().getPackageName())) {
+                analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Error).setAction("Auto download without ignoring battery optimizations"));
+            }
+        }
 
         DateTime nowInSwitzerland = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
         final LocalDate issueDate = new LocalDate(nowInSwitzerland.getYear(), nowInSwitzerland.getMonthOfYear(), nowInSwitzerland.getDayOfMonth());
