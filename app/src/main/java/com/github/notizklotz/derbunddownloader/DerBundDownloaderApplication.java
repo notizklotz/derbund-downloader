@@ -22,13 +22,17 @@ import android.app.Application;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
-import org.androidannotations.annotations.EApplication;
-
-@EApplication
 public class DerBundDownloaderApplication extends Application {
+
+    private static DerBundDownloaderApplication INSTANCE_;
+
+    public static DerBundDownloaderApplication getInstance() {
+        return INSTANCE_;
+    }
 
     @Override
     public void onCreate() {
+        INSTANCE_ = this;
         super.onCreate();
         JodaTimeAndroid.init(this);
     }

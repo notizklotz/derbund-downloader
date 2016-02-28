@@ -33,16 +33,12 @@ import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
 import org.androidannotations.annotations.AfterInject;
-import org.androidannotations.annotations.App;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class AnalyticsTracker {
-
-    @App
-    DerBundDownloaderApplication application;
 
     @Bean(SettingsImpl.class)
     Settings settings;
@@ -54,7 +50,7 @@ public class AnalyticsTracker {
 
     @AfterInject
     void initTracker() {
-        GoogleAnalytics analytics = GoogleAnalytics.getInstance(application);
+        GoogleAnalytics analytics = GoogleAnalytics.getInstance(DerBundDownloaderApplication.getInstance());
         // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
         mTracker = analytics.newTracker(R.xml.app_tracker);
         mTracker.setAnonymizeIp(true);
