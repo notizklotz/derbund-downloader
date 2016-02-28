@@ -23,12 +23,19 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.google.android.gms.analytics.HitBuilders;
 
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EActivity;
 
 @SuppressLint("Registered")
 @EActivity(R.layout.activity_settings)
 public class SettingsActivity extends AppCompatActivity {
+
+    @Bean
+    AnalyticsTracker analyticsTracker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -39,4 +46,9 @@ public class SettingsActivity extends AppCompatActivity {
                 .commit();
     }
 
+    @Override
+    protected void onResume() {
+        analyticsTracker.sendScreenView("Settings", new HitBuilders.ScreenViewBuilder());
+        super.onResume();
+    }
 }

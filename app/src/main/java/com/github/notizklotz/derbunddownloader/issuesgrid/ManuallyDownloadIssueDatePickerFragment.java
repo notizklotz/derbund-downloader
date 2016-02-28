@@ -27,18 +27,23 @@ import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
-import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
-import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EFragment;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 
 @SuppressWarnings("WeakerAccess")
+@EFragment
 public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
+
+    @Bean
+    AnalyticsTracker analyticsTracker;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -70,20 +75,12 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         final Activity activity = getActivity();
         assert activity != null;
 
-        Tracker defaultTracker = ((DerBundDownloaderApplication) getActivity().getApplication()).getDefaultTracker();
-
         LocalDate selectedDate = new LocalDate(year, monthOfYear, dayOfMonth);
         if (selectedDate.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-            defaultTracker.send(new HitBuilders.EventBuilder()
-                    .setCategory("Issue")
-                    .setAction("DownloadSunday")
-                    .build());
+            analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Error).setAction("Sunday issue download attempted").setLabel(selectedDate.toString()));
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
-            defaultTracker.send(new HitBuilders.EventBuilder()
-                    .setCategory("Issue")
-                    .setAction("Download")
-                    .build());
+            analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("manual").setLabel(selectedDate.toString()));
             IssueDownloadService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
         }
     }

@@ -40,8 +40,9 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
-import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
@@ -50,7 +51,6 @@ import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
-import com.google.android.gms.analytics.Tracker;
 import com.squareup.picasso.NetworkPolicy;
 import com.squareup.picasso.Picasso;
 
@@ -92,7 +92,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     @Bean
     ThumbnailRegistry thumbnailRegistry;
 
-    private Tracker mTracker;
+    @Bean
+    AnalyticsTracker analyticsTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,9 +105,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         }
 
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
-
-        DerBundDownloaderApplication application = (DerBundDownloaderApplication) getApplication();
-        mTracker = application.getDefaultTracker();
 
         alarmScheduler.scheduleHalfdailyInexact(UpdateAutomaticDownloadAlarmBroadcastReceiver_.class);
 
@@ -124,6 +122,12 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             SettingsActivity_.intent(this).start();
             Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_LONG).show();
         }
+    }
+
+    @Override
+    protected void onResume() {
+        analyticsTracker.sendScreenView("Downloaded Issues", new HitBuilders.ScreenViewBuilder().setCustomMetric(4, gridView.getCount()));
+        super.onResume();
     }
 
     @AfterViews
@@ -175,10 +179,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     public void deleteIssue(final long id) {
-        mTracker.send(new HitBuilders.EventBuilder()
-                .setCategory("Issue")
-                .setAction("Delete")
-                .build());
+        analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Remove).setAction("single"));
 
         new AsyncTask<Void, Void, String>() {
             @Override
@@ -211,21 +212,17 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     void deleteAllIssues() {
-        mTracker.send(new HitBuilders.EventBuilder()
-                .setCategory("Issue")
-                .setAction("DeleteAll")
-                .build());
-
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query());
-
+                long count = 0;
                 try {
                     if (cursor.moveToFirst()) {
                         while (!cursor.isAfterLast()) {
                             thumbnailRegistry.clear(getDescriptionFromCursor(cursor));
                             long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
+                            count++;
                             downloadManager.remove(itemID);
                             cursor.moveToNext();
                         }
@@ -236,6 +233,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
                 thumbnailRegistry.clearAll();
 
+                analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Remove).setAction("all").setValue(count));
+
                 return null;
             }
         }.execute();
@@ -243,7 +242,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
     @OptionsItem(R.id.action_download)
     void menuItemDownloadSelected() {
-        new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
+        ManuallyDownloadIssueDatePickerFragment_.builder().build().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
     }
 
     @OptionsItem(R.id.action_settings)

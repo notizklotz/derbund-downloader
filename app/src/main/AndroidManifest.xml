@@ -34,7 +34,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".DerBundDownloaderApplication"
+        android:name=".DerBundDownloaderApplication_"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backupscheme"
         android:icon="@mipmap/ic_launcher"
