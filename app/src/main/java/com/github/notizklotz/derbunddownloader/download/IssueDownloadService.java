@@ -156,7 +156,7 @@ public class IssueDownloadService extends IntentService {
                         String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, wifiOnly);
                         downloadDoneSignal.await();
 
-                        long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload) / 1000;
+                        long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
                         analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
 
                         notifyUser(title, getString(R.string.download_completed), false);
