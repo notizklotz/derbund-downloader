@@ -42,7 +42,7 @@ public class SettingsActivity extends AppCompatActivity {
 
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()
-                .replace(R.id.container, new SettingsFragment())
+                .replace(R.id.container, SettingsFragment_.builder().build())
                 .commit();
     }
 
