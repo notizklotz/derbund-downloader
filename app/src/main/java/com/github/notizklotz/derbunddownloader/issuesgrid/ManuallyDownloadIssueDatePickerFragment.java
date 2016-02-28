@@ -80,7 +80,7 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
             analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Error).setAction("Sunday issue download attempted").setLabel(selectedDate.toString()));
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
-            analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("manual").setLabel(selectedDate.toString()));
+            analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("manual").setLabel(selectedDate.toString()).setValue(1));
             IssueDownloadService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
         }
     }

@@ -128,7 +128,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
     @Override
     protected void onResume() {
-        analyticsTracker.sendScreenView("Downloaded Issues", new HitBuilders.ScreenViewBuilder().setCustomMetric(4, gridView.getCount()));
+        analyticsTracker.sendScreenView("Downloaded Issues", new HitBuilders.ScreenViewBuilder().setCustomMetric(1, gridView.getCount()));
         super.onResume();
     }
 
@@ -182,7 +182,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     }
 
     public void deleteIssue(final long id) {
-        analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("single"));
+        analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("single").setValue(1));
 
         new AsyncTask<Void, Void, String>() {
             @Override

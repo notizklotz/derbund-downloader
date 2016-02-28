@@ -73,7 +73,7 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
         int monthOfYear = now.getMonthOfYear();
         int dayOfMonth = now.getDayOfMonth();
 
-        analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(new LocalDate(year, monthOfYear, dayOfMonth).toString()));
+        analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(new LocalDate(year, monthOfYear, dayOfMonth).toString()).setValue(1));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             if (!powerManager.isIgnoringBatteryOptimizations(context.getPackageName())) {
