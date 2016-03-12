@@ -22,6 +22,7 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
+import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
@@ -54,6 +55,10 @@ public class AnalyticsTracker {
         // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
         mTracker = analytics.newTracker(R.xml.app_tracker);
         mTracker.setAnonymizeIp(true);
+
+        if (BuildConfig.DEBUG) {
+            analytics.setDryRun(true);
+        }
     }
 
     public static HitBuilders.EventBuilder createEventBuilder(AnalyticsCategory category) {
