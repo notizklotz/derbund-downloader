@@ -189,9 +189,13 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             protected String doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
                 String descriptionFromCursor = "";
-                if (cursor.moveToFirst()) {
-                    descriptionFromCursor = getDescriptionFromCursor(cursor);
-                    thumbnailRegistry.clear(descriptionFromCursor);
+                try {
+                    if (cursor.moveToFirst()) {
+                        descriptionFromCursor = getDescriptionFromCursor(cursor);
+                        thumbnailRegistry.clear(descriptionFromCursor);
+                    }
+                } finally {
+                    cursor.close();
                 }
 
                 downloadManager.remove(id);
