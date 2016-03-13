@@ -31,6 +31,7 @@ import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -61,7 +62,6 @@ import org.androidannotations.annotations.OptionsItem;
 import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.ViewById;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 
@@ -120,7 +120,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         String username = settings.getUsername();
         String password = settings.getPassword();
 
-        if (!(StringUtils.hasText(username) && StringUtils.hasText(password))) {
+        if (TextUtils.isEmpty(username) || TextUtils.isEmpty(password)) {
             SettingsActivity_.intent(this).start();
             Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_LONG).show();
         }

@@ -34,6 +34,7 @@ import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
+import android.support.annotation.NonNull;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
@@ -55,8 +56,6 @@ import org.androidannotations.annotations.EIntentService;
 import org.androidannotations.annotations.ServiceAction;
 import org.androidannotations.annotations.SystemService;
 import org.joda.time.LocalDate;
-import org.springframework.util.Assert;
-import org.springframework.util.StringUtils;
 
 import java.io.File;
 import java.util.concurrent.CountDownLatch;
@@ -263,7 +262,7 @@ public class IssueDownloadService extends IntentService {
             builder.setCategory(NotificationCompat.CATEGORY_ERROR);
         }
 
-        if (StringUtils.hasText(errorDetails)) {
+        if (errorDetails != null && errorDetails.length() > 0) {
             NotificationCompat.BigTextStyle style =
                     new NotificationCompat.BigTextStyle();
             style.bigText(errorDetails);
@@ -312,8 +311,7 @@ public class IssueDownloadService extends IntentService {
 
         private final CountDownLatch downloadDoneSignal;
 
-        private DownloadCompletedBroadcastReceiver(CountDownLatch downloadDoneSignal) {
-            Assert.notNull(downloadDoneSignal);
+        private DownloadCompletedBroadcastReceiver(@NonNull CountDownLatch downloadDoneSignal) {
             this.downloadDoneSignal = downloadDoneSignal;
         }
 
