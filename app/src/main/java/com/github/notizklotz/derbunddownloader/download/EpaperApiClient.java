@@ -18,20 +18,28 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+import com.google.android.gms.analytics.HitBuilders;
 
+import org.androidannotations.annotations.AfterInject;
+import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
@@ -52,117 +60,131 @@ public class EpaperApiClient {
 
     private OkHttpClient client;
 
-    public EpaperApiClient() {
-        this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
-            private List<Cookie> cookieJar = new ArrayList<Cookie>();
+    @Bean
+    AnalyticsTracker analyticsTracker;
 
+    @RootContext
+    Context context;
+
+    @AfterInject
+    public void init() {
+        final SharedPreferences cookiejar = context.getSharedPreferences("cookiejar", Context.MODE_PRIVATE);
+        this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
             @Override
             public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                cookieJar.clear();
-                cookieJar.addAll(cookies);
+                SharedPreferences.Editor edit = cookiejar.edit();
+                for (Cookie cookie : cookies) {
+                    edit.putString(cookie.name(), cookie.value());
+                }
+                edit.apply();
             }
 
             @Override
             public List<Cookie> loadForRequest(HttpUrl url) {
-                return cookieJar;
+                List<Cookie> result = new LinkedList<Cookie>();
+                for (Map.Entry<String, ?> cookieEntry : cookiejar.getAll().entrySet()) {
+                    result.add(new Cookie.Builder().name(cookieEntry.getKey()).value(cookieEntry.getValue().toString()).domain("epaper.derbund.ch").build());
+                }
+
+                return result;
             }
         }).build();
     }
 
-    public Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
+    public Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate)
+            throws EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
         try {
+            return requestPdfDownloadUrl(issueDate);
+        } catch (EpaperApiInvalidResponseException e) {
+            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Retry requestPdfDownloadUrl with login"));
             login(username, password);
-            Uri uri = requestPdfDownloadUrl(issueDate);
-            logout();
-            return uri;
+            return requestPdfDownloadUrl(issueDate);
+        }
+    }
+
+    private void login(@NonNull String username, @NonNull String password) throws EpaperApiInvalidCredentialsException, EpaperApiInvalidResponseException {
+        try {
+            JSONObject bodyJson = new JSONObject().put("user", username).put("password", password).put("stayLoggedIn", true).put("closeActiveSessions", false);
+            RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
+            Request request = new Request.Builder()
+                    .header("Accept", JSON_ACCEPT.toString())
+                    .url("http://epaper.derbund.ch/index.cfm/authentication/login")
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new EpaperApiInvalidResponseException("Login response was not successful " + response.code());
+            }
+
+            JSONObject responseBodyJson = new JSONObject(response.body().string());
+            if (!responseBodyJson.getBoolean("success")) {
+                if ("INVALID_CREDENTIALS".equals(responseBodyJson.getString("errorCode"))) {
+                    throw new EpaperApiInvalidCredentialsException();
+                } else {
+                    throw new EpaperApiInvalidResponseException(responseBodyJson.getString("error"));
+                }
+            }
         } catch (JSONException e) {
-           throw new EpaperApiInvalidResponseException(e);
+            throw new EpaperApiInvalidResponseException(e);
         } catch (IOException e) {
             throw new EpaperApiInvalidResponseException(e);
         }
     }
 
-    private void login(@NonNull String username, @NonNull String password) throws EpaperApiInvalidCredentialsException, EpaperApiInvalidResponseException, JSONException, IOException {
-        JSONObject bodyJson = new JSONObject().put("user", username).put("password", password).put("stayLoggedIn", false).put("closeActiveSessions", true);
-        RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
-        Request request = new Request.Builder()
-                .header("Accept", JSON_ACCEPT.toString())
-                .url("http://epaper.derbund.ch/index.cfm/authentication/login")
-                .post(body)
-                .build();
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new EpaperApiInvalidResponseException("Login response was not successful " + response.code());
-        }
+    @NonNull
+    private Uri requestPdfDownloadUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException {
+        String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
 
-        JSONObject responseBodyJson = new JSONObject(response.body().string());
-        if (!responseBodyJson.getBoolean("success")) {
-            if ("INVALID_CREDENTIALS".equals(responseBodyJson.getString("errorCode"))) {
-                throw new EpaperApiInvalidCredentialsException();
-            } else {
-                throw new EpaperApiInvalidResponseException(responseBodyJson.getString("error"));
+        try {
+            JSONObject bodyJson = new JSONObject()
+                    .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)))
+                    .put("isAttachment", true)
+                    .put("fileName", "Gesamtausgabe_Der_Bund_" + issueDateString + ".pdf");
+
+            RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
+            Request request = new Request.Builder()
+                    .header("Accept", JSON_ACCEPT.toString())
+                    .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc")
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
             }
-        }
-    }
 
-    private void logout() throws EpaperApiInvalidResponseException, IOException, JSONException {
-        Request request = new Request.Builder()
-                .header("Accept", JSON_ACCEPT.toString())
-                .url("http://epaper.derbund.ch/index.cfm/authentication/logout?")
-                .get()
-                .build();
-        Response response = client.newCall(request).execute();
-
-        JSONObject body = new JSONObject(response.body().string());
-        if (!body.getBoolean("success")) {
-            throw new EpaperApiInvalidResponseException(body.getString("error"));
-        } else if (!response.isSuccessful()) {
-            throw new EpaperApiInvalidResponseException("Logout response was not successful " + response.code());
+            return Uri.parse(new JSONObject(response.body().string()).getJSONArray("data").getJSONObject(0).getString("issuepdf"));
+        } catch (JSONException e) {
+            throw new EpaperApiInvalidResponseException(e);
+        } catch (IOException e) {
+            throw new EpaperApiInvalidResponseException(e);
         }
     }
 
     @NonNull
-    private Uri requestPdfDownloadUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException, JSONException, IOException {
+    public Uri getPdfThumbnailUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException {
         String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
 
-        JSONObject bodyJson = new JSONObject()
-                .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)))
-                .put("isAttachment", true)
-                .put("fileName", "Gesamtausgabe_Der_Bund_" + issueDateString + ".pdf");
+        try {
+            JSONObject bodyJson = new JSONObject()
+                    .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)));
 
-        RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
-        Request request = new Request.Builder()
-                .header("Accept", JSON_ACCEPT.toString())
-                .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc")
-                .post(body)
-                .build();
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
+            RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
+            Request request = new Request.Builder()
+                    .header("Accept", JSON_ACCEPT.toString())
+                    .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getFirstPage")
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
+            }
+
+            return Uri.parse(new JSONObject(response.body().string()).getJSONObject("data").getJSONArray("pages").getJSONObject(0).getJSONObject("pageDocUrl").getJSONObject("PREVIEW").getString("url"));
+        } catch (JSONException e) {
+            throw new EpaperApiInvalidResponseException(e);
+        } catch (IOException e) {
+            throw new EpaperApiInvalidResponseException(e);
         }
-
-        return Uri.parse(new JSONObject(response.body().string()).getJSONArray("data").getJSONObject(0).getString("issuepdf"));
-    }
-
-    @NonNull
-    public Uri getPdfThumbnailUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException, JSONException, IOException {
-        String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
-
-        JSONObject bodyJson = new JSONObject()
-                .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)));
-
-        RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
-        Request request = new Request.Builder()
-                .header("Accept", JSON_ACCEPT.toString())
-                .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getFirstPage")
-                .post(body)
-                .build();
-        Response response = client.newCall(request).execute();
-        if (!response.isSuccessful()) {
-            throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
-        }
-
-        return Uri.parse(new JSONObject(response.body().string()).getJSONObject("data").getJSONArray("pages").getJSONObject(0).getJSONObject("pageDocUrl").getJSONObject("PREVIEW").getString("url"));
     }
 
 }
