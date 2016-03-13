@@ -40,6 +40,8 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.Target;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
@@ -49,7 +51,6 @@ import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivi
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
-import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EIntentService;
@@ -141,9 +142,13 @@ public class IssueDownloadService extends IntentService {
                     Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
                     Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
 
+                    File thumbnailFile = Glide.with(getApplicationContext())
+                            .load(thumbnailUrl)
+                            .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                            .get();
+
                     String stableKey = expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate);
-                    thumbnailRegistry.registerUri(stableKey, thumbnailUrl);
-                    Picasso.with(getApplicationContext()).load(thumbnailUrl).stableKey(stableKey).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).fetch();
+                    thumbnailRegistry.registerUri(stableKey, Uri.fromFile(thumbnailFile));
 
                     final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
                     receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);

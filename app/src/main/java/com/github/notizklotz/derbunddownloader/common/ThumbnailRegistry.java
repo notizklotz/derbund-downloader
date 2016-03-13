@@ -22,7 +22,7 @@ import android.content.Context;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
-import com.squareup.picasso.Picasso;
+import com.bumptech.glide.Glide;
 
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
@@ -39,15 +39,15 @@ public class ThumbnailRegistry {
 
     @NonNull
     public String getUri(@NonNull String description) {
-        return context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).getString(description, description);
+        return context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).getString(description, "");
     }
     
     public void clear(@NonNull String description) {
         context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).edit().remove(description).commit();
-        Picasso.with(context).invalidate(description);
     }
 
     public void clearAll() {
         context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).edit().clear().commit();
+        Glide.get(context).clearDiskCache();
     }
 }

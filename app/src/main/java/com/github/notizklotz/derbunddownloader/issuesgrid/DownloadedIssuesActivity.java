@@ -39,6 +39,8 @@ import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
@@ -51,8 +53,6 @@ import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
-import com.squareup.picasso.NetworkPolicy;
-import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
@@ -151,9 +151,13 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 // Load the thumbnail image
                 ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
                 String description = getDescriptionFromCursor(getCursor());
-
                 String originalThumbnailUri = thumbnailRegistry.getUri(description);
-                Picasso.with(getApplicationContext()).load(originalThumbnailUri).networkPolicy(NetworkPolicy.OFFLINE).stableKey(description).placeholder(R.drawable.issue_placeholder).resizeDimen(R.dimen.image_thumbnail_width, R.dimen.image_thumbnail_height).into(image);
+
+                Glide.with(DownloadedIssuesActivity.this)
+                        .load(originalThumbnailUri)
+                        .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .placeholder(R.drawable.issue_placeholder)
+                        .into(image);
                 return view;
             }
         };
@@ -209,7 +213,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         }.execute();
     }
 
-    private static String getDescriptionFromCursor(Cursor cursor) {
+    static String getDescriptionFromCursor(Cursor cursor) {
         return cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
     }
 
