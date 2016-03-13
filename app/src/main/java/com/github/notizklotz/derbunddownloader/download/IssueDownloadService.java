@@ -101,7 +101,6 @@ public class IssueDownloadService extends IntentService {
 
     private WifiManager.WifiLock myWifiLock;
     private Intent intent;
-    private DownloadCompletedBroadcastReceiver receiver;
 
     public IssueDownloadService() {
         super(WORKER_THREAD_NAME);
@@ -161,7 +160,7 @@ public class IssueDownloadService extends IntentService {
             thumbnailRegistry.registerUri(stableKey, Uri.fromFile(thumbnailFile));
 
             final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
-            receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
+            final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
             registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
             try {
@@ -174,11 +173,12 @@ public class IssueDownloadService extends IntentService {
                 analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
 
                 automaticallyDownloadedIssuesRegistry.registerAsDownloaded(issueDate);
-
                 notificationService.notifyUser(title, getString(R.string.download_completed), false);
             } catch (InterruptedException e) {
                 analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));
                 Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
+            } finally {
+                unregisterReceiver(receiver);
             }
         } catch (EpaperApiInvalidCredentialsException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
@@ -257,11 +257,6 @@ public class IssueDownloadService extends IntentService {
                 myWifiLock.release();
             }
             myWifiLock = null;
-        }
-
-        if (receiver != null) {
-            unregisterReceiver(receiver);
-            receiver = null;
         }
 
         if (intent != null) {
