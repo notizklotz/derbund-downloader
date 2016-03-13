@@ -32,16 +32,14 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Build;
-import android.os.Environment;
-import android.os.StatFs;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.app.TaskStackBuilder;
-import android.support.v4.os.EnvironmentCompat;
 import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
+import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
@@ -286,47 +284,24 @@ public class IssueDownloadService extends IntentService {
     private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {
         final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
         final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
+        if (BuildConfig.DEBUG) {
+            File extFilesDir = getExternalFilesDir(null);
+            File file = new File(extFilesDir, filename);
+            Log.d(LOG_TAG, "Filename: " + file.toString());
+            Log.d(LOG_TAG, "Can write? " + (extFilesDir != null && extFilesDir.canWrite()));
+        }
 
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
                 .setTitle(title)
                 .setDescription(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate))
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            File[] externalFilesDirs = getExternalFilesDirs(null);
-            long destinationDirAvailableBytes = 0;
-            File destinationDir = null;
-            for (File dir : externalFilesDirs) {
-                if (Environment.MEDIA_MOUNTED.equals(EnvironmentCompat.getStorageState(dir))) {
-                    long bytes = new StatFs(dir.getPath()).getAvailableBytes();
-                    if (bytes > destinationDirAvailableBytes) {
-                        destinationDirAvailableBytes = bytes;
-                        destinationDir = dir;
-                    }
-                }
-            }
-
-            if (destinationDir != null) {
-                if (destinationDir.exists()) {
-                    if (!destinationDir.isDirectory()) {
-                        throw new IllegalStateException(destinationDir.getAbsolutePath() + " already exists and is not a directory");
-                    }
-                } else {
-                    if (!destinationDir.mkdirs()) {
-                        throw new IllegalStateException("Unable to create directory: " + destinationDir.getAbsolutePath());
-                    }
-                }
-
-                pdfDownloadRequest.setDestinationUri(Uri.withAppendedPath(Uri.fromFile(destinationDir), filename));
-            } else {
-                pdfDownloadRequest.setDestinationInExternalFilesDir(this, null, filename);
-            }
-        } else {
-            pdfDownloadRequest.setDestinationInExternalFilesDir(this, null, filename);
-        }
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                .setDestinationInExternalFilesDir(this, null, filename);
 
         if (wifiOnly) {
             pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                pdfDownloadRequest.setAllowedOverMetered(false);
+            }
         }
         downloadManager.enqueue(pdfDownloadRequest);
 
