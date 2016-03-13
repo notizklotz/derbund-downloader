@@ -21,12 +21,13 @@ package com.github.notizklotz.derbunddownloader.settings;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.preference.DialogPreference;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.TimePicker;
 
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+
+import org.apache.commons.lang3.StringUtils;
 
 @SuppressWarnings("WeakerAccess")
 public class TimePickerPreference extends DialogPreference {
@@ -39,7 +40,7 @@ public class TimePickerPreference extends DialogPreference {
     }
 
     public static Integer[] toHourMinuteIntegers(String timeString) {
-        if (TextUtils.isEmpty(timeString)) {
+        if (StringUtils.isEmpty(timeString)) {
             throw new IllegalArgumentException("timeString must not be blank");
         }
 

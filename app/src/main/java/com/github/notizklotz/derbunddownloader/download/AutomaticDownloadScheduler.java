@@ -18,8 +18,6 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.text.TextUtils;
-
 import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
@@ -29,6 +27,7 @@ import com.github.notizklotz.derbunddownloader.settings.TimePickerPreference;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 
@@ -46,7 +45,7 @@ public class AutomaticDownloadScheduler {
 
         boolean autoDownloadEnabled = settings.isAutoDownloadEnabled();
         String autoDownloadTime = settings.getAutoDownloadTime();
-        if (autoDownloadEnabled && !TextUtils.isEmpty(autoDownloadTime)) {
+        if (autoDownloadEnabled && StringUtils.isNotBlank(autoDownloadTime)) {
             final Integer[] hourMinute = TimePickerPreference.toHourMinuteIntegers(autoDownloadTime);
             trigger = calculateNextAlarm(DateTime.now(), hourMinute[0], hourMinute[1]);
         }
