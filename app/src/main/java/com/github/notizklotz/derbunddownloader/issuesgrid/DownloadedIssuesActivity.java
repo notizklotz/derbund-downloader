@@ -45,10 +45,8 @@ import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
-import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
-import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
-import com.github.notizklotz.derbunddownloader.download.UpdateAutomaticDownloadAlarmBroadcastReceiver_;
+import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
@@ -88,14 +86,14 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     @Bean(SettingsImpl.class)
     Settings settings;
 
-    @Bean(AlarmSchedulerImpl.class)
-    AlarmScheduler alarmScheduler;
-
     @Bean
     ThumbnailRegistry thumbnailRegistry;
 
     @Bean
     AnalyticsTracker analyticsTracker;
+
+    @Bean
+    AutomaticDownloadScheduler automaticDownloadScheduler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,9 +106,9 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
 
-        alarmScheduler.scheduleHalfdailyInexact(UpdateAutomaticDownloadAlarmBroadcastReceiver_.class);
-
         NotificationManagerCompat.from(this).cancelAll();
+
+        automaticDownloadScheduler.updateAlarm();
     }
 
     @Override

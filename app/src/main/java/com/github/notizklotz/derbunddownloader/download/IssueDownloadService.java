@@ -97,6 +97,9 @@ public class IssueDownloadService extends IntentService {
     @Bean
     AnalyticsTracker analyticsTracker;
 
+    @Bean
+    AutomaticallyDownloadedIssuesRegistry automaticallyDownloadedIssuesRegistry;
+
     private WifiManager.WifiLock myWifiLock;
     private Intent intent;
     private DownloadCompletedBroadcastReceiver receiver;
@@ -162,6 +165,8 @@ public class IssueDownloadService extends IntentService {
 
                         long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
                         analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
+
+                        automaticallyDownloadedIssuesRegistry.registerAsDownloaded(issueDate);
 
                         notifyUser(title, getString(R.string.download_completed), false);
                     } catch (InterruptedException e) {

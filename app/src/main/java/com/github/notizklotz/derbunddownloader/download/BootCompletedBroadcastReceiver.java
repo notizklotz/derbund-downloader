@@ -22,20 +22,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 
-import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
-import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
-
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EReceiver;
 
 @EReceiver
 public class BootCompletedBroadcastReceiver extends BroadcastReceiver {
 
-    @Bean(AlarmSchedulerImpl.class)
-    AlarmScheduler alarmScheduler;
+    @Bean
+    AutomaticDownloadScheduler automaticDownloadScheduler;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        alarmScheduler.scheduleHalfdailyInexact(UpdateAutomaticDownloadAlarmBroadcastReceiver_.class);
+        automaticDownloadScheduler.updateAlarm();
     }
 }

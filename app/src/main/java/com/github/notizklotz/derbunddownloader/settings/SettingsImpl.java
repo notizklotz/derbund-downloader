@@ -53,25 +53,6 @@ public class SettingsImpl implements Settings {
     }
 
     @Override
-    public String getAutoDownloadTime() {
-        return getDefaultSharedPreferences().getString(SettingsImpl.KEY_AUTO_DOWNLOAD_TIME, null);
-    }
-
-    @Override
-    public String getNextWakeup() {
-        return getDefaultSharedPreferences().getString(SettingsImpl.KEY_NEXT_WAKEUP, null);
-    }
-
-    @Override
-    public void updateNextWakeup(String nextWakeup) {
-        if (nextWakeup == null) {
-            getDefaultSharedPreferences().edit().remove(SettingsImpl.KEY_NEXT_WAKEUP).apply();
-        } else {
-            getDefaultSharedPreferences().edit().putString(SettingsImpl.KEY_NEXT_WAKEUP, nextWakeup).apply();
-        }
-    }
-
-    @Override
     public void setLastWakeup(String s) {
         getDefaultSharedPreferences().edit().putString(Settings.KEY_LAST_WAKEUP, s).apply();
     }

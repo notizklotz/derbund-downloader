@@ -18,10 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.Preference;
@@ -71,31 +68,15 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         updateSummaries(sharedPreferences);
 
-        if (SettingsImpl.KEY_AUTO_DOWNLOAD_ENABLED.equals(key) || SettingsImpl.KEY_AUTO_DOWNLOAD_TIME.equals(key)) {
+        if (SettingsImpl.KEY_AUTO_DOWNLOAD_ENABLED.equals(key)) {
             AutomaticDownloadScheduler_.getInstance_(this.getActivity()).updateAlarm();
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                String packageName = getContext().getPackageName();
-                if (settings.isAutoDownloadEnabled() && !powerManager.isIgnoringBatteryOptimizations(packageName)) {
-                    Intent intent = new Intent();
-                    intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                    intent.setData(Uri.parse("package:" + packageName));
-                    getContext().startActivity(intent);
-                }
-            }
         }
     }
 
     private void updateSummaries(SharedPreferences sharedPreferences) {
-        updateAutoDownloadTime(sharedPreferences);
         updateUsername(sharedPreferences);
         updateLogin(sharedPreferences);
         updateLastWakeup(sharedPreferences);
-        updateNextWakeup(sharedPreferences);
-    }
-
-    private void updateNextWakeup(SharedPreferences sharedPreferences) {
-        getPreferenceScreen().findPreference(SettingsImpl.KEY_NEXT_WAKEUP).setSummary(sharedPreferences.getString(SettingsImpl.KEY_NEXT_WAKEUP, this.getString(R.string.last_wakeup_never)));
     }
 
     private void updateLastWakeup(SharedPreferences sharedPreferences) {
@@ -119,11 +100,4 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         usernamePreference.setSummary(sharedPreferences.getString(SettingsImpl.KEY_USERNAME, this.getString(R.string.username_summary)));
     }
 
-    private void updateAutoDownloadTime(SharedPreferences sharedPreferences) {
-        String auto_download_time = sharedPreferences.getString(SettingsImpl.KEY_AUTO_DOWNLOAD_TIME, null);
-        Preference auto_download_time_preference = getPreferenceScreen().findPreference(SettingsImpl.KEY_AUTO_DOWNLOAD_TIME);
-        if (auto_download_time_preference != null) {
-            auto_download_time_preference.setSummary(auto_download_time);
-        }
-    }
 }

@@ -20,11 +20,9 @@ package com.github.notizklotz.derbunddownloader.settings;
 
 public interface Settings {
     String KEY_AUTO_DOWNLOAD_ENABLED = "auto_download_enabled";
-    String KEY_AUTO_DOWNLOAD_TIME = "auto_download_time";
     String KEY_USERNAME = "username";
     String KEY_PASSWORD = "password";
     String KEY_LAST_WAKEUP = "last_wakeup";
-    String KEY_NEXT_WAKEUP = "next_wakeup";
     String KEY_WIFI_ONLY_ENABLED = "wifi_only";
 
     String getUsername();
@@ -34,12 +32,6 @@ public interface Settings {
     boolean isWifiOnly();
 
     boolean isAutoDownloadEnabled();
-
-    String getAutoDownloadTime();
-
-    String getNextWakeup();
-
-    void updateNextWakeup(String nextWakeup);
 
     void setLastWakeup(String s);
 }

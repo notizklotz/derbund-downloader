@@ -16,31 +16,35 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.common.internal;
+package com.github.notizklotz.derbunddownloader.download;
 
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
+import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 
-import com.github.notizklotz.derbunddownloader.common.PendingIntentFactory;
-
+import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
+import org.joda.time.LocalDate;
 
 @EBean
-public class PendingIntentFactoryImpl implements PendingIntentFactory {
+public class AutomaticallyDownloadedIssuesRegistry {
 
     @RootContext
     Context context;
 
-    @Override
-    public PendingIntent createPendingIntent(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
-        return PendingIntent.getBroadcast(
-                context,
-                0,
-                new Intent(context, broadcastReceiver),
-                PendingIntent.FLAG_UPDATE_CURRENT);
+    private SharedPreferences sharedPreferences;
+
+    @AfterInject
+    public void init() {
+        sharedPreferences = context.getSharedPreferences("downloadedIssueRegistry", Context.MODE_PRIVATE);
+    }
+
+    public void registerAsDownloaded(@NonNull LocalDate localDate) {
+        sharedPreferences.edit().putBoolean(localDate.toString(), true).apply();
+    }
+
+    public boolean isRegisteredAsDownloaded(@NonNull LocalDate localDate) {
+        return sharedPreferences.contains(localDate.toString());
     }
 }

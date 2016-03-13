@@ -20,7 +20,6 @@ package com.github.notizklotz.derbunddownloader.download;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.os.PowerManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
@@ -35,15 +34,16 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EReceiver;
 import org.androidannotations.annotations.SystemService;
 import org.joda.time.DateTime;
-import org.joda.time.Instant;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
-import org.joda.time.format.ISODateTimeFormat;
 
 /**
  * Triggered by an alarm to automatically download the issue of today.
  */
 @EReceiver
 public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver {
+
+    private static final String TAG = "AutomaticDownloadBR";
 
     @Bean(SettingsImpl.class)
     Settings settings;
@@ -57,12 +57,12 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
     @SystemService
     PowerManager powerManager;
 
+    @Bean
+    AutomaticallyDownloadedIssuesRegistry automaticallyDownloadedIssuesRegistry;
+
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i("AutomaticIssueDownload", "Starting service @ " + ISODateTimeFormat.dateTime().print(Instant.now()));
-
         settings.setLastWakeup(DateHandlingUtils.toFullStringUserTimezone(DateTime.now()));
-        automaticDownloadScheduler.updateAlarm();
         callDownloadService(context);
     }
 
@@ -73,16 +73,22 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
         int monthOfYear = now.getMonthOfYear();
         int dayOfMonth = now.getDayOfMonth();
 
-        analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(new LocalDate(year, monthOfYear, dayOfMonth).toString()).setValue(1));
+        LocalDate issueDate = new LocalDate(year, monthOfYear, dayOfMonth);
+        if (!automaticallyDownloadedIssuesRegistry.isRegisteredAsDownloaded(issueDate)) {
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (!powerManager.isIgnoringBatteryOptimizations(context.getPackageName())) {
-                analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Error).setAction("Auto download without ignoring battery optimizations"));
+            //Do not schedule on Sundays in Switzerland as the newspaper is not issued on Sundays
+            if ((now.getDayOfWeek() != DateTimeConstants.SUNDAY)) {
+                analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download)
+                        .setAction("auto").setLabel(issueDate.toString()).setValue(1));
+
+                Intent intent = IssueDownloadService_.intent(context).downloadIssue(dayOfMonth, monthOfYear, year).get();
+                startWakefulService(context, intent);
+            } else {
+                Log.d(TAG, "callDownloadService: Skipping download. It's Sunday.");
             }
+        } else {
+            Log.d(TAG, "callDownloadService: Skipping download. Issue is registered as already downloaded");
         }
-
-        Intent intent = IssueDownloadService_.intent(context).downloadIssue(dayOfMonth, monthOfYear, year).get();
-        startWakefulService(context, intent);
     }
 
 }

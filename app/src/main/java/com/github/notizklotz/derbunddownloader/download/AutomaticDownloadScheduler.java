@@ -18,55 +18,72 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import com.github.notizklotz.derbunddownloader.common.AlarmScheduler;
-import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
-import com.github.notizklotz.derbunddownloader.common.internal.AlarmSchedulerImpl;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.os.SystemClock;
+import android.support.annotation.NonNull;
+import android.util.Log;
+
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
-import com.github.notizklotz.derbunddownloader.settings.TimePickerPreference;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
+import org.androidannotations.annotations.RootContext;
+import org.androidannotations.annotations.SystemService;
+
+import java.util.concurrent.TimeUnit;
 
 @EBean
 public class AutomaticDownloadScheduler {
 
+    private static final String TAG = "AutoDownloadScheduler";
+
     @Bean(SettingsImpl.class)
     Settings settings;
 
-    @Bean(AlarmSchedulerImpl.class)
-    AlarmScheduler alarmScheduler;
+    @SystemService
+    AlarmManager alarmManager;
+
+    @RootContext
+    Context context;
 
     public void updateAlarm() {
-        DateTime trigger = null;
-
         boolean autoDownloadEnabled = settings.isAutoDownloadEnabled();
-        String autoDownloadTime = settings.getAutoDownloadTime();
-        if (autoDownloadEnabled && StringUtils.isNotBlank(autoDownloadTime)) {
-            final Integer[] hourMinute = TimePickerPreference.toHourMinuteIntegers(autoDownloadTime);
-            trigger = calculateNextAlarm(DateTime.now(), hourMinute[0], hourMinute[1]);
+        if (autoDownloadEnabled) {
+            scheduleHalfHourly(AutomaticDownloadBroadcastReceiver_.class);
+        } else {
+            cancel(AutomaticDownloadBroadcastReceiver_.class);
         }
-
-        alarmScheduler.scheduleExact(AutomaticDownloadBroadcastReceiver_.class, trigger);
-
-        settings.updateNextWakeup(trigger != null ? DateHandlingUtils.toFullStringUserTimezone(trigger) : null);
     }
 
-    protected DateTime calculateNextAlarm(DateTime now, int hourOfDay, int minute) {
-        DateTime nextAlarm = now.withTime(hourOfDay, minute, 0, 0);
+    private void scheduleHalfHourly(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
+        Log.d(TAG, "Scheduling auto download alarm");
 
-        //Make sure trigger is in the future (incl. grace time)
-        if (nextAlarm.isBefore(now.plusSeconds(10))) {
-            nextAlarm = nextAlarm.plusDays(1);
-        }
-        //Do not schedule on Sundays in Switzerland as the newspaper is not issued on Sundays
-        if ((nextAlarm.withZone(DateHandlingUtils.TIMEZONE_SWITZERLAND).getDayOfWeek() == DateTimeConstants.SUNDAY)) {
-            nextAlarm = nextAlarm.plusDays(1);
-        }
-        return nextAlarm;
+        final PendingIntent pendingIntent = createPendingIntent(broadcastReceiver);
+        alarmManager.cancel(pendingIntent);
+        alarmManager.setInexactRepeating(
+                AlarmManager.ELAPSED_REALTIME_WAKEUP,
+                SystemClock.elapsedRealtime() + TimeUnit.MINUTES.toMillis(1),
+                AlarmManager.INTERVAL_HALF_HOUR,
+                pendingIntent);
+    }
+
+    private void cancel(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
+        Log.d(TAG, "Canceling auto download alarm");
+
+        alarmManager.cancel(createPendingIntent(broadcastReceiver));
+    }
+
+    private PendingIntent createPendingIntent(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
+        return PendingIntent.getBroadcast(
+                context,
+                0,
+                new Intent(context, broadcastReceiver),
+                PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
 }
