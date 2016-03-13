@@ -21,7 +21,6 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.app.IntentService;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -35,9 +34,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.support.v4.app.NotificationManagerCompat;
-import android.support.v4.app.TaskStackBuilder;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.bumptech.glide.Glide;
@@ -46,8 +42,8 @@ import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
-import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity_;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
@@ -100,16 +96,15 @@ public class IssueDownloadService extends IntentService {
     @Bean
     AutomaticallyDownloadedIssuesRegistry automaticallyDownloadedIssuesRegistry;
 
+    @Bean
+    NotificationService notificationService;
+
     private WifiManager.WifiLock myWifiLock;
     private Intent intent;
     private DownloadCompletedBroadcastReceiver receiver;
 
     public IssueDownloadService() {
         super(WORKER_THREAD_NAME);
-    }
-
-    private static String expandTemplateWithDate(String template, LocalDate localDate) {
-        return String.format(template, localDate.getDayOfMonth(), localDate.getMonthOfYear(), localDate.getYear());
     }
 
     @ServiceAction
@@ -122,7 +117,7 @@ public class IssueDownloadService extends IntentService {
                 connected = waitForWifiConnection();
                 if (!connected) {
                     analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi connection failed").setNonInteraction(true));
-                    notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), true);
+                    notificationService.notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), true);
                 }
             } else {
                 NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
@@ -133,58 +128,89 @@ public class IssueDownloadService extends IntentService {
                         connectionState = activeNetworkInfo.getState().name();
                     }
                     analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("No connection on download").setLabel(connectionState).setNonInteraction(true));
-                    notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), true);
+                    notificationService.notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), true);
                 }
             }
 
             if (connected) {
-                final LocalDate issueDate = new LocalDate(year, month, day);
-                final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
-
-                try {
-                    Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
-                    Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
-
-                    File thumbnailFile = Glide.with(getApplicationContext())
-                            .load(thumbnailUrl)
-                            .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                            .get();
-
-                    String stableKey = expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate);
-                    thumbnailRegistry.registerUri(stableKey, Uri.fromFile(thumbnailFile));
-
-                    final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
-                    receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
-                    registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-                    try {
-                        long millisBeforeDownload = SystemClock.elapsedRealtime();
-
-                        String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, wifiOnly);
-                        downloadDoneSignal.await();
-
-                        long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
-                        analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
-
-                        automaticallyDownloadedIssuesRegistry.registerAsDownloaded(issueDate);
-
-                        notifyUser(title, getString(R.string.download_completed), false);
-                    } catch (InterruptedException e) {
-                        analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));
-                        Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
-                    }
-                } catch (EpaperApiInvalidCredentialsException e) {
-                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
-                    notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), true);
-                }
+                download(day, month, year, wifiOnly);
             }
         } catch (Exception e) {
             Log.e(LOG_TAG, e.getMessage());
             analyticsTracker.sendDefaultException(this, e);
-            notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text), e.getMessage(), true);
+            notificationService.notifyUser(getText(R.string.download_service_error), getText(R.string.download_service_error_text), e.getMessage(), true);
         } finally {
             cleanup();
         }
+    }
+
+    private void download(int day, int month, int year, boolean wifiOnly) throws EpaperApiInvalidResponseException, InterruptedException, java.util.concurrent.ExecutionException {
+        final LocalDate issueDate = new LocalDate(year, month, day);
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(this);
+
+        try {
+            Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
+            Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
+
+            File thumbnailFile = Glide.with(getApplicationContext())
+                    .load(thumbnailUrl)
+                    .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
+                    .get();
+
+            String stableKey = expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate);
+            thumbnailRegistry.registerUri(stableKey, Uri.fromFile(thumbnailFile));
+
+            final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
+            receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
+            registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+            try {
+                long millisBeforeDownload = SystemClock.elapsedRealtime();
+
+                String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, wifiOnly);
+                downloadDoneSignal.await();
+
+                long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
+                analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
+
+                automaticallyDownloadedIssuesRegistry.registerAsDownloaded(issueDate);
+
+                notificationService.notifyUser(title, getString(R.string.download_completed), false);
+            } catch (InterruptedException e) {
+                analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));
+                Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
+            }
+        } catch (EpaperApiInvalidCredentialsException e) {
+            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
+            notificationService.notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), true);
+        }
+    }
+
+    private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {
+        final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
+        final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
+        if (BuildConfig.DEBUG) {
+            File extFilesDir = getExternalFilesDir(null);
+            File file = new File(extFilesDir, filename);
+            Log.d(LOG_TAG, "Filename: " + file.toString());
+            Log.d(LOG_TAG, "Can write? " + (extFilesDir != null && extFilesDir.canWrite()));
+        }
+
+        DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
+                .setTitle(title)
+                .setDescription(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate))
+                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
+                .setDestinationInExternalFilesDir(this, null, filename);
+
+        if (wifiOnly) {
+            pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+                pdfDownloadRequest.setAllowedOverMetered(false);
+            }
+        }
+        downloadManager.enqueue(pdfDownloadRequest);
+
+        return title;
     }
 
     private boolean waitForWifiConnection() {
@@ -200,7 +226,7 @@ public class IssueDownloadService extends IntentService {
             long firstCheckMillis = System.currentTimeMillis();
             if (!wifiManager.isWifiEnabled()) {
                 analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi disabled").setNonInteraction(true));
-                notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), true);
+                notificationService.notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), true);
             } else {
                 do {
                     final NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
@@ -255,68 +281,6 @@ public class IssueDownloadService extends IntentService {
         this.intent = intent;
     }
 
-    private void notifyUser(CharSequence contentTitle, CharSequence contentText, boolean error) {
-        notifyUser(contentTitle, contentText, null, error);
-    }
-
-    private void notifyUser(CharSequence contentTitle, CharSequence contentText, CharSequence errorDetails, boolean error) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext());
-        builder
-                .setSmallIcon(R.drawable.ic_stat_newspaper)
-                .setContentTitle(contentTitle)
-                .setContentText(contentText)
-                .setTicker(contentTitle)
-                .setAutoCancel(true);
-        builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
-        if (error) {
-            builder.setCategory(NotificationCompat.CATEGORY_ERROR);
-        }
-
-        if (errorDetails != null && errorDetails.length() > 0) {
-            NotificationCompat.BigTextStyle style =
-                    new NotificationCompat.BigTextStyle();
-            style.bigText(errorDetails);
-            builder.setStyle(style);
-        }
-
-        //http://developer.android.com/guide/topics/ui/notifiers/notifications.html
-        // The stack builder object will contain an artificial back stack for thestarted Activity.
-        // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
-        builder.setContentIntent(TaskStackBuilder.create(getApplicationContext()).
-                addParentStack(DownloadedIssuesActivity_.class).
-                addNextIntent(new Intent(getApplicationContext(), DownloadedIssuesActivity_.class)).
-                getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
-
-        NotificationManagerCompat.from(this).notify(1, builder.build());
-    }
-
-    private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {
-        final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
-        final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
-        if (BuildConfig.DEBUG) {
-            File extFilesDir = getExternalFilesDir(null);
-            File file = new File(extFilesDir, filename);
-            Log.d(LOG_TAG, "Filename: " + file.toString());
-            Log.d(LOG_TAG, "Can write? " + (extFilesDir != null && extFilesDir.canWrite()));
-        }
-
-        DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
-                .setTitle(title)
-                .setDescription(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate))
-                .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                .setDestinationInExternalFilesDir(this, null, filename);
-
-        if (wifiOnly) {
-            pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                pdfDownloadRequest.setAllowedOverMetered(false);
-            }
-        }
-        downloadManager.enqueue(pdfDownloadRequest);
-
-        return title;
-    }
-
     private static class DownloadCompletedBroadcastReceiver extends BroadcastReceiver {
 
         private final CountDownLatch downloadDoneSignal;
@@ -329,5 +293,9 @@ public class IssueDownloadService extends IntentService {
         public void onReceive(Context context, Intent intent) {
             downloadDoneSignal.countDown();
         }
+    }
+
+    private static String expandTemplateWithDate(String template, LocalDate localDate) {
+        return String.format(template, localDate.getDayOfMonth(), localDate.getMonthOfYear(), localDate.getYear());
     }
 }
