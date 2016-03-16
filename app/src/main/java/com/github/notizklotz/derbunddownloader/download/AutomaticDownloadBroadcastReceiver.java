@@ -24,6 +24,7 @@ import android.os.PowerManager;
 import android.support.v4.content.WakefulBroadcastReceiver;
 import android.util.Log;
 
+import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
@@ -68,20 +69,18 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
 
     private void callDownloadService(Context context) {
         DateTime now = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
+        LocalDate issueDate = new LocalDate(now.getYear(), now.getMonthOfYear(), now.getDayOfMonth());
 
-        int year = now.getYear();
-        int monthOfYear = now.getMonthOfYear();
-        int dayOfMonth = now.getDayOfMonth();
+        if (BuildConfig.DEBUG) {
+            issueDate = issueDate.plusDays(1);
+        }
 
-        LocalDate issueDate = new LocalDate(year, monthOfYear, dayOfMonth);
         if (!automaticallyDownloadedIssuesRegistry.isRegisteredAsDownloaded(issueDate)) {
-
             //Do not schedule on Sundays in Switzerland as the newspaper is not issued on Sundays
             if (now.getDayOfWeek() != DateTimeConstants.SUNDAY) {
-                analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download)
-                        .setAction("auto").setLabel(issueDate.toString()).setValue(1));
+                analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(issueDate.toString()).setValue(1));
 
-                Intent intent = IssueDownloadService_.intent(context).downloadIssue(dayOfMonth, monthOfYear, year).get();
+                Intent intent = IssueDownloadService_.intent(context).downloadIssue(issueDate.getDayOfMonth(), issueDate.getMonthOfYear(), issueDate.getYear()).get();
                 startWakefulService(context, intent);
             } else {
                 Log.d(TAG, "callDownloadService: Skipping download. It's Sunday.");

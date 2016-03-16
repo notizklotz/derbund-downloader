@@ -183,6 +183,8 @@ public class IssueDownloadService extends IntentService {
         } catch (EpaperApiInvalidCredentialsException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
             notificationService.notifyUser(getText(R.string.download_login_failed), getText(R.string.download_login_failed_text), true);
+        } catch (EpaperApiInexistingIssueRequestedException e) {
+            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Inexisting issue " + e.getIssueDate().toString()));
         }
     }
 

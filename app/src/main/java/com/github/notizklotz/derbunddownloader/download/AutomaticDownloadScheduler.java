@@ -63,7 +63,7 @@ public class AutomaticDownloadScheduler {
         LocalTime initialAlarmTime = new LocalTime(5, 0);
 
         if (BuildConfig.DEBUG) {
-            initialAlarmTime = new LocalTime(19,52);
+            initialAlarmTime = new LocalTime(20, 57);
         }
 
         DateTime nextAlarm = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(initialAlarmTime);
@@ -81,7 +81,7 @@ public class AutomaticDownloadScheduler {
                 nextAlarm.getMillis(),
                 AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                 pendingIntent);
-}
+    }
 
 
     private void cancel() {

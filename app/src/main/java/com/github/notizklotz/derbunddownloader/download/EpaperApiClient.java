@@ -92,7 +92,7 @@ public class EpaperApiClient {
     }
 
     public Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate)
-            throws EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
+            throws EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException, EpaperApiInexistingIssueRequestedException {
         try {
             return requestPdfDownloadUrl(issueDate);
         } catch (EpaperApiInvalidResponseException e) {
@@ -132,7 +132,7 @@ public class EpaperApiClient {
     }
 
     @NonNull
-    private Uri requestPdfDownloadUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException {
+    private Uri requestPdfDownloadUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException, EpaperApiInexistingIssueRequestedException {
         String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
 
         try {
@@ -149,6 +149,10 @@ public class EpaperApiClient {
                     .build();
             Response response = client.newCall(request).execute();
             if (!response.isSuccessful()) {
+                if (response.code() == 500) {
+                    throw new EpaperApiInexistingIssueRequestedException(issueDate);
+                }
+
                 throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
             }
 
