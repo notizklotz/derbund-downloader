@@ -77,7 +77,7 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
         if (!automaticallyDownloadedIssuesRegistry.isRegisteredAsDownloaded(issueDate)) {
 
             //Do not schedule on Sundays in Switzerland as the newspaper is not issued on Sundays
-            if ((now.getDayOfWeek() != DateTimeConstants.SUNDAY)) {
+            if (now.getDayOfWeek() != DateTimeConstants.SUNDAY) {
                 analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download)
                         .setAction("auto").setLabel(issueDate.toString()).setValue(1));
 
@@ -85,9 +85,11 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
                 startWakefulService(context, intent);
             } else {
                 Log.d(TAG, "callDownloadService: Skipping download. It's Sunday.");
+                automaticDownloadScheduler.updateAlarm();
             }
         } else {
             Log.d(TAG, "callDownloadService: Skipping download. Issue is registered as already downloaded");
+            automaticDownloadScheduler.updateAlarm();
         }
     }
 

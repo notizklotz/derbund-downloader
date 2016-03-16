@@ -23,10 +23,10 @@ import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.os.SystemClock;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
+import com.github.notizklotz.derbunddownloader.BuildConfig;
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 
@@ -34,13 +34,12 @@ import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
-
-import java.util.concurrent.TimeUnit;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
+import org.joda.time.LocalTime;
 
 @EBean
 public class AutomaticDownloadScheduler {
-
-    private static final String TAG = "AutoDownloadScheduler";
 
     @Bean(SettingsImpl.class)
     Settings settings;
@@ -54,28 +53,39 @@ public class AutomaticDownloadScheduler {
     public void updateAlarm() {
         boolean autoDownloadEnabled = settings.isAutoDownloadEnabled();
         if (autoDownloadEnabled) {
-            scheduleHalfHourly(AutomaticDownloadBroadcastReceiver_.class);
+            schedule();
         } else {
-            cancel(AutomaticDownloadBroadcastReceiver_.class);
+            cancel();
         }
     }
 
-    private void scheduleHalfHourly(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
-        Log.d(TAG, "Scheduling auto download alarm");
+    private void schedule() {
+        LocalTime initialAlarmTime = new LocalTime(5, 0);
 
-        final PendingIntent pendingIntent = createPendingIntent(broadcastReceiver);
+        if (BuildConfig.DEBUG) {
+            initialAlarmTime = new LocalTime(19,52);
+        }
+
+        DateTime nextAlarm = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(initialAlarmTime);
+        if (nextAlarm.isBeforeNow()) {
+            nextAlarm = nextAlarm.plusDays(1);
+        }
+        if (nextAlarm.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+            nextAlarm = nextAlarm.plusDays(1);
+        }
+
+        final PendingIntent pendingIntent = createPendingIntent(AutomaticDownloadBroadcastReceiver_.class);
         alarmManager.cancel(pendingIntent);
         alarmManager.setInexactRepeating(
-                AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + TimeUnit.MINUTES.toMillis(1),
-                AlarmManager.INTERVAL_HALF_HOUR,
+                AlarmManager.RTC_WAKEUP,
+                nextAlarm.getMillis(),
+                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
                 pendingIntent);
-    }
+}
 
-    private void cancel(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
-        Log.d(TAG, "Canceling auto download alarm");
 
-        alarmManager.cancel(createPendingIntent(broadcastReceiver));
+    private void cancel() {
+        alarmManager.cancel(createPendingIntent(AutomaticDownloadBroadcastReceiver_.class));
     }
 
     private PendingIntent createPendingIntent(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
