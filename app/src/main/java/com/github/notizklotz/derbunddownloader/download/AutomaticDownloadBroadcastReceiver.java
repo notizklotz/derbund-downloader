@@ -80,7 +80,7 @@ public class AutomaticDownloadBroadcastReceiver extends WakefulBroadcastReceiver
             if (now.getDayOfWeek() != DateTimeConstants.SUNDAY) {
                 analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(issueDate.toString()).setValue(1));
 
-                Intent intent = IssueDownloadService_.intent(context).downloadIssue(issueDate.getDayOfMonth(), issueDate.getMonthOfYear(), issueDate.getYear()).get();
+                Intent intent = IssueDownloadIntentService_.intent(context).downloadIssue(issueDate.getDayOfMonth(), issueDate.getMonthOfYear(), issueDate.getYear()).get();
                 startWakefulService(context, intent);
             } else {
                 Log.d(TAG, "callDownloadService: Skipping download. It's Sunday.");

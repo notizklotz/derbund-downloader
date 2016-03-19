@@ -66,9 +66,11 @@ public class EpaperApiClient {
     @RootContext
     Context context;
 
+    private SharedPreferences cookiejar;
+
     @AfterInject
     public void init() {
-        final SharedPreferences cookiejar = context.getSharedPreferences("cookiejar", Context.MODE_PRIVATE);
+        cookiejar = context.getSharedPreferences("cookiejar", Context.MODE_PRIVATE);
         this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
             @Override
             public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
@@ -99,10 +101,15 @@ public class EpaperApiClient {
             analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Retry requestPdfDownloadUrl with login"));
             login(username, password);
             return requestPdfDownloadUrl(issueDate);
+        } catch (EpaperApiInexistingIssueRequestedException e) {
+            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Retry requestPdfDownloadUrl with login"));
+            login(username, password);
+            return requestPdfDownloadUrl(issueDate);
         }
     }
 
     private void login(@NonNull String username, @NonNull String password) throws EpaperApiInvalidCredentialsException, EpaperApiInvalidResponseException {
+        cookiejar.edit().clear().apply();
         try {
             JSONObject bodyJson = new JSONObject().put("user", username).put("password", password).put("stayLoggedIn", true).put("closeActiveSessions", false);
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());

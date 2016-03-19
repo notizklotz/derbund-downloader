@@ -30,7 +30,7 @@ import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
-import com.github.notizklotz.derbunddownloader.download.IssueDownloadService_;
+import com.github.notizklotz.derbunddownloader.download.IssueDownloadIntentService_;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
@@ -81,7 +81,7 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
             analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("manual").setLabel(selectedDate.toString()).setValue(1));
-            IssueDownloadService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
+            IssueDownloadIntentService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
         }
     }
 
