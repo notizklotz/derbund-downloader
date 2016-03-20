@@ -22,6 +22,7 @@ import android.content.Context;
 
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
+import com.evernote.android.job.util.JobApi;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -61,7 +62,7 @@ public class AutomaticDownloadScheduler {
     private void schedule() {
         LocalTime alarmTime = new LocalTime(5, 0);
         if (BuildConfig.DEBUG) {
-            alarmTime = new LocalTime(10, 15);
+            alarmTime = new LocalTime(10, 42);
         }
 
         DateTime nextAlarmSwissTime = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(alarmTime);
@@ -78,11 +79,16 @@ public class AutomaticDownloadScheduler {
         Duration windowStart = new Duration(nowDeviceTime, nextAlarmSwissTime);
         Duration windowEnd =  new Duration(nowDeviceTime, nextAlarmSwissTime.plusMinutes(5));
 
-        new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
-                .setExecutionWindow(windowStart.getMillis(), windowEnd.getMillis())
-                .setPersisted(true)
-                .build()
-                .schedule();
+        JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
+                .setPersisted(true);
+        if (JobApi.V_14.equals(JobManager.instance().getApi())) {
+            //Currently, com.evernote.android.job.v14.JobProxy14 doesn't use RTC_WAKEUP for non-exact jobs.
+            builder.setExact(windowStart.getMillis());
+        } else {
+            builder.setExecutionWindow(windowStart.getMillis(), windowEnd.getMillis());
+        }
+
+        builder.build().schedule();
     }
 
     private void cancel() {
