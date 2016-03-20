@@ -69,8 +69,10 @@ public class AutomaticIssueDownloadJob extends Job {
     @NonNull
     @Override
     protected Result onRunJob(Params params) {
-        DateTime now = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
-        final LocalDate issueDate = new LocalDate(now.getYear(), now.getMonthOfYear(), now.getDayOfMonth());
+        settings.setLastWakeup(DateTime.now().toString());
+
+        DateTime nowInSwitzerland = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
+        final LocalDate issueDate = new LocalDate(nowInSwitzerland.getYear(), nowInSwitzerland.getMonthOfYear(), nowInSwitzerland.getDayOfMonth());
 
         final boolean wifiOnly = settings.isWifiOnly();
         try {
