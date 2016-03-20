@@ -54,8 +54,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
-import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
-
 @EBean
 public class IssueDownloader {
     private static final String LOG_TAG = IssueDownloader.class.getSimpleName();
@@ -87,15 +85,41 @@ public class IssueDownloader {
     @Bean(SettingsImpl.class)
     Settings settings;
 
-    public void download(LocalDate issueDate) throws IOException {
+    public void download(LocalDate issueDate) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isConnected()) {
             throw new IOException("Not connected");
         }
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+        Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
+
+        downloadThumbnail(issueDate);
+
+        final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
+        final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
+        context.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
         try {
-            Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
+            long millisBeforeDownload = SystemClock.elapsedRealtime();
+
+            String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
+            downloadDoneSignal.await();
+
+            long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
+            analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
+
+            notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
+        } catch (InterruptedException e) {
+            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));
+            Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
+        } finally {
+            context.unregisterReceiver(receiver);
+        }
+    }
+
+    private void downloadThumbnail(LocalDate issueDate) {
+        try {
             Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
 
             File thumbnailFile = Glide.with(context)
@@ -105,36 +129,8 @@ public class IssueDownloader {
 
             String stableKey = expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate);
             thumbnailRegistry.registerUri(stableKey, Uri.fromFile(thumbnailFile));
-
-            final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
-            final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
-            context.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-            try {
-                long millisBeforeDownload = SystemClock.elapsedRealtime();
-
-                String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
-                downloadDoneSignal.await();
-
-                long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
-                analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
-
-                notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
-            } catch (InterruptedException e) {
-                analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));
-                Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
-            } finally {
-                context.unregisterReceiver(receiver);
-            }
-        } catch (EpaperApiInvalidCredentialsException e) {
-            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
-            notificationService.notifyUser(context.getText(R.string.download_login_failed), context.getText(R.string.download_login_failed_text), true);
-        } catch (EpaperApiInexistingIssueRequestedException e) {
-            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Inexisting issue " + e.getIssueDate().toString()));
         } catch (Exception e) {
-            Log.e(LOG_TAG, e.getMessage());
-            analyticsTracker.sendDefaultException(context, e);
-            notificationService.notifyUser(context.getText(R.string.download_service_error), context.getText(R.string.download_service_error_text), e.getMessage(), true);
+            analyticsTracker.sendDefaultException(this.context, e);
         }
     }
 

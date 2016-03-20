@@ -19,7 +19,6 @@
 package com.github.notizklotz.derbunddownloader.download;
 
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.evernote.android.job.Job;
 import com.github.notizklotz.derbunddownloader.R;
@@ -32,6 +31,7 @@ import com.github.notizklotz.derbunddownloader.common.WifiConnectionFailedExcept
 import com.github.notizklotz.derbunddownloader.common.WifiNotEnabledException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
+import com.google.android.gms.analytics.HitBuilders;
 
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
@@ -77,42 +77,45 @@ public class AutomaticIssueDownloadJob extends Job {
         final boolean wifiOnly = settings.isWifiOnly();
         try {
             if (wifiOnly) {
-                try {
-                    wifiCommandExecutor.execute(new Callable() {
-                        @Override
-                        public Object call() throws Exception {
-                            issueDownloader.download(issueDate);
-                            return null;
-                        }
-                    });
-                    analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(issueDate.toString()).setValue(1));
-                } catch (WifiConnectionFailedException e) {
-                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi connection failed").setNonInteraction(true));
-                    notificationService.notifyUser(getContext().getText(R.string.download_wifi_connection_failed), getContext().getText(R.string.download_wifi_connection_failed_text), true);
-                    return Result.RESCHEDULE;
-                } catch (WifiNotEnabledException e) {
-                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi disabled").setNonInteraction(true));
-                    notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_no_wifi_text), true);
-                    return Result.FAILURE;
-                }
+                wifiCommandExecutor.execute(new Callable() {
+                    @Override
+                    public Object call() throws Exception {
+                        issueDownloader.download(issueDate);
+                        return null;
+                    }
+                });
             } else {
                 issueDownloader.download(issueDate);
-                analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(issueDate.toString()).setValue(1));
             }
+            analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(issueDate.toString()).setValue(1));
 
             automaticDownloadScheduler.scheduleNextJobRequest();
 
             return Result.SUCCESS;
         }
-        catch (IOException e) {
+        catch (WifiConnectionFailedException e) {
+            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi connection failed").setNonInteraction(true));
+            notificationService.notifyUser(getContext().getText(R.string.download_wifi_connection_failed), getContext().getText(R.string.download_wifi_connection_failed_text), true);
+            return Result.RESCHEDULE;
+        } catch (WifiNotEnabledException e) {
+            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi disabled").setNonInteraction(true));
+            notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_no_wifi_text), true);
+            return Result.FAILURE;
+        } catch (EpaperApiInvalidCredentialsException e) {
+            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
+            notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
+            return Result.FAILURE;
+        } catch (EpaperApiInexistingIssueRequestedException e) {
+            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Inexisting issue " + e.getIssueDate().toString()));
+            return Result.RESCHEDULE;
+        } catch (IOException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("No connection on download").setNonInteraction(true));
             notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_text), true);
             return Result.RESCHEDULE;
-        }
-        catch (Exception e) {
-            Log.e("AutoIssueDownloadJob", "downloadIssue: failed", e);
+        } catch (Exception e) {
             analyticsTracker.sendDefaultException(getContext(), e);
-            return Result.RESCHEDULE;
+            notificationService.notifyUser(getContext().getText(R.string.download_service_error), getContext().getText(R.string.download_service_error_text), e.getMessage(), true);
+            return Result.FAILURE;
         }
     }
 }

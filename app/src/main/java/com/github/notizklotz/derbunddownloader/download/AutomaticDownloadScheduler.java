@@ -62,7 +62,7 @@ public class AutomaticDownloadScheduler {
     private void schedule() {
         LocalTime alarmTime = new LocalTime(5, 0);
         if (BuildConfig.DEBUG) {
-            alarmTime = new LocalTime(10, 42);
+            alarmTime = new LocalTime().plusMinutes(2);
         }
 
         DateTime nextAlarmSwissTime = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(alarmTime);

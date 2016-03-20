@@ -95,13 +95,9 @@ public class EpaperApiClient {
 
     public Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate)
             throws EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException, EpaperApiInexistingIssueRequestedException {
-        try {
+        if (isSubscribed(issueDate)) {
             return requestPdfDownloadUrl(issueDate);
-        } catch (EpaperApiInvalidResponseException e) {
-            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Retry requestPdfDownloadUrl with login"));
-            login(username, password);
-            return requestPdfDownloadUrl(issueDate);
-        } catch (EpaperApiInexistingIssueRequestedException e) {
+        } else {
             analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Retry requestPdfDownloadUrl with login"));
             login(username, password);
             return requestPdfDownloadUrl(issueDate);
@@ -131,6 +127,33 @@ public class EpaperApiClient {
                     throw new EpaperApiInvalidResponseException(responseBodyJson.getString("error"));
                 }
             }
+        } catch (JSONException e) {
+            throw new EpaperApiInvalidResponseException(e);
+        } catch (IOException e) {
+            throw new EpaperApiInvalidResponseException(e);
+        }
+    }
+
+    public boolean isSubscribed(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException{
+        String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
+
+        try {
+            JSONObject bodyJson = new JSONObject()
+                    .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)))
+                    .put("articles", new JSONArray().put(42));
+
+            RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
+            Request request = new Request.Builder()
+                    .header("Accept", JSON_ACCEPT.toString())
+                    .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getArticle")
+                    .post(body)
+                    .build();
+            Response response = client.newCall(request).execute();
+            if (!response.isSuccessful()) {
+                throw new EpaperApiInvalidResponseException("Subscription check url response was not successful " + response.code());
+            }
+
+            return new JSONObject(response.body().string()).getBoolean("isSubscribed");
         } catch (JSONException e) {
             throw new EpaperApiInvalidResponseException(e);
         } catch (IOException e) {

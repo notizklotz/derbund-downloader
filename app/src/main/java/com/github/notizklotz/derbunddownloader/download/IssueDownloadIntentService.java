@@ -20,8 +20,9 @@ package com.github.notizklotz.derbunddownloader.download;
 
 import android.app.IntentService;
 import android.content.Intent;
-import android.util.Log;
 
+import com.github.notizklotz.derbunddownloader.R;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
@@ -35,10 +36,10 @@ import org.joda.time.LocalDate;
 
 import java.io.IOException;
 
+import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
+
 @EIntentService
 public class IssueDownloadIntentService extends IntentService {
-
-    private static final String TAG = "IssueDownloadService";
 
     @Bean
     WifiCommandExecutor wifiCommandExecutor;
@@ -65,7 +66,16 @@ public class IssueDownloadIntentService extends IntentService {
         try {
             issueDownloader.download(issueDate);
         } catch (IOException e) {
-            Log.e(TAG, "downloadIssue: connection failed", e);
+            notificationService.notifyUser(this.getText(R.string.download_connection_failed), this.getText(R.string.download_connection_failed_text), true);
+        } catch (EpaperApiInexistingIssueRequestedException e) {
+            analyticsTracker.sendDefaultException(this, e);
+            notificationService.notifyUser(this.getText(R.string.download_service_error), this.getText(R.string.download_service_error_text), e.getMessage(), true);
+        } catch (EpaperApiInvalidResponseException e) {
+            analyticsTracker.sendDefaultException(this, e);
+            notificationService.notifyUser(this.getText(R.string.download_service_error), this.getText(R.string.download_service_error_text), e.getMessage(), true);
+        } catch (EpaperApiInvalidCredentialsException e) {
+            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
+            notificationService.notifyUser(this.getText(R.string.download_login_failed), this.getText(R.string.download_login_failed_text), true);
         }
     }
 
