@@ -151,6 +151,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 Picasso.with(DownloadedIssuesActivity.this)
                         .load(originalThumbnailUri)
                         .placeholder(R.drawable.issue_placeholder)
+                        .fit()
                         .into(image);
                 return view;
             }
