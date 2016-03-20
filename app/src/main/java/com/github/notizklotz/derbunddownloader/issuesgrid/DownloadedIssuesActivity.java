@@ -39,17 +39,17 @@ import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
+import com.squareup.picasso.Picasso;
 
 import org.androidannotations.annotations.AfterViews;
 import org.androidannotations.annotations.Bean;
@@ -59,6 +59,7 @@ import org.androidannotations.annotations.OptionsMenu;
 import org.androidannotations.annotations.SystemService;
 import org.androidannotations.annotations.ViewById;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.LocalDate;
 
 import java.io.File;
 
@@ -143,12 +144,12 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 // Load the thumbnail image
                 ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
                 String description = getDescriptionFromCursor(getCursor());
-                String originalThumbnailUri = thumbnailRegistry.getUri(description);
 
-                Glide.with(DownloadedIssuesActivity.this)
+                LocalDate issueDate = DateHandlingUtils.fromDateString(description);
+                File originalThumbnailUri = thumbnailRegistry.getThumbnailFile(issueDate);
+
+                Picasso.with(DownloadedIssuesActivity.this)
                         .load(originalThumbnailUri)
-                        .diskCacheStrategy(DiskCacheStrategy.NONE)
-                        .dontTransform()
                         .placeholder(R.drawable.issue_placeholder)
                         .into(image);
                 return view;
@@ -189,7 +190,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 try {
                     if (cursor.moveToFirst()) {
                         descriptionFromCursor = getDescriptionFromCursor(cursor);
-                        thumbnailRegistry.clear(descriptionFromCursor);
+                        thumbnailRegistry.clear(DateHandlingUtils.fromDateString(descriptionFromCursor));
                     }
                 } finally {
                     cursor.close();
@@ -224,7 +225,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 try {
                     if (cursor.moveToFirst()) {
                         while (!cursor.isAfterLast()) {
-                            thumbnailRegistry.clear(getDescriptionFromCursor(cursor));
                             long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
                             count++;
                             downloadManager.remove(itemID);

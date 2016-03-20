@@ -25,6 +25,7 @@ import android.support.annotation.NonNull;
 
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.google.android.gms.analytics.HitBuilders;
 
 import org.androidannotations.annotations.AfterInject;
@@ -36,6 +37,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
@@ -49,6 +51,9 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okio.BufferedSink;
+import okio.Okio;
 
 @EBean(scope = EBean.Scope.Singleton)
 public class EpaperApiClient {
@@ -62,6 +67,9 @@ public class EpaperApiClient {
 
     @Bean
     AnalyticsTracker analyticsTracker;
+
+    @Bean
+    ThumbnailRegistry thumbnailRegistry;
 
     @RootContext
     Context context;
@@ -218,6 +226,33 @@ public class EpaperApiClient {
             throw new EpaperApiInvalidResponseException(e);
         } catch (IOException e) {
             throw new EpaperApiInvalidResponseException(e);
+        }
+    }
+
+    public void savePdfThumbnail(@NonNull LocalDate issueDate) {
+        try {
+            Uri thumbnailUrl = getPdfThumbnailUrl(issueDate);
+
+            Request request = new Request.Builder()
+                    .url(thumbnailUrl.toString())
+                    .get()
+                    .build();
+
+            File thumbnailFile = thumbnailRegistry.getThumbnailFile(issueDate);
+
+            //noinspection ResultOfMethodCallIgnored
+            thumbnailFile.getParentFile().mkdirs();
+
+            Response response = client.newCall(request).execute();
+            if (response.isSuccessful()) {
+                BufferedSink sink = Okio.buffer(Okio.sink(thumbnailFile));
+                ResponseBody body = response.body();
+                sink.writeAll(body.source());
+                sink.close();
+                body.close();
+            }
+        } catch (Exception e) {
+            analyticsTracker.sendDefaultException(this.context, e);
         }
     }
 

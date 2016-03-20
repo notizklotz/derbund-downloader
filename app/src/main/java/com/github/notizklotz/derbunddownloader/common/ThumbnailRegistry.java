@@ -19,35 +19,54 @@
 package com.github.notizklotz.derbunddownloader.common;
 
 import android.content.Context;
-import android.net.Uri;
 import android.support.annotation.NonNull;
-
-import com.bumptech.glide.Glide;
+import android.util.Log;
 
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
+import org.joda.time.LocalDate;
+
+import java.io.File;
 
 @EBean
 public class ThumbnailRegistry {
 
+    private static final String TAG = "ThumbnailRegistry";
+
     @RootContext
     Context context;
 
-    public void registerUri(@NonNull String description, @NonNull Uri thumbnailUri) {
-        context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).edit().putString(description, thumbnailUri.toString()).commit();
+    @NonNull
+    public File getThumbnailFile(@NonNull LocalDate issueDate) {
+        return new File(getCacheDir(), issueDate.toString() + ".jpg");
     }
 
-    @NonNull
-    public String getUri(@NonNull String description) {
-        return context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).getString(description, "");
-    }
-    
-    public void clear(@NonNull String description) {
-        context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).edit().remove(description).commit();
+    public void clear(@NonNull LocalDate issueDate) {
+        try {
+            File thumbnailFile = getThumbnailFile(issueDate);
+            //noinspection ResultOfMethodCallIgnored
+            thumbnailFile.delete();
+        } catch (Exception e) {
+            Log.e(TAG, "clear: failed", e);
+        }
     }
 
     public void clearAll() {
-        context.getSharedPreferences("thumbnailregistry", Context.MODE_PRIVATE).edit().clear().commit();
-        Glide.get(context).clearDiskCache();
+        try {
+            File cacheDir = getCacheDir();
+            if (cacheDir.exists()) {
+                for (File file : cacheDir.listFiles()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    file.delete();
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "clearAll: failed", e);
+        }
+    }
+
+    @NonNull
+    private File getCacheDir() {
+        return new File(context.getCacheDir(), "thumbs");
     }
 }

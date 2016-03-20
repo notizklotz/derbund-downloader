@@ -18,9 +18,10 @@
 
 package com.github.notizklotz.derbunddownloader.common;
 
-import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 import java.util.Locale;
 
@@ -28,24 +29,21 @@ public class DateHandlingUtils {
 
     public static final DateTimeZone TIMEZONE_SWITZERLAND = DateTimeZone.forID("Europe/Zurich");
     public static final Locale SERVER_LOCALE = new Locale("de", "CH");
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("dd.MM.yyyy");
 
     private DateHandlingUtils() {
-    }
-
-    /**
-     * Creates a formatted full date/time string as in this example: "31.12.2014 12:59:59 GMT+2".
-     * The device's current default timezone is used for timezone calculations.
-     */
-    public static String toFullStringUserTimezone(DateTime date) {
-        return toFullString(date, getUserTimezone());
     }
 
     public static DateTimeZone getUserTimezone() {
         return DateTimeZone.getDefault();
     }
 
-    public static String toFullString(DateTime date, DateTimeZone timeZone) {
-        return DateTimeFormat.forPattern("dd.MM.yyyy HH:mm:ss z").withLocale(SERVER_LOCALE).withZone(timeZone).print(date);
+    public static String toDateString(LocalDate localDate) {
+        return localDate.toString(DATE_TIME_FORMATTER);
+    }
+
+    public static LocalDate fromDateString(String dateString) {
+        return LocalDate.parse(dateString, DATE_TIME_FORMATTER);
     }
 
 }

@@ -33,13 +33,11 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.Target;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
-import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
@@ -50,7 +48,6 @@ import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
 import org.joda.time.LocalDate;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
@@ -59,7 +56,6 @@ public class IssueDownloader {
     private static final String LOG_TAG = IssueDownloader.class.getSimpleName();
     private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
     private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
-    private static final String ISSUE_DESCRIPTION_TEMPLATE = "%02d.%02d.%04d";
 
     @RootContext
     Context context;
@@ -72,9 +68,6 @@ public class IssueDownloader {
 
     @Bean
     EpaperApiClient epaperApiClient;
-
-    @Bean
-    ThumbnailRegistry thumbnailRegistry;
 
     @Bean
     AnalyticsTracker analyticsTracker;
@@ -94,7 +87,7 @@ public class IssueDownloader {
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
 
-        downloadThumbnail(issueDate);
+        epaperApiClient.savePdfThumbnail(issueDate);
 
         final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
         final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
@@ -118,29 +111,13 @@ public class IssueDownloader {
         }
     }
 
-    private void downloadThumbnail(LocalDate issueDate) {
-        try {
-            Uri thumbnailUrl = epaperApiClient.getPdfThumbnailUrl(issueDate);
-
-            File thumbnailFile = Glide.with(context)
-                    .load(thumbnailUrl)
-                    .downloadOnly(Target.SIZE_ORIGINAL, Target.SIZE_ORIGINAL)
-                    .get();
-
-            String stableKey = expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate);
-            thumbnailRegistry.registerUri(stableKey, Uri.fromFile(thumbnailFile));
-        } catch (Exception e) {
-            analyticsTracker.sendDefaultException(this.context, e);
-        }
-    }
-
     private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {
         final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
         final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
 
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
                 .setTitle(title)
-                .setDescription(expandTemplateWithDate(ISSUE_DESCRIPTION_TEMPLATE, issueDate))
+                .setDescription(DateHandlingUtils.toDateString(issueDate))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
                 .setDestinationInExternalFilesDir(context, null, filename);
 

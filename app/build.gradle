@@ -77,8 +77,9 @@ dependencies {
     compile 'com.google.android.gms:play-services-analytics:8.4.0'
 
     compile "net.danlew:android.joda:$JODA_TIME_VERSION"
-    compile 'com.github.bumptech.glide:glide:3.7.0'
+    compile 'com.squareup.picasso:picasso:2.5.2'
     compile 'com.squareup.okhttp3:okhttp:3.2.0'
+    compile 'com.squareup.okio:okio:1.6.0'
     compile 'org.apache.commons:commons-lang3:3.4'
     compile 'com.evernote:android-job:1.0.3'
 
