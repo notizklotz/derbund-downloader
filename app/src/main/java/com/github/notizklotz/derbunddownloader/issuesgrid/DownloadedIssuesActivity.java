@@ -148,6 +148,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 Glide.with(DownloadedIssuesActivity.this)
                         .load(originalThumbnailUri)
                         .diskCacheStrategy(DiskCacheStrategy.NONE)
+                        .dontTransform()
                         .placeholder(R.drawable.issue_placeholder)
                         .into(image);
                 return view;
