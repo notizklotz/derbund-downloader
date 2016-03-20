@@ -18,18 +18,13 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.annotation.SuppressLint;
 import android.app.IntentService;
 import android.content.Intent;
 import android.util.Log;
 
-import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
-import com.github.notizklotz.derbunddownloader.common.WifiConnectionFailedException;
-import com.github.notizklotz.derbunddownloader.common.WifiNotEnabledException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 
@@ -39,15 +34,11 @@ import org.androidannotations.annotations.ServiceAction;
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
-import java.util.concurrent.Callable;
 
-import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
-
-@SuppressLint("Registered")
 @EIntentService
 public class IssueDownloadIntentService extends IntentService {
 
-    private static final String TAG = IssueDownloadIntentService.class.getSimpleName();
+    private static final String TAG = "IssueDownloadService";
 
     @Bean
     WifiCommandExecutor wifiCommandExecutor;
@@ -64,8 +55,6 @@ public class IssueDownloadIntentService extends IntentService {
     @Bean
     IssueDownloader issueDownloader;
 
-    private Intent intent;
-
     public IssueDownloadIntentService() {
         super("IssueDownloadIntentService");
     }
@@ -73,57 +62,15 @@ public class IssueDownloadIntentService extends IntentService {
     @ServiceAction
     public void downloadIssue(int day, int month, int year) {
         final LocalDate issueDate = new LocalDate(year, month, day);
-        final boolean wifiOnly = settings.isWifiOnly();
-
         try {
-            if (wifiOnly) {
-                try {
-                    wifiCommandExecutor.execute(new Callable() {
-                        @Override
-                        public Object call() throws Exception {
-                            issueDownloader.download(issueDate, true);
-                            return null;
-                        }
-                    });
-                } catch (WifiConnectionFailedException e) {
-                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi connection failed").setNonInteraction(true));
-                    notificationService.notifyUser(getText(R.string.download_wifi_connection_failed), getText(R.string.download_wifi_connection_failed_text), true);
-                } catch (WifiNotEnabledException e) {
-                    analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi disabled").setNonInteraction(true));
-                    notificationService.notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_no_wifi_text), true);
-                }
-            } else {
-                issueDownloader.download(issueDate, false);
-            }
+            issueDownloader.download(issueDate);
+        } catch (IOException e) {
+            Log.e(TAG, "downloadIssue: connection failed", e);
         }
-        catch (IOException e) {
-            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("No connection on download").setNonInteraction(true));
-            notificationService.notifyUser(getText(R.string.download_connection_failed), getText(R.string.download_connection_failed_text), true);
-        }
-        catch (Exception e) {
-            Log.e(TAG, "downloadIssue: failed", e);
-            analyticsTracker.sendDefaultException(this, e);
-        } finally {
-            cleanup();
-        }
-    }
-
-    private void cleanup() {
-        if (intent != null) {
-            AutomaticDownloadBroadcastReceiver.completeWakefulIntent(intent);
-            intent = null;
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        cleanup();
-        super.onDestroy();
     }
 
     @Override
     protected void onHandleIntent(Intent intent) {
-        this.intent = intent;
-    }
 
+    }
 }

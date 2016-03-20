@@ -15,7 +15,6 @@
   ~ You should have received a copy of the GNU General Public License
   ~ along with this program. If not, see {http://www.gnu.org/licenses/}.
   -->
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="com.github.notizklotz.derbunddownloader"
@@ -35,7 +34,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
-        android:name=".DerBundDownloaderApplication"
+        android:name=".DerBundDownloaderApplication_"
         android:allowBackup="true"
         android:fullBackupContent="@xml/backupscheme"
         android:icon="@mipmap/ic_launcher"
@@ -66,25 +65,13 @@
             android:name=".download.IssueDownloadIntentService_"
             android:exported="false" />
 
-        <receiver
-            android:name=".download.AutomaticDownloadBroadcastReceiver_"
-            android:exported="false" />
-
-        <receiver
-            android:name=".download.BootCompletedBroadcastReceiver_"
-            android:exported="false">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
-
         <meta-data
             android:name="com.github.notizklotz.derbunddownloader.common.EpaperGlideModule"
             android:value="GlideModule" />
+
     </application>
 
 </manifest>

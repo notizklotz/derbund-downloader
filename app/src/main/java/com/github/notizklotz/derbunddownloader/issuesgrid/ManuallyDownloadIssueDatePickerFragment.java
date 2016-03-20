@@ -81,6 +81,7 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
             analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("manual").setLabel(selectedDate.toString()).setValue(1));
+
             IssueDownloadIntentService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
         }
     }

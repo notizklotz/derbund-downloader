@@ -18,13 +18,10 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.app.AlarmManager;
-import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
-import android.support.annotation.NonNull;
 
+import com.evernote.android.job.JobManager;
+import com.evernote.android.job.JobRequest;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -33,67 +30,63 @@ import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.SystemService;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
+import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 
 @EBean
 public class AutomaticDownloadScheduler {
 
-    @Bean(SettingsImpl.class)
-    Settings settings;
-
-    @SystemService
-    AlarmManager alarmManager;
-
     @RootContext
     Context context;
 
-    public void updateAlarm() {
-        boolean autoDownloadEnabled = settings.isAutoDownloadEnabled();
-        if (autoDownloadEnabled) {
-            schedule();
+    @Bean(SettingsImpl.class)
+    Settings settings;
+
+    public void update() {
+        if (settings.isAutoDownloadEnabled()) {
+            if (JobManager.instance().getAllJobRequestsForTag(AutomaticIssueDownloadJob.TAG).isEmpty()) {
+                schedule();
+            }
         } else {
             cancel();
         }
     }
 
-    private void schedule() {
-        LocalTime initialAlarmTime = new LocalTime(5, 0);
-
-        if (BuildConfig.DEBUG) {
-            initialAlarmTime = new LocalTime(20, 57);
-        }
-
-        DateTime nextAlarm = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(initialAlarmTime);
-        if (nextAlarm.isBeforeNow()) {
-            nextAlarm = nextAlarm.plusDays(1);
-        }
-        if (nextAlarm.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-            nextAlarm = nextAlarm.plusDays(1);
-        }
-
-        final PendingIntent pendingIntent = createPendingIntent(AutomaticDownloadBroadcastReceiver_.class);
-        alarmManager.cancel(pendingIntent);
-        alarmManager.setInexactRepeating(
-                AlarmManager.RTC_WAKEUP,
-                nextAlarm.getMillis(),
-                AlarmManager.INTERVAL_FIFTEEN_MINUTES,
-                pendingIntent);
+    public void scheduleNextJobRequest() {
+        schedule();
     }
 
+    private void schedule() {
+        LocalTime alarmTime = new LocalTime(5, 0);
+        if (BuildConfig.DEBUG) {
+            alarmTime = new LocalTime(10, 15);
+        }
+
+        DateTime nextAlarmSwissTime = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(alarmTime);
+        if (nextAlarmSwissTime.isBeforeNow()) {
+            nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
+        }
+        if (!BuildConfig.DEBUG) {
+            if (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+                nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
+            }
+        }
+
+        DateTime nowDeviceTime = DateTime.now();
+        Duration windowStart = new Duration(nowDeviceTime, nextAlarmSwissTime);
+        Duration windowEnd =  new Duration(nowDeviceTime, nextAlarmSwissTime.plusMinutes(5));
+
+        new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
+                .setExecutionWindow(windowStart.getMillis(), windowEnd.getMillis())
+                .setPersisted(true)
+                .build()
+                .schedule();
+    }
 
     private void cancel() {
-        alarmManager.cancel(createPendingIntent(AutomaticDownloadBroadcastReceiver_.class));
-    }
-
-    private PendingIntent createPendingIntent(@NonNull Class<? extends BroadcastReceiver> broadcastReceiver) {
-        return PendingIntent.getBroadcast(
-                context,
-                0,
-                new Intent(context, broadcastReceiver),
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        JobManager.instance().cancelAllForTag(AutomaticIssueDownloadJob.TAG);
     }
 
 }

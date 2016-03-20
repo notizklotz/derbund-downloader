@@ -46,7 +46,6 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
-import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
 import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
@@ -92,9 +91,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     @Bean
     AnalyticsTracker analyticsTracker;
 
-    @Bean
-    AutomaticDownloadScheduler automaticDownloadScheduler;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -107,8 +103,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
 
         NotificationManagerCompat.from(this).cancelAll();
-
-        automaticDownloadScheduler.updateAlarm();
     }
 
     @Override

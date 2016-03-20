@@ -20,20 +20,41 @@ package com.github.notizklotz.derbunddownloader;
 
 import android.app.Application;
 
+import com.evernote.android.job.Job;
+import com.evernote.android.job.JobCreator;
+import com.evernote.android.job.JobManager;
+import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler;
+import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadJob;
+import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadJob_;
+
 import net.danlew.android.joda.JodaTimeAndroid;
 
+import org.androidannotations.annotations.Bean;
+import org.androidannotations.annotations.EApplication;
+
+@EApplication
 public class DerBundDownloaderApplication extends Application {
 
-    private static DerBundDownloaderApplication INSTANCE_;
-
-    public static DerBundDownloaderApplication getInstance() {
-        return INSTANCE_;
-    }
+    @Bean
+    AutomaticDownloadScheduler automaticDownloadScheduler;
 
     @Override
     public void onCreate() {
-        INSTANCE_ = this;
         super.onCreate();
         JodaTimeAndroid.init(this);
+        JobManager jobManager = JobManager.create(this);
+        if (BuildConfig.DEBUG) {
+            jobManager.setVerbose(true);
+        }
+        jobManager.addJobCreator(new JobCreator() {
+            @Override
+            public Job create(String tag) {
+                if (AutomaticIssueDownloadJob.TAG.equals(tag)) {
+                    return AutomaticIssueDownloadJob_.getInstance_(DerBundDownloaderApplication.this);
+                }
+                return null;
+            }
+        });
+        automaticDownloadScheduler.update();
     }
 }

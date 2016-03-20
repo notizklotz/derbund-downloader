@@ -41,6 +41,7 @@ import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
+import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
 
 import org.androidannotations.annotations.Bean;
@@ -81,12 +82,12 @@ public class IssueDownloader {
     AnalyticsTracker analyticsTracker;
 
     @Bean
-    AutomaticallyDownloadedIssuesRegistry automaticallyDownloadedIssuesRegistry;
-
-    @Bean
     NotificationService notificationService;
 
-    public void download(LocalDate issueDate, boolean wifiOnly) throws IOException {
+    @Bean(SettingsImpl.class)
+    Settings settings;
+
+    public void download(LocalDate issueDate) throws IOException {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isConnected()) {
             throw new IOException("Not connected");
@@ -112,13 +113,12 @@ public class IssueDownloader {
             try {
                 long millisBeforeDownload = SystemClock.elapsedRealtime();
 
-                String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, wifiOnly);
+                String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
                 downloadDoneSignal.await();
 
                 long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
                 analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
 
-                automaticallyDownloadedIssuesRegistry.registerAsDownloaded(issueDate);
                 notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
             } catch (InterruptedException e) {
                 analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));

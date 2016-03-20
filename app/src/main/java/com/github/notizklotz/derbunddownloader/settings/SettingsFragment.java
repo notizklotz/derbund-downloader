@@ -27,6 +27,7 @@ import android.preference.PreferenceFragment;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler;
 
+import org.androidannotations.annotations.Background;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EFragment;
 import org.androidannotations.annotations.SystemService;
@@ -72,8 +73,13 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         updateSummaries(sharedPreferences);
 
         if (SettingsImpl.KEY_AUTO_DOWNLOAD_ENABLED.equals(key)) {
-            automaticDownloadScheduler.updateAlarm();
+            updateAutomaticDownloadScheduler();
         }
+    }
+
+    @Background
+    void updateAutomaticDownloadScheduler() {
+        automaticDownloadScheduler.update();
     }
 
     private void updateSummaries(SharedPreferences sharedPreferences) {

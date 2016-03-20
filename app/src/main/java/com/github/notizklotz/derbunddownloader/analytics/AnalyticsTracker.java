@@ -23,7 +23,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
-import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -36,6 +35,7 @@ import com.google.android.gms.analytics.Tracker;
 import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.Bean;
 import org.androidannotations.annotations.EBean;
+import org.androidannotations.annotations.RootContext;
 import org.androidannotations.annotations.SystemService;
 
 @EBean(scope = EBean.Scope.Singleton)
@@ -47,11 +47,14 @@ public class AnalyticsTracker {
     @SystemService
     ConnectivityManager connectivityManager;
 
+    @RootContext
+    Context context;
+
     private Tracker mTracker;
 
     @AfterInject
     void initTracker() {
-        GoogleAnalytics analytics = GoogleAnalytics.getInstance(DerBundDownloaderApplication.getInstance());
+        GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
         // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
         mTracker = analytics.newTracker(R.xml.app_tracker);
         mTracker.setAnonymizeIp(true);
