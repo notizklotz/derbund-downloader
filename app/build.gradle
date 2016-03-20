@@ -94,3 +94,4 @@ dependencies {
     apt "org.androidannotations:androidannotations:$AAVersion"
 }
 
+apply plugin: 'com.google.gms.google-services'
