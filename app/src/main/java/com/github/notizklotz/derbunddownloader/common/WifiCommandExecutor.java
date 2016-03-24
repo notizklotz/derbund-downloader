@@ -47,7 +47,7 @@ public class WifiCommandExecutor {
 
     @AfterInject
     public void init() {
-        myWifiLock = wifiManager.createWifiLock("ePaperDownloader");
+        myWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ePaperDownloader");
         myWifiLock.setReferenceCounted(true);
     }
 
