@@ -34,7 +34,11 @@ import org.androidannotations.annotations.RootContext;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.Duration;
+import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+
+import java.util.HashSet;
+import java.util.Set;
 
 @EBean
 public class AutomaticDownloadScheduler {
@@ -44,6 +48,25 @@ public class AutomaticDownloadScheduler {
 
     @Bean(SettingsImpl.class)
     Settings settings;
+
+    private static final Set<LocalDate> HOLIDAYS = new HashSet<LocalDate>();
+
+    static {
+        HOLIDAYS.add(new LocalDate(2016, 3, 28));
+        HOLIDAYS.add(new LocalDate(2016, 5, 5));
+        HOLIDAYS.add(new LocalDate(2016, 5, 16));
+        HOLIDAYS.add(new LocalDate(2016, 8, 1));
+        HOLIDAYS.add(new LocalDate(2016, 12, 26));
+
+        HOLIDAYS.add(new LocalDate(2017, 1, 2));
+        HOLIDAYS.add(new LocalDate(2017, 4, 14));
+        HOLIDAYS.add(new LocalDate(2017, 4, 17));
+        HOLIDAYS.add(new LocalDate(2017, 5, 25));
+        HOLIDAYS.add(new LocalDate(2017, 6, 5));
+        HOLIDAYS.add(new LocalDate(2017, 8, 1));
+        HOLIDAYS.add(new LocalDate(2017, 12, 25));
+        HOLIDAYS.add(new LocalDate(2017, 12, 26));
+    }
 
     public void update() {
         if (settings.isAutoDownloadEnabled()) {
@@ -71,6 +94,10 @@ public class AutomaticDownloadScheduler {
         }
         if (!BuildConfig.DEBUG) {
             if (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+                nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
+            }
+
+            while (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY || HOLIDAYS.contains(nextAlarmSwissTime.toLocalDate())) {
                 nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
             }
         }
