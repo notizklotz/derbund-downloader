@@ -24,7 +24,6 @@ import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import org.androidannotations.annotations.AfterInject;
 import org.androidannotations.annotations.EBean;
 import org.androidannotations.annotations.SystemService;
 
@@ -43,14 +42,6 @@ public class WifiCommandExecutor {
     @SystemService
     ConnectivityManager connectivityManager;
 
-    private WifiManager.WifiLock myWifiLock;
-
-    @AfterInject
-    public void init() {
-        myWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ePaperDownloader");
-        myWifiLock.setReferenceCounted(true);
-    }
-
     /**
      * Makes sure Wifi connection is available and stays until callable is completed. This method is thread safe.
      *
@@ -63,9 +54,9 @@ public class WifiCommandExecutor {
             throw new WifiNotEnabledException();
         }
 
+        WifiManager.WifiLock myWifiLock = wifiManager.createWifiLock(WifiManager.WIFI_MODE_FULL_HIGH_PERF, "ePaperDownloader");
         myWifiLock.acquire();
         try {
-            wifiManager.reconnect();
             boolean connected = waitForWifiConnection();
             if (connected) {
                 return callable.call();
