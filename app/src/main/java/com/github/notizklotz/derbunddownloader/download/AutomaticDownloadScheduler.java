@@ -88,6 +88,12 @@ public class AutomaticDownloadScheduler {
             builder.setExecutionWindow(windowStart.getMillis(), windowEnd.getMillis());
         }
 
+        if (settings.isWifiOnly()) {
+            builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
+        } else {
+            builder.setRequiredNetworkType(JobRequest.NetworkType.CONNECTED);
+        }
+
         builder.build().schedule();
     }
 
