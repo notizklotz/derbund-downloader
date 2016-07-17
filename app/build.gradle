@@ -28,8 +28,8 @@ apt {
 }
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion '23.0.2'
+    compileSdkVersion 24
+    buildToolsVersion '24.0.0'
 
     defaultConfig {
         applicationId "com.github.notizklotz.derbunddownloader"
@@ -60,7 +60,7 @@ android {
 }
 
 dependencies {
-    final SUPPORT_LIBRARY_VERSION = '23.2.1'
+    final SUPPORT_LIBRARY_VERSION = '24.0.0'
     final JODA_TIME_VERSION = '2.9.2'
 
     compile fileTree(include: ['*.jar'], dir: 'libs')
@@ -73,7 +73,7 @@ dependencies {
     //noinspection GradleDependency
     compile "com.android.support:design:$SUPPORT_LIBRARY_VERSION"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
-    compile 'com.google.android.gms:play-services-analytics:8.4.0'
+    compile 'com.google.android.gms:play-services-analytics:9.2.1'
 
     compile "net.danlew:android.joda:$JODA_TIME_VERSION"
     compile 'com.squareup.picasso:picasso:2.5.2'

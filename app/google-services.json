@@ -1,22 +1,22 @@
 {
   "project_info": {
-    "project_id": "der-bund-epaper-downloader",
     "project_number": "516145314408",
-    "name": "Der Bund ePaper Downloader"
+    "project_id": "der-bund-epaper-downloader"
   },
   "client": [
     {
       "client_info": {
         "mobilesdk_app_id": "1:516145314408:android:83a8cc6880a21dcf",
-        "client_id": "android:com.github.notizklotz.derbunddownloader",
-        "client_type": 1,
         "android_client_info": {
-          "package_name": "com.github.notizklotz.derbunddownloader",
-          "certificate_hash": []
+          "package_name": "com.github.notizklotz.derbunddownloader"
         }
       },
       "oauth_client": [],
-      "api_key": [],
+      "api_key": [
+        {
+          "current_key": ""
+        }
+      ],
       "services": {
         "analytics_service": {
           "status": 2,
@@ -24,16 +24,9 @@
             "tracking_id": "UA-73769440-1"
           }
         },
-        "cloud_messaging_service": {
-          "status": 1,
-          "apns_config": []
-        },
         "appinvite_service": {
           "status": 1,
           "other_platform_oauth_client": []
-        },
-        "google_signin_service": {
-          "status": 1
         },
         "ads_service": {
           "status": 1
@@ -41,6 +34,5 @@
       }
     }
   ],
-  "client_info": [],
-  "ARTIFACT_VERSION": "1"
+  "configuration_version": "1"
 }
