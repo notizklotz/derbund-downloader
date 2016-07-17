@@ -25,11 +25,13 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationManagerCompat;
+import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -162,12 +164,21 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         getLoaderManager().initLoader(1, null, new IssuesGridLoaderCallbacks(this, issueListAdapter));
     }
 
-    private void openPDF(String uri) {
+    private void openPDF(Uri uri) {
         NotificationManagerCompat.from(this).cancelAll();
 
         Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(new File(uri)), MEDIA_TYPE_PDF);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
+
+        Uri dataUri;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            File file = new File(uri.getPath());
+            dataUri = FileProvider.getUriForFile(this, "com.github.notizklotz.derbunddownloader", file);
+            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        } else {
+            dataUri = uri;
+        }
+        intent.setDataAndType(dataUri, MEDIA_TYPE_PDF);
 
         PackageManager packageManager = getPackageManager();
         assert packageManager != null;
@@ -262,8 +273,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             if (selectedIssue != null) {
                 boolean completed = selectedIssue.getInt(selectedIssue.getColumnIndex(DownloadManager.COLUMN_STATUS)) == DownloadManager.STATUS_SUCCESSFUL;
                 if (completed) {
-                    String uri = selectedIssue.getString(selectedIssue.getColumnIndex(DownloadManager.COLUMN_LOCAL_FILENAME));
-                    openPDF(uri);
+                    String uri = selectedIssue.getString(selectedIssue.getColumnIndex(DownloadManager.COLUMN_LOCAL_URI));
+                    openPDF(Uri.parse(uri));
                 }
             }
         }
