@@ -52,5 +52,4 @@
     <string name="action_delete_all">Alle entfernen</string>
     <string name="debugging">Informationen</string>
     <string name="issue_deleted">Ausgabe entfernt: </string>
-    <string name="auto_download_summary"/>
 </resources>

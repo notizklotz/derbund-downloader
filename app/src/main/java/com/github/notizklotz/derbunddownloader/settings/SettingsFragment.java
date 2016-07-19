@@ -18,10 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
-import android.content.Intent;
 import android.content.SharedPreferences;
-import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.preference.Preference;
@@ -77,16 +74,6 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
 
         if (SettingsImpl.KEY_AUTO_DOWNLOAD_ENABLED.equals(key)) {
             updateAutomaticDownloadScheduler();
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                String packageName = getContext().getPackageName();
-                if (settings.isAutoDownloadEnabled() && !powerManager.isIgnoringBatteryOptimizations(packageName)) {
-                    Intent intent = new Intent();
-                    intent.setAction(android.provider.Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-                    intent.setData(Uri.parse("package:" + packageName));
-                    getContext().startActivity(intent);
-                }
-            }
         }
     }
 
