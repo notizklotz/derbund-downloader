@@ -19,12 +19,10 @@
 package com.github.notizklotz.derbunddownloader;
 
 import android.app.Application;
-import android.os.Build;
 
 import com.evernote.android.job.Job;
 import com.evernote.android.job.JobCreator;
 import com.evernote.android.job.JobManager;
-import com.evernote.android.job.util.JobApi;
 import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler;
 import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadJob;
 import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadJob_;
@@ -45,18 +43,6 @@ public class DerBundDownloaderApplication extends Application {
         super.onCreate();
         JodaTimeAndroid.init(this);
         JobManager jobManager = JobManager.create(this);
-
-        //Doze makes JobApi.V_21 suboptimal for automatic issue downloading as the issue is downloaded too late
-        //JobApi.V_14 with android.app.AlarmManager.setExactAndAllowWhileIdle() also doesn't solve the problem as network is not available then
-        //Thus: Prefer GCM over V_21 API as this is excluded from Doze restrictions
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            if (JobApi.GCM.isSupported(getApplicationContext())) {
-               jobManager.forceApi(JobApi.GCM);
-            } else {
-                jobManager.forceApi(JobApi.V_21);
-            }
-        }
-
         if (BuildConfig.DEBUG) {
             jobManager.setVerbose(true);
         }
