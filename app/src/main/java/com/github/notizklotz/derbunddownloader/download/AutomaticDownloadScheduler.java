@@ -107,18 +107,18 @@ public class AutomaticDownloadScheduler {
         Duration windowEnd =  new Duration(nowDeviceTime, nextAlarmSwissTime.plusMinutes(5));
 
         JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
-                .setPersisted(true);
+                .setPersisted(true).setRequirementsEnforced(false);
         if (JobApi.V_14.equals(JobManager.instance().getApi())) {
             //Currently, com.evernote.android.job.v14.JobProxy14 doesn't use RTC_WAKEUP for non-exact jobs.
             builder.setExact(windowStart.getMillis());
         } else {
             builder.setExecutionWindow(windowStart.getMillis(), windowEnd.getMillis());
-        }
 
-        if (settings.isWifiOnly()) {
-            builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
-        } else {
-            builder.setRequiredNetworkType(JobRequest.NetworkType.CONNECTED);
+            if (settings.isWifiOnly()) {
+                builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
+            } else {
+                builder.setRequiredNetworkType(JobRequest.NetworkType.CONNECTED);
+            }
         }
 
         builder.build().schedule();
