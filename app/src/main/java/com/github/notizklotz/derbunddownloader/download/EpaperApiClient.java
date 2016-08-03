@@ -119,7 +119,7 @@ public class EpaperApiClient {
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("http://epaper.derbund.ch/index.cfm/authentication/login")
+                    .url("https://epaper.derbund.ch/index.cfm/authentication/login")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
@@ -153,7 +153,7 @@ public class EpaperApiClient {
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getArticle")
+                    .url("https://epaper.derbund.ch/index.cfm/epaper/1.0/getArticle")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
@@ -182,7 +182,7 @@ public class EpaperApiClient {
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc")
+                    .url("https://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
@@ -194,7 +194,8 @@ public class EpaperApiClient {
                 throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
             }
 
-            return Uri.parse(new JSONObject(response.body().string()).getJSONArray("data").getJSONObject(0).getString("issuepdf"));
+            JSONObject jsonObject = new JSONObject(response.body().string());
+            return Uri.parse(jsonObject.getJSONArray("data").getJSONObject(0).getString("issuefile"));
         } catch (JSONException e) {
             throw new EpaperApiInvalidResponseException(e);
         } catch (IOException e) {
@@ -213,7 +214,7 @@ public class EpaperApiClient {
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("http://epaper.derbund.ch/index.cfm/epaper/1.0/getFirstPage")
+                    .url("https://epaper.derbund.ch/index.cfm/epaper/1.0/getFirstPage")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
