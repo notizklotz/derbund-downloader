@@ -195,7 +195,15 @@ public class EpaperApiClient {
             }
 
             JSONObject jsonObject = new JSONObject(response.body().string());
-            return Uri.parse(jsonObject.getJSONArray("data").getJSONObject(0).getString("issuefile"));
+
+
+            JSONObject jsonObject1 = jsonObject.getJSONArray("data").getJSONObject(0);
+            String uriString = jsonObject1.optString("issuepdf");
+            if (uriString == null) {
+                uriString = jsonObject1.getString("issuefile");
+            }
+
+            return Uri.parse(uriString);
         } catch (JSONException e) {
             throw new EpaperApiInvalidResponseException(e);
         } catch (IOException e) {
