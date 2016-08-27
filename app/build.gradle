@@ -29,7 +29,7 @@ apt {
 
 android {
     compileSdkVersion 24
-    buildToolsVersion '24.0.1'
+    buildToolsVersion '24.0.2'
 
     defaultConfig {
         applicationId "com.github.notizklotz.derbunddownloader"
@@ -72,7 +72,7 @@ dependencies {
     //noinspection GradleDependency
     compile "com.android.support:design:$SUPPORT_LIBRARY_VERSION"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
-    compile 'com.google.android.gms:play-services-analytics:9.2.1'
+    compile 'com.google.android.gms:play-services-analytics:9.4.0'
 
     compile "net.danlew:android.joda:2.9.4.1"
     compile 'com.squareup.picasso:picasso:2.5.2'
