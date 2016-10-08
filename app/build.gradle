@@ -18,7 +18,7 @@
 
 apply plugin: 'com.android.application'
 apply plugin: 'android-apt'
-def AAVersion = '4.0.0'
+def AAVersion = '4.1.0'
 
 apt {
     arguments {
@@ -61,7 +61,7 @@ android {
 }
 
 dependencies {
-    final SUPPORT_LIBRARY_VERSION = '24.0.0'
+    final SUPPORT_LIBRARY_VERSION = '24.2.1'
     compile fileTree(include: ['*.jar'], dir: 'libs')
 
     //noinspection GradleDependency
@@ -72,7 +72,7 @@ dependencies {
     //noinspection GradleDependency
     compile "com.android.support:design:$SUPPORT_LIBRARY_VERSION"
     compile "org.androidannotations:androidannotations-api:$AAVersion"
-    compile 'com.google.android.gms:play-services-analytics:9.4.0'
+    compile 'com.google.android.gms:play-services-analytics:9.6.1'
 
     compile "net.danlew:android.joda:2.9.4.1"
     compile 'com.squareup.picasso:picasso:2.5.2'
