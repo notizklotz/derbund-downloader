@@ -18,19 +18,13 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.content.Context;
-
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 import com.evernote.android.job.util.JobApi;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.Duration;
@@ -40,14 +34,15 @@ import org.joda.time.LocalTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@EBean
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class AutomaticDownloadScheduler {
 
-    @RootContext
-    Context context;
+    private final Settings settings;
 
-    @Bean(SettingsImpl.class)
-    Settings settings;
+    private final JobManager jobManager;
 
     private static final Set<LocalDate> HOLIDAYS = new HashSet<LocalDate>();
 
@@ -68,9 +63,15 @@ public class AutomaticDownloadScheduler {
         HOLIDAYS.add(new LocalDate(2017, 12, 26));
     }
 
+    @Inject
+    public AutomaticDownloadScheduler(Settings settings, JobManager jobManager) {
+        this.settings = settings;
+        this.jobManager = jobManager;
+    }
+
     public void update() {
         if (settings.isAutoDownloadEnabled()) {
-            if (JobManager.instance().getAllJobRequestsForTag(AutomaticIssueDownloadJob.TAG).isEmpty()) {
+            if (jobManager.getAllJobRequestsForTag(AutomaticIssueDownloadJob.TAG).isEmpty()) {
                 schedule();
             }
         } else {
@@ -108,7 +109,7 @@ public class AutomaticDownloadScheduler {
 
         JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
                 .setPersisted(true).setRequirementsEnforced(false);
-        if (JobApi.V_14.equals(JobManager.instance().getApi())) {
+        if (JobApi.V_14.equals(jobManager.getApi())) {
             //Currently, com.evernote.android.job.v14.JobProxy14 doesn't use RTC_WAKEUP for non-exact jobs.
             builder.setExact(windowStart.getMillis());
         } else {
@@ -122,10 +123,11 @@ public class AutomaticDownloadScheduler {
         }
 
         builder.build().schedule();
+
     }
 
     private void cancel() {
-        JobManager.instance().cancelAllForTag(AutomaticIssueDownloadJob.TAG);
+        jobManager.cancelAllForTag(AutomaticIssueDownloadJob.TAG);
     }
 
 }

@@ -18,7 +18,6 @@
 
 package com.github.notizklotz.derbunddownloader.issuesgrid;
 
-import android.annotation.SuppressLint;
 import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -33,6 +32,9 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -42,63 +44,52 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.BuildConfig;
+import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
-import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
+import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsActivity_;
-import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
+import com.github.notizklotz.derbunddownloader.settings.SettingsActivity;
 import com.google.android.gms.analytics.HitBuilders;
 import com.squareup.picasso.Picasso;
 
-import org.androidannotations.annotations.AfterViews;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EActivity;
-import org.androidannotations.annotations.OptionsItem;
-import org.androidannotations.annotations.OptionsMenu;
-import org.androidannotations.annotations.SystemService;
-import org.androidannotations.annotations.ViewById;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 
 import java.io.File;
 
+import javax.inject.Inject;
+
 import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
-@SuppressLint("Registered")
-@EActivity(R.layout.activity_downloaded_issues)
-@OptionsMenu(R.menu.main)
 public class DownloadedIssuesActivity extends AppCompatActivity {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
 
-    @SuppressWarnings("WeakerAccess")
-    @ViewById(R.id.gridview)
-    GridView gridView;
+    private GridView gridView;
 
-    @ViewById(R.id.empty_grid_view)
-    View emptyGridView;
+    private View emptyGridView;
 
-    @SystemService
+    @Inject
     DownloadManager downloadManager;
 
-    @Bean(SettingsImpl.class)
+    @Inject
     Settings settings;
 
-    @Bean
+    @Inject
     ThumbnailRegistry thumbnailRegistry;
 
-    @Bean
+    @Inject
     AnalyticsTracker analyticsTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (BuildConfig.DEBUG) {
+        if (BuildConfig.DEBUG && false) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
@@ -106,6 +97,15 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
 
         NotificationManagerCompat.from(this).cancelAll();
+
+        setContentView(R.layout.activity_downloaded_issues);
+
+        this.gridView = ((GridView) findViewById(R.id.gridview));
+        this.emptyGridView = findViewById(R.id.empty_grid_view);
+
+        ((DerBundDownloaderApplication)getApplication()).getDownloadedIssuesComponent().inject(this);
+
+        setupIssuesGrid();
     }
 
     @Override
@@ -116,7 +116,8 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         String password = settings.getPassword();
 
         if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
-            SettingsActivity_.intent(this).start();
+            startActivity(new Intent(this, SettingsActivity.class));
+
             Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_LONG).show();
         }
     }
@@ -127,7 +128,33 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         super.onResume();
     }
 
-    @AfterViews
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int itemId_ = item.getItemId();
+        if (itemId_ == R.id.action_deleteAll) {
+            showDeleteAllIssuesDialog();
+            return true;
+        }
+        if (itemId_ == R.id.action_download) {
+            menuItemDownloadSelected();
+            return true;
+        }
+        if (itemId_ == R.id.action_settings) {
+            menuItemSettingsSelected();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+
+
     void setupIssuesGrid() {
         gridView.setEmptyView(emptyGridView);
         gridView.setOnItemClickListener(new IssuesGridOnItemClickListener());
@@ -223,7 +250,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         return cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
     }
 
-    @OptionsItem(R.id.action_deleteAll)
     void showDeleteAllIssuesDialog() {
         ConfirmAllIssuesDeleteDialogFragment.createDialogFragment().show(getFragmentManager(), "issueDelete");
     }
@@ -256,14 +282,12 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         }.execute();
     }
 
-    @OptionsItem(R.id.action_download)
     void menuItemDownloadSelected() {
-        ManuallyDownloadIssueDatePickerFragment_.builder().build().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
+        new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
     }
 
-    @OptionsItem(R.id.action_settings)
     void menuItemSettingsSelected() {
-        SettingsActivity_.intent(this).start();
+        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     private class IssuesGridOnItemClickListener implements AdapterView.OnItemClickListener {

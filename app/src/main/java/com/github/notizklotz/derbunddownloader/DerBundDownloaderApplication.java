@@ -20,41 +20,60 @@ package com.github.notizklotz.derbunddownloader;
 
 import android.app.Application;
 
-import com.evernote.android.job.Job;
-import com.evernote.android.job.JobCreator;
-import com.evernote.android.job.JobManager;
-import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler;
-import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadJob;
-import com.github.notizklotz.derbunddownloader.download.AutomaticIssueDownloadJob_;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsComponent;
+import com.github.notizklotz.derbunddownloader.analytics.AnalyticsModule;
+import com.github.notizklotz.derbunddownloader.analytics.DaggerAnalyticsComponent;
+import com.github.notizklotz.derbunddownloader.download.DaggerDownloadComponent;
+import com.github.notizklotz.derbunddownloader.download.DownloadComponent;
+import com.github.notizklotz.derbunddownloader.download.DownloadModule;
+import com.github.notizklotz.derbunddownloader.issuesgrid.DaggerDownloadedIssuesComponent;
+import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesComponent;
+import com.github.notizklotz.derbunddownloader.settings.DaggerSettingsComponent;
+import com.github.notizklotz.derbunddownloader.settings.SettingsComponent;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EApplication;
 
-@EApplication
 public class DerBundDownloaderApplication extends Application {
 
-    @Bean
-    AutomaticDownloadScheduler automaticDownloadScheduler;
+    private AnalyticsComponent analyticsComponent;
+
+    private DownloadComponent downloadComponent;
+
+    private SettingsComponent settingsComponent;
+
+    private DownloadedIssuesComponent downloadedIssuesComponent;
 
     @Override
     public void onCreate() {
         super.onCreate();
         JodaTimeAndroid.init(this);
-        JobManager jobManager = JobManager.create(this);
-        if (BuildConfig.DEBUG) {
-            jobManager.setVerbose(true);
-        }
-        jobManager.addJobCreator(new JobCreator() {
-            @Override
-            public Job create(String tag) {
-                if (AutomaticIssueDownloadJob.TAG.equals(tag)) {
-                    return AutomaticIssueDownloadJob_.getInstance_(DerBundDownloaderApplication.this);
-                }
-                return null;
-            }
-        });
-        automaticDownloadScheduler.update();
+
+        AppModule appModule = new AppModule(this);
+        AnalyticsModule analyticsModule = new AnalyticsModule();
+        DownloadModule downloadModule = new DownloadModule();
+
+        analyticsComponent = DaggerAnalyticsComponent.builder().appModule(appModule).analyticsModule(analyticsModule).build();
+        downloadComponent = DaggerDownloadComponent.builder().appModule(appModule).analyticsModule(analyticsModule).downloadModule(downloadModule).build();
+        settingsComponent = DaggerSettingsComponent.builder().appModule(appModule).build();
+        downloadedIssuesComponent = DaggerDownloadedIssuesComponent.builder().appModule(appModule).analyticsModule(analyticsModule).downloadModule(downloadModule).build();
+
+        downloadComponent.automaticDownloadScheduler().update();
+    }
+
+    public AnalyticsComponent getAnalyticsComponent() {
+        return analyticsComponent;
+    }
+
+    public DownloadComponent getDownloadComponent() {
+        return downloadComponent;
+    }
+
+    public SettingsComponent getSettingsComponent() {
+        return settingsComponent;
+    }
+
+    public DownloadedIssuesComponent getDownloadedIssuesComponent() {
+        return downloadedIssuesComponent;
     }
 }

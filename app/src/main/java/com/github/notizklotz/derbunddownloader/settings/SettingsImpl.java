@@ -18,18 +18,18 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
-
-@EBean(scope = EBean.Scope.Singleton)
 public class SettingsImpl implements Settings {
 
-    @RootContext
-    Context context;
+    private final Context context;
+
+    public SettingsImpl(Application context) {
+        this.context = context;
+    }
 
     @Override
     public String getUsername() {

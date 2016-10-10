@@ -30,11 +30,8 @@ import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
 import com.github.notizklotz.derbunddownloader.common.WifiConnectionFailedException;
 import com.github.notizklotz.derbunddownloader.common.WifiNotEnabledException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
 
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EBean;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -43,28 +40,35 @@ import java.util.concurrent.Callable;
 
 import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
-@EBean
 public class AutomaticIssueDownloadJob extends Job {
 
     public static final String TAG = "AutomaticIssueDownloadJob";
 
-    @Bean
-    WifiCommandExecutor wifiCommandExecutor;
+    private final WifiCommandExecutor wifiCommandExecutor;
 
-    @Bean(SettingsImpl.class)
-    Settings settings;
+    private final Settings settings;
 
-    @Bean
-    AnalyticsTracker analyticsTracker;
+    private final AnalyticsTracker analyticsTracker;
 
-    @Bean
-    NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    @Bean
-    IssueDownloader issueDownloader;
+    private final IssueDownloader issueDownloader;
 
-    @Bean
-    AutomaticDownloadScheduler automaticDownloadScheduler;
+    private final AutomaticDownloadScheduler automaticDownloadScheduler;
+
+    public AutomaticIssueDownloadJob(WifiCommandExecutor wifiCommandExecutor,
+                                     Settings settings,
+                                     AnalyticsTracker analyticsTracker,
+                                     NotificationService notificationService,
+                                     IssueDownloader issueDownloader,
+                                     AutomaticDownloadScheduler automaticDownloadScheduler) {
+        this.wifiCommandExecutor = wifiCommandExecutor;
+        this.settings = settings;
+        this.analyticsTracker = analyticsTracker;
+        this.notificationService = notificationService;
+        this.issueDownloader = issueDownloader;
+        this.automaticDownloadScheduler = automaticDownloadScheduler;
+    }
 
     @NonNull
     @Override

@@ -30,19 +30,17 @@ import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
-import com.github.notizklotz.derbunddownloader.download.IssueDownloadIntentService_;
+import com.github.notizklotz.derbunddownloader.download.IssueDownloadIntentService;
 
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EFragment;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 
-@SuppressWarnings("WeakerAccess")
-@EFragment
+import javax.inject.Inject;
+
 public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
-    @Bean
+    @Inject
     AnalyticsTracker analyticsTracker;
 
     @Override
@@ -82,7 +80,7 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         } else {
             analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("manual").setLabel(selectedDate.toString()).setValue(1));
 
-            IssueDownloadIntentService_.intent(activity.getApplication()).downloadIssue(dayOfMonth, monthOfYear, year).start();
+            IssueDownloadIntentService.startDownload(activity.getApplication(), dayOfMonth, monthOfYear, year);
         }
     }
 

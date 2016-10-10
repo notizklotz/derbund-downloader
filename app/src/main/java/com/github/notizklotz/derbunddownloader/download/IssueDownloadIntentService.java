@@ -18,50 +18,56 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.app.Application;
 import android.app.IntentService;
 import android.content.Intent;
+import android.os.Bundle;
 
+import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EIntentService;
-import org.androidannotations.annotations.ServiceAction;
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
 
+import javax.inject.Inject;
+
 import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
-@EIntentService
 public class IssueDownloadIntentService extends IntentService {
 
-    @Bean
+    public final static String ACTION_DOWNLOAD_ISSUE = "downloadIssue";
+    public final static String DAY_EXTRA = "day";
+    public final static String MONTH_EXTRA = "month";
+    public final static String YEAR_EXTRA = "year";
+
+    @Inject
     WifiCommandExecutor wifiCommandExecutor;
 
-    @Bean(SettingsImpl.class)
+    @Inject
     Settings settings;
 
-    @Bean
+    @Inject
     AnalyticsTracker analyticsTracker;
 
-    @Bean
+    @Inject
     NotificationService notificationService;
 
-    @Bean
+    @Inject
     IssueDownloader issueDownloader;
 
     public IssueDownloadIntentService() {
         super("IssueDownloadIntentService");
+
+        ((DerBundDownloaderApplication)getApplication()).getDownloadComponent().inject(this);
     }
 
-    @ServiceAction
-    public void downloadIssue(int day, int month, int year) {
+    void downloadIssue(int day, int month, int year) {
         final LocalDate issueDate = new LocalDate(year, month, day);
         try {
             issueDownloader.download(issueDate);
@@ -79,8 +85,27 @@ public class IssueDownloadIntentService extends IntentService {
         }
     }
 
-    @Override
-    protected void onHandleIntent(Intent intent) {
+    public static void  startDownload(Application application, int day, int month, int year) {
+        Intent intent = new Intent(application, IssueDownloadIntentService.class);
+        intent.putExtra(DAY_EXTRA, day);
+        intent.putExtra(MONTH_EXTRA, month);
+        intent.putExtra(YEAR_EXTRA, year);
 
+        application.startService(intent);
     }
+
+    @Override
+    public void onHandleIntent(Intent intent) {
+        String action = intent.getAction();
+        if (ACTION_DOWNLOAD_ISSUE.equals(action)) {
+            Bundle extras = intent.getExtras();
+            if (extras!= null) {
+                int dayExtra = extras.getInt(DAY_EXTRA);
+                int monthExtra = extras.getInt(MONTH_EXTRA);
+                int yearExtra = extras.getInt(YEAR_EXTRA);
+                downloadIssue(dayExtra, monthExtra, yearExtra);
+            }
+        }
+    }
+
 }

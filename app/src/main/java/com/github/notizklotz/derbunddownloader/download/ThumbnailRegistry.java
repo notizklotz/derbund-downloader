@@ -16,25 +16,31 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.common;
+package com.github.notizklotz.derbunddownloader.download;
 
+import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
 import org.joda.time.LocalDate;
 
 import java.io.File;
 
-@EBean
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class ThumbnailRegistry {
 
     private static final String TAG = "ThumbnailRegistry";
 
-    @RootContext
-    Context context;
+    private final Context context;
+
+    @Inject
+    public ThumbnailRegistry(Application context) {
+        this.context = context;
+    }
 
     @NonNull
     public File getThumbnailFile(@NonNull LocalDate issueDate) {

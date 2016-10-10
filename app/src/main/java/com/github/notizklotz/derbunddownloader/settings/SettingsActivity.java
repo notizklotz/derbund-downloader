@@ -18,31 +18,32 @@
 
 package com.github.notizklotz.derbunddownloader.settings;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
+import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.google.android.gms.analytics.HitBuilders;
 
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EActivity;
+import javax.inject.Inject;
 
-@SuppressLint("Registered")
-@EActivity(R.layout.activity_settings)
 public class SettingsActivity extends AppCompatActivity {
 
-    @Bean
+    @Inject
     AnalyticsTracker analyticsTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        ((DerBundDownloaderApplication) getApplication()).getSettingsComponent().inject(this);
+
+        setContentView(R.layout.activity_settings);
+
         // Display the fragment as the main content.
         getFragmentManager().beginTransaction()
-                .replace(R.id.container, SettingsFragment_.builder().build())
+                .replace(R.id.container, new SettingsFragment())
                 .commit();
     }
 

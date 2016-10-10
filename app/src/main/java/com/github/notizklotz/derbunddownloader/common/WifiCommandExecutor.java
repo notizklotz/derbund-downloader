@@ -24,23 +24,27 @@ import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.SystemService;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
-@EBean
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class WifiCommandExecutor {
     private static final String LOG_TAG = "WifiCommandExecutor";
     private static final long WIFI_RECHECK_WAIT_MILLIS = TimeUnit.SECONDS.toMillis(5);
     private static final long WIFI_CHECK_MAX_MILLIS = TimeUnit.MINUTES.toMillis(2);
 
-    @SystemService
-    WifiManager wifiManager;
+    private final WifiManager wifiManager;
 
-    @SystemService
-    ConnectivityManager connectivityManager;
+    private final ConnectivityManager connectivityManager;
+
+    @Inject
+    public WifiCommandExecutor(WifiManager wifiManager, ConnectivityManager connectivityManager) {
+        this.wifiManager = wifiManager;
+        this.connectivityManager = connectivityManager;
+    }
 
     /**
      * Makes sure Wifi connection is available and stays until callable is completed. This method is thread safe.

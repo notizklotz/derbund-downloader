@@ -18,6 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.app.Application;
 import android.app.DownloadManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -39,44 +40,49 @@ import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
 import com.google.android.gms.analytics.HitBuilders;
 
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.SystemService;
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
 
-@EBean
+import javax.inject.Inject;
+import javax.inject.Singleton;
+
+@Singleton
 public class IssueDownloader {
     private static final String LOG_TAG = IssueDownloader.class.getSimpleName();
     private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
     private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
 
-    @RootContext
-    Context context;
+    private final Context context;
 
-    @SystemService
-    ConnectivityManager connectivityManager;
+    private final ConnectivityManager connectivityManager;
 
-    @SystemService
-    DownloadManager downloadManager;
+    private final DownloadManager downloadManager;
 
-    @Bean
-    EpaperApiClient epaperApiClient;
+    private final EpaperApiClient epaperApiClient;
 
-    @Bean
-    AnalyticsTracker analyticsTracker;
+    private final AnalyticsTracker analyticsTracker;
 
-    @Bean
-    NotificationService notificationService;
+    private final NotificationService notificationService;
 
-    @Bean(SettingsImpl.class)
-    Settings settings;
+    private final Settings settings;
+
+    @Inject
+    public IssueDownloader(Application context, ConnectivityManager connectivityManager,
+                           DownloadManager downloadManager, EpaperApiClient epaperApiClient,
+                           AnalyticsTracker analyticsTracker, NotificationService notificationService,
+                           Settings settings) {
+        this.context = context;
+        this.connectivityManager = connectivityManager;
+        this.downloadManager = downloadManager;
+        this.epaperApiClient = epaperApiClient;
+        this.analyticsTracker = analyticsTracker;
+        this.notificationService = notificationService;
+        this.settings = settings;
+    }
 
     public void download(LocalDate issueDate) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();

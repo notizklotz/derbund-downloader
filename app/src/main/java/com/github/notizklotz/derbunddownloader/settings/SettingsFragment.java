@@ -19,35 +19,31 @@
 package com.github.notizklotz.derbunddownloader.settings;
 
 import android.content.SharedPreferences;
+import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.PowerManager;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
 
+import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.AutomaticDownloadScheduler;
 
-import org.androidannotations.annotations.Background;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EFragment;
-import org.androidannotations.annotations.SystemService;
+import javax.inject.Inject;
 
-@EFragment
 public class SettingsFragment extends PreferenceFragment implements SharedPreferences.OnSharedPreferenceChangeListener {
 
-    @SystemService
-    PowerManager powerManager;
-
-    @Bean(SettingsImpl.class)
+    @Inject
     Settings settings;
 
-    @Bean
+    @Inject
     AutomaticDownloadScheduler automaticDownloadScheduler;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         addPreferencesFromResource(R.xml.preferences);
+
+        ((DerBundDownloaderApplication) getActivity().getApplication()).getSettingsComponent().inject(this);
 
         updateSummaries(getPreferenceScreen().getSharedPreferences());
     }
@@ -77,9 +73,14 @@ public class SettingsFragment extends PreferenceFragment implements SharedPrefer
         }
     }
 
-    @Background
     void updateAutomaticDownloadScheduler() {
-        automaticDownloadScheduler.update();
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... params) {
+                automaticDownloadScheduler.update();
+                return null;
+            }
+        }.execute();
     }
 
     private void updateSummaries(SharedPreferences sharedPreferences) {

@@ -22,46 +22,29 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
-import com.github.notizklotz.derbunddownloader.BuildConfig;
-import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsImpl;
-import com.google.android.gms.analytics.GoogleAnalytics;
 import com.google.android.gms.analytics.HitBuilders;
 import com.google.android.gms.analytics.StandardExceptionParser;
 import com.google.android.gms.analytics.Tracker;
 
-import org.androidannotations.annotations.AfterInject;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
-import org.androidannotations.annotations.SystemService;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-@EBean(scope = EBean.Scope.Singleton)
+@Singleton
 public class AnalyticsTracker {
 
-    @Bean(SettingsImpl.class)
-    Settings settings;
+    private final Settings settings;
 
-    @SystemService
-    ConnectivityManager connectivityManager;
+    private final ConnectivityManager connectivityManager;
 
-    @RootContext
-    Context context;
+    private final Tracker tracker;
 
-    private Tracker mTracker;
-
-    @AfterInject
-    void initTracker() {
-        GoogleAnalytics analytics = GoogleAnalytics.getInstance(context);
-        // To enable debug logging use: adb shell setprop log.tag.GAv4 DEBUG
-        mTracker = analytics.newTracker(R.xml.app_tracker);
-        mTracker.setAnonymizeIp(true);
-
-        if (BuildConfig.DEBUG) {
-            analytics.setDryRun(true);
-        }
+    @Inject
+    public AnalyticsTracker(Tracker tracker, Settings settings, ConnectivityManager connectivityManager) {
+        this.tracker = tracker;
+        this.settings = settings;
+        this.connectivityManager = connectivityManager;
     }
 
     public static HitBuilders.EventBuilder createEventBuilder(AnalyticsCategory category) {
@@ -69,7 +52,7 @@ public class AnalyticsTracker {
     }
 
     public void send(HitBuilders.EventBuilder eventBuilder) {
-        mTracker.send(eventBuilder.build());
+        tracker.send(eventBuilder.build());
     }
 
     public void sendWithCustomDimensions(HitBuilders.EventBuilder eventBuilder) {
@@ -89,7 +72,7 @@ public class AnalyticsTracker {
     }
 
     public void send(HitBuilders.ExceptionBuilder exceptionBuilder) {
-        mTracker.send(exceptionBuilder.build());
+        tracker.send(exceptionBuilder.build());
     }
 
     public void sendDefaultException(Context context, Exception e) {
@@ -97,11 +80,11 @@ public class AnalyticsTracker {
     }
 
     public void send(HitBuilders.TimingBuilder timingBuilder) {
-        mTracker.send(timingBuilder.build());
+        tracker.send(timingBuilder.build());
     }
 
     public void sendScreenView(String screen, HitBuilders.ScreenViewBuilder builder) {
-        mTracker.setScreenName(screen);
-        mTracker.send(builder.build());
+        tracker.setScreenName(screen);
+        tracker.send(builder.build());
     }
 }

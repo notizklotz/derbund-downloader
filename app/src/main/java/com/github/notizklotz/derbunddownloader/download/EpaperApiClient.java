@@ -18,6 +18,7 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -25,13 +26,8 @@ import android.support.annotation.NonNull;
 
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
-import com.github.notizklotz.derbunddownloader.common.ThumbnailRegistry;
 import com.google.android.gms.analytics.HitBuilders;
 
-import org.androidannotations.annotations.AfterInject;
-import org.androidannotations.annotations.Bean;
-import org.androidannotations.annotations.EBean;
-import org.androidannotations.annotations.RootContext;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -42,6 +38,9 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
@@ -55,7 +54,7 @@ import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
 
-@EBean(scope = EBean.Scope.Singleton)
+@Singleton
 public class EpaperApiClient {
 
     private static final String ISSUE_DATE__TEMPLATE = "%04d-%02d-%02d";
@@ -63,21 +62,22 @@ public class EpaperApiClient {
     private static final MediaType JSON_CONTENTTYPE = MediaType.parse("application/json; charset=utf-8");
     private static final MediaType JSON_ACCEPT = MediaType.parse("application/json");
 
+    private final AnalyticsTracker analyticsTracker;
+
+    private final ThumbnailRegistry thumbnailRegistry;
+
+    private final Context context;
+
     private OkHttpClient client;
-
-    @Bean
-    AnalyticsTracker analyticsTracker;
-
-    @Bean
-    ThumbnailRegistry thumbnailRegistry;
-
-    @RootContext
-    Context context;
 
     private SharedPreferences cookiejar;
 
-    @AfterInject
-    public void init() {
+    @Inject
+    public EpaperApiClient(Application context, AnalyticsTracker analyticsTracker, ThumbnailRegistry thumbnailRegistry) {
+        this.context = context;
+        this.analyticsTracker = analyticsTracker;
+        this.thumbnailRegistry = thumbnailRegistry;
+
         cookiejar = context.getSharedPreferences("cookiejar", Context.MODE_PRIVATE);
         this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
             @Override
