@@ -17,12 +17,13 @@
   -->
 
 <resources>
-    <string name="app_name">Der Bund ePaper Downloader</string>
+    <string name="app_name">Der Bund ePaper</string>
+    <string name="file_provider_authority">com.github.notizklotz.derbunddownloader</string>
     <string name="action_settings">Einstellungen</string>
     <string name="action_download">Herunterladen</string>
     <string name="auto_download">Automatisch täglich herunterladen</string>
     <string name="einstellungen">Einstellungen</string>
-    <string name="error_no_issue_on_sundays">Der Bund erscheint Sonntags nicht!</string>
+    <string name="error_no_issue_on_sundays">Die Zeitung erscheint Sonntags nicht!</string>
     <string name="no_issues_downloaded">Keine Ausgaben heruntergeladen</string>
     <string name="issue">Zeitungsausgabe</string>
     <string name="download_state_unknown">Unbekannt</string>
@@ -37,10 +38,10 @@
     <string name="download_login_failed_text">Ihre Benutzerdaten sind nicht gültig</string>
     <string name="download_wifi_connection_failed">WLAN-Verbindung fehlgeschlagen</string>
     <string name="download_wifi_connection_failed_text">Es konnte keine WLAN-Verbindung hergestellt werden.</string>
-    <string name="download_connection_failed_no_wifi_text">WLAN war nicht eingeschaltet. \"Der Bund\" wurde nicht heruntergeladen.</string>
+    <string name="download_connection_failed_no_wifi_text">WLAN war nicht eingeschaltet. Die Zeitung wurde nicht heruntergeladen.</string>
     <string name="download_connection_failed">Verbindung fehlgeschlagen</string>
     <string name="download_connection_failed_text">Es konnte keine Internet-Verbindung hergestellt werden.</string>
-    <string name="please_login">Bitte geben Sie Benutzername und Passwort ihres \"Der Bund ePaper\" Logins ein</string>
+    <string name="please_login">Bitte geben Sie Benutzername und Passwort ihres \"ePaper\" Logins ein</string>
     <string name="download_completed">Download Abgeschlossen</string>
     <string name="last_wakeup">Zuletzt aufgewacht</string>
     <string name="last_wakeup_never">Nie</string>
