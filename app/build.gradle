@@ -40,24 +40,22 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
 
-    packagingOptions {
-        exclude('META-INF/notice.txt')
-        exclude('META-INF/NOTICE.txt')
-        exclude('META-INF/license.txt')
-        exclude('META-INF/LICENSE.txt')
-    }
-
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_6
-        targetCompatibility JavaVersion.VERSION_1_6
-    }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    productFlavors {
+        derbund {
+            applicationId "com.github.notizklotz.derbunddownloader"
+        }
+        tagesanzeiger {
+            applicationId "com.github.notizklotz.derbunddownloader.tagesanzeiger"
+        }
+    }
+
 }
 
 dependencies {
