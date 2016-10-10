@@ -27,6 +27,7 @@ import android.os.Bundle;
 import android.widget.DatePicker;
 import android.widget.Toast;
 
+import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
@@ -36,12 +37,7 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 
-import javax.inject.Inject;
-
 public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
-
-    @Inject
-    AnalyticsTracker analyticsTracker;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -74,6 +70,9 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         assert activity != null;
 
         LocalDate selectedDate = new LocalDate(year, monthOfYear, dayOfMonth);
+
+        AnalyticsTracker analyticsTracker = ((DerBundDownloaderApplication)getActivity().getApplication()).getAnalyticsComponent().analyticsTracker();
+
         if (selectedDate.getDayOfWeek() == DateTimeConstants.SUNDAY) {
             analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Error).setAction("Sunday issue download attempted").setLabel(selectedDate.toString()));
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();

@@ -63,6 +63,11 @@ public class IssueDownloadIntentService extends IntentService {
 
     public IssueDownloadIntentService() {
         super("IssueDownloadIntentService");
+    }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
 
         ((DerBundDownloaderApplication)getApplication()).getDownloadComponent().inject(this);
     }
@@ -85,8 +90,9 @@ public class IssueDownloadIntentService extends IntentService {
         }
     }
 
-    public static void  startDownload(Application application, int day, int month, int year) {
+    public static void startDownload(Application application, int day, int month, int year) {
         Intent intent = new Intent(application, IssueDownloadIntentService.class);
+        intent.setAction(ACTION_DOWNLOAD_ISSUE);
         intent.putExtra(DAY_EXTRA, day);
         intent.putExtra(MONTH_EXTRA, month);
         intent.putExtra(YEAR_EXTRA, year);
