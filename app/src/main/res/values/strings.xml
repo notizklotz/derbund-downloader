@@ -17,7 +17,7 @@
   -->
 
 <resources>
-    <string name="app_name">Der Bund ePaper</string>
+    <string name="app_name">Bund ePaper</string>
     <string name="file_provider_authority">com.github.notizklotz.derbunddownloader</string>
     <string name="action_settings">Einstellungen</string>
     <string name="action_download">Herunterladen</string>
