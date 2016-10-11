@@ -21,4 +21,5 @@
     <string name="file_provider_authority">com.github.notizklotz.derbunddownloader.tagesanzeiger</string>
 
     <string name="epaper_api_domain">epaper.tagesanzeiger.ch</string>
+    <string name="epaper_api_defid">20</string>
 </resources>

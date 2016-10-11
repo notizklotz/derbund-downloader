@@ -159,7 +159,7 @@ public class EpaperApiClient {
 
         try {
             JSONObject bodyJson = new JSONObject()
-                    .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)))
+                    .put("editions", new JSONArray().put(new JSONObject().put("defId", context.getString(R.string.epaper_api_defid)).put("publicationDate", issueDateString)))
                     .put("articles", new JSONArray().put(42));
 
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
@@ -187,7 +187,7 @@ public class EpaperApiClient {
 
         try {
             JSONObject bodyJson = new JSONObject()
-                    .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)))
+                    .put("editions", new JSONArray().put(new JSONObject().put("defId", context.getString(R.string.epaper_api_defid)).put("publicationDate", issueDateString)))
                     .put("isAttachment", true)
                     .put("fileName", "Gesamtausgabe_Tages-Anzeiger_" + issueDateString + ".pdf");
 
@@ -229,7 +229,7 @@ public class EpaperApiClient {
 
         try {
             JSONObject bodyJson = new JSONObject()
-                    .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)));
+                    .put("editions", new JSONArray().put(new JSONObject().put("defId", context.getString(R.string.epaper_api_defid)).put("publicationDate", issueDateString)));
 
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
