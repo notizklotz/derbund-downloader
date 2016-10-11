@@ -46,7 +46,6 @@
     <string name="last_wakeup">Zuletzt aufgewacht</string>
     <string name="last_wakeup_never">Nie</string>
     <string name="download_service_error">Fehler beim Herunterladen</string>
-    <string name="download_service_error_text">Es ist ein Problem aufgetreten</string>
     <string name="wifi_only">Nur über WLAN herunterladen</string>
     <string name="wifi_only_summary">Verhindert das Herunterladen über die Mobilfunkverbindung. Eine Ausgabe der Zeitung ist ca. 10MB gross.</string>
     <string name="delete">Entfernen</string>

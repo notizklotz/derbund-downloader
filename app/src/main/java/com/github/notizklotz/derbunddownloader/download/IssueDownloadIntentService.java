@@ -80,10 +80,10 @@ public class IssueDownloadIntentService extends IntentService {
             notificationService.notifyUser(this.getText(R.string.download_connection_failed), this.getText(R.string.download_connection_failed_text), true);
         } catch (EpaperApiInexistingIssueRequestedException e) {
             analyticsTracker.sendDefaultException(this, e);
-            notificationService.notifyUser(this.getText(R.string.download_service_error), this.getText(R.string.download_service_error_text), e.getMessage(), true);
+            notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
         } catch (EpaperApiInvalidResponseException e) {
             analyticsTracker.sendDefaultException(this, e);
-            notificationService.notifyUser(this.getText(R.string.download_service_error), this.getText(R.string.download_service_error_text), e.getMessage(), true);
+            notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
         } catch (EpaperApiInvalidCredentialsException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
             notificationService.notifyUser(this.getText(R.string.download_login_failed), this.getText(R.string.download_login_failed_text), true);

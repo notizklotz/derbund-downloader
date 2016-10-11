@@ -40,9 +40,9 @@ import java.util.concurrent.Callable;
 
 import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
-public class AutomaticIssueDownloadJob extends Job {
+class AutomaticIssueDownloadJob extends Job {
 
-    public static final String TAG = "AutomaticIssueDownloadJob";
+    static final String TAG = "AutomaticIssueDownloadJob";
 
     private final WifiCommandExecutor wifiCommandExecutor;
 
@@ -56,12 +56,12 @@ public class AutomaticIssueDownloadJob extends Job {
 
     private final AutomaticDownloadScheduler automaticDownloadScheduler;
 
-    public AutomaticIssueDownloadJob(WifiCommandExecutor wifiCommandExecutor,
-                                     Settings settings,
-                                     AnalyticsTracker analyticsTracker,
-                                     NotificationService notificationService,
-                                     IssueDownloader issueDownloader,
-                                     AutomaticDownloadScheduler automaticDownloadScheduler) {
+    AutomaticIssueDownloadJob(WifiCommandExecutor wifiCommandExecutor,
+                              Settings settings,
+                              AnalyticsTracker analyticsTracker,
+                              NotificationService notificationService,
+                              IssueDownloader issueDownloader,
+                              AutomaticDownloadScheduler automaticDownloadScheduler) {
         this.wifiCommandExecutor = wifiCommandExecutor;
         this.settings = settings;
         this.analyticsTracker = analyticsTracker;
@@ -118,7 +118,7 @@ public class AutomaticIssueDownloadJob extends Job {
             return Result.RESCHEDULE;
         } catch (Exception e) {
             analyticsTracker.sendDefaultException(getContext(), e);
-            notificationService.notifyUser(getContext().getText(R.string.download_service_error), getContext().getText(R.string.download_service_error_text), e.getMessage(), true);
+            notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
             return Result.FAILURE;
         }
     }
