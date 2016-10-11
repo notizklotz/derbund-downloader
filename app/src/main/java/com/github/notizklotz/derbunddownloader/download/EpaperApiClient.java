@@ -24,6 +24,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
 
+import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.google.android.gms.analytics.HitBuilders;
@@ -68,15 +69,18 @@ public class EpaperApiClient {
 
     private final Context context;
 
-    private OkHttpClient client;
+    private final OkHttpClient client;
 
-    private SharedPreferences cookiejar;
+    private final SharedPreferences cookiejar;
+
+    private final String domain;
 
     @Inject
-    public EpaperApiClient(Application context, AnalyticsTracker analyticsTracker, ThumbnailRegistry thumbnailRegistry) {
+    public EpaperApiClient(final Application context, AnalyticsTracker analyticsTracker, ThumbnailRegistry thumbnailRegistry) {
         this.context = context;
         this.analyticsTracker = analyticsTracker;
         this.thumbnailRegistry = thumbnailRegistry;
+        this.domain = context.getString(R.string.epaper_api_domain);
 
         cookiejar = context.getSharedPreferences("cookiejar", Context.MODE_PRIVATE);
         this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
@@ -93,7 +97,7 @@ public class EpaperApiClient {
             public List<Cookie> loadForRequest(HttpUrl url) {
                 List<Cookie> result = new LinkedList<Cookie>();
                 for (Map.Entry<String, ?> cookieEntry : cookiejar.getAll().entrySet()) {
-                    result.add(new Cookie.Builder().name(cookieEntry.getKey()).value(cookieEntry.getValue().toString()).domain("epaper.derbund.ch").build());
+                    result.add(new Cookie.Builder().name(cookieEntry.getKey()).value(cookieEntry.getValue().toString()).domain(domain).build());
                 }
 
                 return result;
@@ -101,9 +105,17 @@ public class EpaperApiClient {
         }).build();
     }
 
-    public Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate)
+    Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate)
             throws EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException, EpaperApiInexistingIssueRequestedException {
-        if (isSubscribed(issueDate)) {
+
+        boolean subscribed = false;
+        try {
+            subscribed = isSubscribed(issueDate);
+        } catch (EpaperApiInvalidResponseException e) {
+            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription(e.getMessage()));
+        }
+
+        if (subscribed) {
             return requestPdfDownloadUrl(issueDate);
         } else {
             analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Retry requestPdfDownloadUrl with login"));
@@ -119,7 +131,7 @@ public class EpaperApiClient {
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("https://epaper.derbund.ch/index.cfm/authentication/login")
+                    .url("https://" + domain + "/index.cfm/authentication/login")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
@@ -142,7 +154,7 @@ public class EpaperApiClient {
         }
     }
 
-    public boolean isSubscribed(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException{
+    private boolean isSubscribed(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException{
         String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
 
         try {
@@ -153,7 +165,7 @@ public class EpaperApiClient {
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("https://epaper.derbund.ch/index.cfm/epaper/1.0/getArticle")
+                    .url("https://" + domain + "/index.cfm/epaper/1.0/getArticle")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
@@ -177,12 +189,12 @@ public class EpaperApiClient {
             JSONObject bodyJson = new JSONObject()
                     .put("editions", new JSONArray().put(new JSONObject().put("defId", "46").put("publicationDate", issueDateString)))
                     .put("isAttachment", true)
-                    .put("fileName", "Gesamtausgabe_Der_Bund_" + issueDateString + ".pdf");
+                    .put("fileName", "Gesamtausgabe_Tages-Anzeiger_" + issueDateString + ".pdf");
 
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("https://epaper.derbund.ch/index.cfm/epaper/1.0/getEditionDoc")
+                    .url("https://" + domain + "/index.cfm/epaper/1.0/getEditionDoc")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
@@ -212,7 +224,7 @@ public class EpaperApiClient {
     }
 
     @NonNull
-    public Uri getPdfThumbnailUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException {
+    private Uri getPdfThumbnailUrl(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException {
         String issueDateString = String.format(DateHandlingUtils.SERVER_LOCALE, ISSUE_DATE__TEMPLATE, issueDate.getYear(), issueDate.getMonthOfYear(), issueDate.getDayOfMonth());
 
         try {
@@ -222,7 +234,7 @@ public class EpaperApiClient {
             RequestBody body = RequestBody.create(JSON_CONTENTTYPE, bodyJson.toString());
             Request request = new Request.Builder()
                     .header("Accept", JSON_ACCEPT.toString())
-                    .url("https://epaper.derbund.ch/index.cfm/epaper/1.0/getFirstPage")
+                    .url("https://" + domain + "/index.cfm/epaper/1.0/getFirstPage")
                     .post(body)
                     .build();
             Response response = client.newCall(request).execute();
@@ -230,7 +242,13 @@ public class EpaperApiClient {
                 throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
             }
 
-            return Uri.parse(new JSONObject(response.body().string()).getJSONObject("data").getJSONArray("pages").getJSONObject(0).getJSONObject("pageDocUrl").getJSONObject("PREVIEW").getString("url"));
+            return Uri.parse(new JSONObject(response.body().string())
+                    .getJSONObject("data")
+                    .getJSONArray("pages")
+                    .getJSONObject(0)
+                    .getJSONObject("pageDocUrl")
+                    .getJSONObject("PREVIEW")
+                    .getString("url"));
         } catch (JSONException e) {
             throw new EpaperApiInvalidResponseException(e);
         } catch (IOException e) {
@@ -238,7 +256,7 @@ public class EpaperApiClient {
         }
     }
 
-    public void savePdfThumbnail(@NonNull LocalDate issueDate) {
+    void savePdfThumbnail(@NonNull LocalDate issueDate) {
         try {
             Uri thumbnailUrl = getPdfThumbnailUrl(issueDate);
 

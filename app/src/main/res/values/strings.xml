@@ -53,4 +53,6 @@
     <string name="action_delete_all">Alle entfernen</string>
     <string name="debugging">Informationen</string>
     <string name="issue_deleted">Ausgabe entfernt: </string>
+
+    <string name="epaper_api_domain">epaper.derbund.ch</string>
 </resources>
