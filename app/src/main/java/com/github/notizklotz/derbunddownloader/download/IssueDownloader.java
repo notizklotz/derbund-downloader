@@ -118,8 +118,8 @@ public class IssueDownloader {
     }
 
     private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {
-        final String title = expandTemplateWithDate(ISSUE_TITLE_TEMPLATE, issueDate);
-        final String filename = expandTemplateWithDate(ISSUE_FILENAME_TEMPLATE, issueDate);
+        final String title = expandTemplateWithDate(context.getString(R.string.issue_title) + " ePaper %02d.%02d.%04d", issueDate);
+        final String filename = expandTemplateWithDate(context.getString(R.string.issue_title) + "ePaper %02d.%02d.%04d.pdf", issueDate);
 
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
                 .setTitle(title)

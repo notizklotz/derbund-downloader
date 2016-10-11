@@ -89,7 +89,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (BuildConfig.DEBUG && false) {
+        if (BuildConfig.DEBUG) {
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
         }
@@ -200,7 +200,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         Uri dataUri;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             File file = new File(uri.getPath());
-            dataUri = FileProvider.getUriForFile(this, "com.github.notizklotz.derbunddownloader", file);
+            dataUri = FileProvider.getUriForFile(this, getPackageName(), file);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         } else {
             dataUri = uri;

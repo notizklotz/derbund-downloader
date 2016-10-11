@@ -55,4 +55,5 @@
 
     <string name="epaper_api_domain">epaper.derbund.ch</string>
     <string name="epaper_api_defid">46</string>
+    <string name="issue_title">Der Bund</string>
 </resources>
