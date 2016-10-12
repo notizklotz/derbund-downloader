@@ -25,6 +25,7 @@ import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
+import org.apache.commons.lang3.RandomUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.Duration;
@@ -94,15 +95,13 @@ public class AutomaticDownloadScheduler {
             nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
         }
         if (!BuildConfig.DEBUG) {
-            if (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-                nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
-            }
-
             while (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY || HOLIDAYS.contains(nextAlarmSwissTime.toLocalDate())) {
                 nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
             }
 
-            //TODO Add random value to prevent DoS on server
+            //Randomize so device are not requesting at the same time
+            int randomSeconds = RandomUtils.nextInt(0, 180);
+            nextAlarmSwissTime.plusSeconds(randomSeconds);
         }
 
         DateTime nowDeviceTime = DateTime.now();
