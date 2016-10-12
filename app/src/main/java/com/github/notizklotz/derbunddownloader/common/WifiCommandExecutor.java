@@ -41,7 +41,7 @@ public class WifiCommandExecutor {
     private final ConnectivityManager connectivityManager;
 
     @Inject
-    public WifiCommandExecutor(WifiManager wifiManager, ConnectivityManager connectivityManager) {
+    WifiCommandExecutor(WifiManager wifiManager, ConnectivityManager connectivityManager) {
         this.wifiManager = wifiManager;
         this.connectivityManager = connectivityManager;
     }
@@ -52,8 +52,7 @@ public class WifiCommandExecutor {
      * @throws WifiNotEnabledException if Wifi is not enabled.
      * @throws WifiConnectionFailedException if Wifi connection could not be obtained within {@link #WIFI_CHECK_MAX_MILLIS}.
      */
-    @NonNull
-    public <T> T execute(@NonNull Callable<T> callable) throws Exception {
+    public void execute(@NonNull Callable callable) throws Exception {
         if (!wifiManager.isWifiEnabled()) {
             throw new WifiNotEnabledException();
         }
@@ -63,7 +62,7 @@ public class WifiCommandExecutor {
         try {
             boolean connected = waitForWifiConnection();
             if (connected) {
-                return callable.call();
+                callable.call();
             } else {
                 throw new WifiConnectionFailedException();
             }
@@ -72,7 +71,7 @@ public class WifiCommandExecutor {
         }
     }
 
-    private boolean waitForWifiConnection() throws WifiNotEnabledException {
+    private boolean waitForWifiConnection() {
 
         boolean connected;
 

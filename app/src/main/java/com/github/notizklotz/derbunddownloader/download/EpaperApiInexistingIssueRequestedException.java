@@ -18,17 +18,9 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import org.joda.time.LocalDate;
+class EpaperApiInexistingIssueRequestedException extends Exception {
 
-public class EpaperApiInexistingIssueRequestedException extends Exception {
-
-    private final LocalDate issueDate;
-
-    public EpaperApiInexistingIssueRequestedException(LocalDate issueDate) {
-        this.issueDate = issueDate;
+    EpaperApiInexistingIssueRequestedException() {
     }
 
-    public LocalDate getIssueDate() {
-        return issueDate;
-    }
 }

@@ -70,10 +70,7 @@ public class IssueDownloadIntentService extends IntentService {
             issueDownloader.download(issueDate, "manual");
         } catch (IOException e) {
             notificationService.notifyUser(this.getText(R.string.download_connection_failed), this.getText(R.string.download_connection_failed_text), true);
-        } catch (EpaperApiInexistingIssueRequestedException e) {
-            logErrorEvent(issueDate, e.getMessage());
-            notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
-        } catch (EpaperApiInvalidResponseException e) {
+        } catch (EpaperApiInexistingIssueRequestedException | EpaperApiInvalidResponseException e) {
             logErrorEvent(issueDate, e.getMessage());
             notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
         } catch (EpaperApiInvalidCredentialsException e) {

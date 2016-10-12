@@ -33,7 +33,7 @@ import dagger.Provides;
 @Module
 public class AppModule {
 
-    private DerBundDownloaderApplication application;
+    private final DerBundDownloaderApplication application;
 
     public AppModule(DerBundDownloaderApplication application) {
         this.application = application;

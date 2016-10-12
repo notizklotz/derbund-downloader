@@ -54,7 +54,7 @@ import okio.BufferedSink;
 import okio.Okio;
 
 @Singleton
-public class EpaperApiClient {
+class EpaperApiClient {
 
     private static final String ISSUE_DATE__TEMPLATE = "%04d-%02d-%02d";
 
@@ -72,7 +72,7 @@ public class EpaperApiClient {
     private final String domain;
 
     @Inject
-    public EpaperApiClient(final Application context, ThumbnailRegistry thumbnailRegistry) {
+    EpaperApiClient(final Application context, ThumbnailRegistry thumbnailRegistry) {
         this.context = context;
         this.thumbnailRegistry = thumbnailRegistry;
         this.domain = context.getString(R.string.epaper_api_domain);
@@ -90,7 +90,7 @@ public class EpaperApiClient {
 
             @Override
             public List<Cookie> loadForRequest(HttpUrl url) {
-                List<Cookie> result = new LinkedList<Cookie>();
+                List<Cookie> result = new LinkedList<>();
                 for (Map.Entry<String, ?> cookieEntry : cookiejar.getAll().entrySet()) {
                     result.add(new Cookie.Builder().name(cookieEntry.getKey()).value(cookieEntry.getValue().toString()).domain(domain).build());
                 }
@@ -141,9 +141,7 @@ public class EpaperApiClient {
                     throw new EpaperApiInvalidResponseException(responseBodyJson.getString("error"));
                 }
             }
-        } catch (JSONException e) {
-            throw new EpaperApiInvalidResponseException(e);
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             throw new EpaperApiInvalidResponseException(e);
         }
     }
@@ -168,9 +166,7 @@ public class EpaperApiClient {
             }
 
             return new JSONObject(response.body().string()).getBoolean("isSubscribed");
-        } catch (JSONException e) {
-            throw new EpaperApiInvalidResponseException(e);
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             throw new EpaperApiInvalidResponseException(e);
         }
     }
@@ -194,7 +190,7 @@ public class EpaperApiClient {
             Response response = client.newCall(request).execute();
             if (!response.isSuccessful()) {
                 if (response.code() == 500) {
-                    throw new EpaperApiInexistingIssueRequestedException(issueDate);
+                    throw new EpaperApiInexistingIssueRequestedException();
                 }
 
                 throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
@@ -210,9 +206,7 @@ public class EpaperApiClient {
             }
 
             return Uri.parse(uriString);
-        } catch (JSONException e) {
-            throw new EpaperApiInvalidResponseException(e);
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             throw new EpaperApiInvalidResponseException(e);
         }
     }
@@ -243,9 +237,7 @@ public class EpaperApiClient {
                     .getJSONObject("pageDocUrl")
                     .getJSONObject("PREVIEW")
                     .getString("url"));
-        } catch (JSONException e) {
-            throw new EpaperApiInvalidResponseException(e);
-        } catch (IOException e) {
+        } catch (JSONException | IOException e) {
             throw new EpaperApiInvalidResponseException(e);
         }
     }

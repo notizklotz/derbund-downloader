@@ -43,10 +43,6 @@ public class NotificationService {
     }
 
     public void notifyUser(CharSequence contentTitle, CharSequence contentText, boolean error) {
-        notifyUser(contentTitle, contentText, null, error);
-    }
-
-    public void notifyUser(CharSequence contentTitle, CharSequence contentText, CharSequence errorDetails, boolean error) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder
                 .setSmallIcon(R.drawable.ic_stat_newspaper)
@@ -57,13 +53,6 @@ public class NotificationService {
         builder.setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
         if (error) {
             builder.setCategory(NotificationCompat.CATEGORY_ERROR);
-        }
-
-        if (errorDetails != null && errorDetails.length() > 0) {
-            NotificationCompat.BigTextStyle style =
-                    new NotificationCompat.BigTextStyle();
-            style.bigText(errorDetails);
-            builder.setStyle(style);
         }
 
         //http://developer.android.com/guide/topics/ui/notifiers/notifications.html

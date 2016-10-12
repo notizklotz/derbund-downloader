@@ -45,7 +45,7 @@ public class AutomaticDownloadScheduler {
 
     private final JobManager jobManager;
 
-    private static final Set<LocalDate> HOLIDAYS = new HashSet<LocalDate>();
+    private static final Set<LocalDate> HOLIDAYS = new HashSet<>();
 
     static {
         HOLIDAYS.add(new LocalDate(2016, 3, 28));

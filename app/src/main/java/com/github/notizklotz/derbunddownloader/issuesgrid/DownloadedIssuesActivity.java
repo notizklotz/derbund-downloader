@@ -218,6 +218,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             protected String doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
                 String descriptionFromCursor = "";
+                //noinspection TryFinallyCanBeTryWithResources
                 try {
                     if (cursor.moveToFirst()) {
                         descriptionFromCursor = getDescriptionFromCursor(cursor);
@@ -251,6 +252,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query());
+                //noinspection TryFinallyCanBeTryWithResources
                 try {
                     if (cursor.moveToFirst()) {
                         while (!cursor.isAfterLast()) {
