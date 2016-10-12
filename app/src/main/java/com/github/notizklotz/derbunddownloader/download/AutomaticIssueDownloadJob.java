@@ -79,6 +79,8 @@ class AutomaticIssueDownloadJob extends Job {
         final LocalDate issueDate = new LocalDate(nowInSwitzerland.getYear(), nowInSwitzerland.getMonthOfYear(), nowInSwitzerland.getDayOfMonth());
 
         final boolean wifiOnly = settings.isWifiOnly();
+
+        Job.Result result;
         try {
             if (wifiOnly) {
                 wifiCommandExecutor.execute(new Callable() {
@@ -93,33 +95,37 @@ class AutomaticIssueDownloadJob extends Job {
             }
             analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(issueDate.toString()).setValue(1));
 
-            automaticDownloadScheduler.scheduleNextJobRequest();
-
-            return Result.SUCCESS;
+            result = Result.SUCCESS;
         }
         catch (WifiConnectionFailedException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi connection failed").setNonInteraction(true));
             notificationService.notifyUser(getContext().getText(R.string.download_wifi_connection_failed), getContext().getText(R.string.download_wifi_connection_failed_text), true);
-            return Result.RESCHEDULE;
+            result = Result.RESCHEDULE;
         } catch (WifiNotEnabledException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi disabled").setNonInteraction(true));
             notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_no_wifi_text), true);
-            return Result.FAILURE;
+            result = Result.FAILURE;
         } catch (EpaperApiInvalidCredentialsException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
-            return Result.FAILURE;
+            result = Result.FAILURE;
         } catch (EpaperApiInexistingIssueRequestedException e) {
             analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Inexisting issue " + e.getIssueDate().toString()));
-            return Result.RESCHEDULE;
+            result = Result.RESCHEDULE;
         } catch (IOException e) {
             analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("No connection on download").setNonInteraction(true));
             notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_text), true);
-            return Result.RESCHEDULE;
+            result = Result.RESCHEDULE;
         } catch (Exception e) {
             analyticsTracker.sendDefaultException(getContext(), e);
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
-            return Result.FAILURE;
+            result = Result.FAILURE;
         }
+
+        if (result != Result.RESCHEDULE) {
+            automaticDownloadScheduler.scheduleNextJobRequest();
+        }
+
+        return result;
     }
 }

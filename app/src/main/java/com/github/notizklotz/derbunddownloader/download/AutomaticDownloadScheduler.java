@@ -72,19 +72,17 @@ public class AutomaticDownloadScheduler {
 
     public void update() {
         if (settings.isAutoDownloadEnabled()) {
-            if (jobManager.getAllJobRequestsForTag(AutomaticIssueDownloadJob.TAG).isEmpty()) {
-                schedule();
-            }
+            schedule(true);
         } else {
-            cancel();
+            jobManager.cancelAllForTag(AutomaticIssueDownloadJob.TAG);
         }
     }
 
     void scheduleNextJobRequest() {
-        schedule();
+        schedule(false);
     }
 
-    private void schedule() {
+    private void schedule(boolean update) {
         LocalTime alarmTime = new LocalTime(5, 0);
         if (BuildConfig.DEBUG) {
             alarmTime = new LocalTime().plusSeconds(10);
@@ -114,7 +112,8 @@ public class AutomaticDownloadScheduler {
         }
 
         JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
-                .setPersisted(true).setRequirementsEnforced(false);
+                .setPersisted(true).setRequirementsEnforced(false).setUpdateCurrent(update);
+
         if (JobApi.V_14.equals(jobManager.getApi()) || JobApi.V_19.equals(jobManager.getApi())) {
             //Currently, com.evernote.android.job.v14.JobProxy14 doesn't use RTC_WAKEUP for non-exact jobs.
             builder.setExact(windowStart.getMillis());
@@ -129,11 +128,6 @@ public class AutomaticDownloadScheduler {
         }
 
         builder.build().schedule();
-
-    }
-
-    private void cancel() {
-        jobManager.cancelAllForTag(AutomaticIssueDownloadJob.TAG);
     }
 
 }
