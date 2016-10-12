@@ -29,9 +29,9 @@ import android.widget.Toast;
 
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloadIntentService;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
@@ -71,14 +71,15 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
         LocalDate selectedDate = new LocalDate(year, monthOfYear, dayOfMonth);
 
-        AnalyticsTracker analyticsTracker = ((DerBundDownloaderApplication)getActivity().getApplication()).getAnalyticsComponent().analyticsTracker();
+        FirebaseAnalytics firebaseAnalytics = ((DerBundDownloaderApplication)getActivity().getApplication()).getAnalyticsComponent().firebaseAnalytics();
 
         if (selectedDate.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-            analyticsTracker.send(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Error).setAction("Sunday issue download attempted").setLabel(selectedDate.toString()));
+            Bundle bundle = new Bundle();
+            bundle.putString("cause", "Sunday issue download attempted");
+            firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
+
             Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
         } else {
-            analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("manual").setLabel(selectedDate.toString()).setValue(1));
-
             IssueDownloadIntentService.startDownload(activity.getApplication(), dayOfMonth, monthOfYear, year);
         }
     }

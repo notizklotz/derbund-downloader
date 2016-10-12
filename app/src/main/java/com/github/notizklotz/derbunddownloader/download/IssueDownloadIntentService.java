@@ -25,19 +25,17 @@ import android.os.Bundle;
 
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseParams;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
-import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
-import com.github.notizklotz.derbunddownloader.settings.Settings;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
 
 import javax.inject.Inject;
-
-import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
 public class IssueDownloadIntentService extends IntentService {
 
@@ -47,13 +45,7 @@ public class IssueDownloadIntentService extends IntentService {
     public final static String YEAR_EXTRA = "year";
 
     @Inject
-    WifiCommandExecutor wifiCommandExecutor;
-
-    @Inject
-    Settings settings;
-
-    @Inject
-    AnalyticsTracker analyticsTracker;
+    FirebaseAnalytics firebaseAnalytics;
 
     @Inject
     NotificationService notificationService;
@@ -75,17 +67,17 @@ public class IssueDownloadIntentService extends IntentService {
     void downloadIssue(int day, int month, int year) {
         final LocalDate issueDate = new LocalDate(year, month, day);
         try {
-            issueDownloader.download(issueDate);
+            issueDownloader.download(issueDate, "manual");
         } catch (IOException e) {
             notificationService.notifyUser(this.getText(R.string.download_connection_failed), this.getText(R.string.download_connection_failed_text), true);
         } catch (EpaperApiInexistingIssueRequestedException e) {
-            analyticsTracker.sendDefaultException(this, e);
+            logErrorEvent(issueDate, e.getMessage());
             notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
         } catch (EpaperApiInvalidResponseException e) {
-            analyticsTracker.sendDefaultException(this, e);
+            logErrorEvent(issueDate, e.getMessage());
             notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
         } catch (EpaperApiInvalidCredentialsException e) {
-            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
+            logErrorEvent(issueDate, "Invalid credentials");
             notificationService.notifyUser(this.getText(R.string.download_login_failed), this.getText(R.string.download_login_failed_text), true);
         }
     }
@@ -112,6 +104,13 @@ public class IssueDownloadIntentService extends IntentService {
                 downloadIssue(dayExtra, monthExtra, yearExtra);
             }
         }
+    }
+
+    private void logErrorEvent(LocalDate issueDate, String cause) {
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
+        bundle.putString(FirebaseParams.ERROR_CAUSE,  StringUtils.substring(cause, 0, 36));
+        firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_ERROR, bundle);
     }
 
 }

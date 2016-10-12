@@ -29,23 +29,25 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseParams;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.google.android.gms.analytics.HitBuilders;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -53,8 +55,6 @@ import javax.inject.Singleton;
 @Singleton
 public class IssueDownloader {
     private static final String LOG_TAG = IssueDownloader.class.getSimpleName();
-    private static final String ISSUE_TITLE_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d";
-    private static final String ISSUE_FILENAME_TEMPLATE = "Der Bund ePaper %02d.%02d.%04d.pdf";
 
     private final Context context;
 
@@ -64,7 +64,7 @@ public class IssueDownloader {
 
     private final EpaperApiClient epaperApiClient;
 
-    private final AnalyticsTracker analyticsTracker;
+    private final FirebaseAnalytics firebaseAnalytics;
 
     private final NotificationService notificationService;
 
@@ -73,18 +73,18 @@ public class IssueDownloader {
     @Inject
     public IssueDownloader(Application context, ConnectivityManager connectivityManager,
                            DownloadManager downloadManager, EpaperApiClient epaperApiClient,
-                           AnalyticsTracker analyticsTracker, NotificationService notificationService,
+                           FirebaseAnalytics firebaseAnalytics, NotificationService notificationService,
                            Settings settings) {
         this.context = context;
         this.connectivityManager = connectivityManager;
         this.downloadManager = downloadManager;
         this.epaperApiClient = epaperApiClient;
-        this.analyticsTracker = analyticsTracker;
+        this.firebaseAnalytics = firebaseAnalytics;
         this.notificationService = notificationService;
         this.settings = settings;
     }
 
-    public void download(LocalDate issueDate) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
+    public void download(LocalDate issueDate, String trigger) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isConnected()) {
             throw new IOException("Not connected");
@@ -93,7 +93,11 @@ public class IssueDownloader {
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
 
-        epaperApiClient.savePdfThumbnail(issueDate);
+        try {
+            epaperApiClient.savePdfThumbnail(issueDate);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, "Could not save thumbnail", e);
+        }
 
         final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
         final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
@@ -105,12 +109,15 @@ public class IssueDownloader {
             String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
             downloadDoneSignal.await();
 
-            long elapsedTime = (SystemClock.elapsedRealtime() - millisBeforeDownload);
-            analyticsTracker.send(new HitBuilders.TimingBuilder().setCategory(AnalyticsCategory.Download.name()).setVariable("completion").setValue(elapsedTime));
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
+            bundle.putString(FirebaseParams.DOWNLOAD_TRIGGER, trigger);
+            bundle.putLong(FirebaseParams.DOWNLOAD_TIME_SECONDS, TimeUnit.MILLISECONDS.toSeconds(SystemClock.elapsedRealtime() - millisBeforeDownload));
+
+            firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
 
             notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
         } catch (InterruptedException e) {
-            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setDescription("Interrupted while waiting for the downloadDoneSignal").setFatal(false));
             Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
         } finally {
             context.unregisterReceiver(receiver);
@@ -119,7 +126,7 @@ public class IssueDownloader {
 
     private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {
         final String title = expandTemplateWithDate(context.getString(R.string.issue_title) + " ePaper %02d.%02d.%04d", issueDate);
-        final String filename = expandTemplateWithDate(context.getString(R.string.issue_title) + "ePaper %02d.%02d.%04d.pdf", issueDate);
+        final String filename = expandTemplateWithDate(context.getString(R.string.issue_title) + " ePaper %02d.%02d.%04d.pdf", issueDate);
 
         DownloadManager.Request pdfDownloadRequest = new DownloadManager.Request(issueUrl)
                 .setTitle(title)

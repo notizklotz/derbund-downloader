@@ -32,7 +32,5 @@ public interface SettingsComponent {
 
     Settings settings();
 
-    void inject(SettingsActivity target);
-
     void inject(SettingsFragment target);
 }

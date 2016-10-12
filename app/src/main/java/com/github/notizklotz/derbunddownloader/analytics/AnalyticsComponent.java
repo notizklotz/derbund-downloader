@@ -19,6 +19,7 @@
 package com.github.notizklotz.derbunddownloader.analytics;
 
 import com.github.notizklotz.derbunddownloader.AppModule;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Singleton;
 
@@ -28,5 +29,5 @@ import dagger.Component;
 @Component(modules = {AppModule.class, AnalyticsModule.class})
 public interface AnalyticsComponent {
 
-    AnalyticsTracker analyticsTracker();
+    FirebaseAnalytics firebaseAnalytics();
 }

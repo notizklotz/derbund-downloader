@@ -25,9 +25,7 @@ import android.net.Uri;
 import android.support.annotation.NonNull;
 
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
-import com.google.android.gms.analytics.HitBuilders;
 
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
@@ -63,8 +61,6 @@ public class EpaperApiClient {
     private static final MediaType JSON_CONTENTTYPE = MediaType.parse("application/json; charset=utf-8");
     private static final MediaType JSON_ACCEPT = MediaType.parse("application/json");
 
-    private final AnalyticsTracker analyticsTracker;
-
     private final ThumbnailRegistry thumbnailRegistry;
 
     private final Context context;
@@ -76,9 +72,8 @@ public class EpaperApiClient {
     private final String domain;
 
     @Inject
-    public EpaperApiClient(final Application context, AnalyticsTracker analyticsTracker, ThumbnailRegistry thumbnailRegistry) {
+    public EpaperApiClient(final Application context, ThumbnailRegistry thumbnailRegistry) {
         this.context = context;
-        this.analyticsTracker = analyticsTracker;
         this.thumbnailRegistry = thumbnailRegistry;
         this.domain = context.getString(R.string.epaper_api_domain);
 
@@ -112,13 +107,12 @@ public class EpaperApiClient {
         try {
             subscribed = isSubscribed(issueDate);
         } catch (EpaperApiInvalidResponseException e) {
-            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription(e.getMessage()));
+            //No problem
         }
 
         if (subscribed) {
             return requestPdfDownloadUrl(issueDate);
         } else {
-            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Retry requestPdfDownloadUrl with login"));
             login(username, password);
             return requestPdfDownloadUrl(issueDate);
         }
@@ -256,30 +250,26 @@ public class EpaperApiClient {
         }
     }
 
-    void savePdfThumbnail(@NonNull LocalDate issueDate) {
-        try {
-            Uri thumbnailUrl = getPdfThumbnailUrl(issueDate);
+    void savePdfThumbnail(@NonNull LocalDate issueDate) throws EpaperApiInvalidResponseException, IOException {
+        Uri thumbnailUrl = getPdfThumbnailUrl(issueDate);
 
-            Request request = new Request.Builder()
-                    .url(thumbnailUrl.toString())
-                    .get()
-                    .build();
+        Request request = new Request.Builder()
+                .url(thumbnailUrl.toString())
+                .get()
+                .build();
 
-            File thumbnailFile = thumbnailRegistry.getThumbnailFile(issueDate);
+        File thumbnailFile = thumbnailRegistry.getThumbnailFile(issueDate);
 
-            //noinspection ResultOfMethodCallIgnored
-            thumbnailFile.getParentFile().mkdirs();
+        //noinspection ResultOfMethodCallIgnored
+        thumbnailFile.getParentFile().mkdirs();
 
-            Response response = client.newCall(request).execute();
-            if (response.isSuccessful()) {
-                BufferedSink sink = Okio.buffer(Okio.sink(thumbnailFile));
-                ResponseBody body = response.body();
-                sink.writeAll(body.source());
-                sink.close();
-                body.close();
-            }
-        } catch (Exception e) {
-            analyticsTracker.sendDefaultException(this.context, e);
+        Response response = client.newCall(request).execute();
+        if (response.isSuccessful()) {
+            BufferedSink sink = Okio.buffer(Okio.sink(thumbnailFile));
+            ResponseBody body = response.body();
+            sink.writeAll(body.source());
+            sink.close();
+            body.close();
         }
     }
 

@@ -46,13 +46,12 @@ import android.widget.Toast;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.github.notizklotz.derbunddownloader.settings.SettingsActivity;
-import com.google.android.gms.analytics.HitBuilders;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.StringUtils;
@@ -61,8 +60,6 @@ import org.joda.time.LocalDate;
 import java.io.File;
 
 import javax.inject.Inject;
-
-import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
 public class DownloadedIssuesActivity extends AppCompatActivity {
 
@@ -83,7 +80,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     ThumbnailRegistry thumbnailRegistry;
 
     @Inject
-    AnalyticsTracker analyticsTracker;
+    FirebaseAnalytics firebaseAnalytics;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,12 +117,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
 
             Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_LONG).show();
         }
-    }
-
-    @Override
-    protected void onResume() {
-        analyticsTracker.sendScreenView("Downloaded Issues", new HitBuilders.ScreenViewBuilder().setCustomMetric(1, gridView.getCount()));
-        super.onResume();
     }
 
     @Override
@@ -213,14 +204,15 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         if (intent.resolveActivity(packageManager) != null) {
             startActivity(intent);
         } else {
-            analyticsTracker.send(createEventBuilder(AnalyticsCategory.Error).setAction("No PDF reader installed"));
+            Bundle bundle = new Bundle();
+            bundle.putString("cause", "No PDF reader installed");
+            firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
+
             Snackbar.make(gridView, R.string.no_pdf_reader, Snackbar.LENGTH_LONG).show();
         }
     }
 
     public void deleteIssue(final long id) {
-        analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("single").setValue(1));
-
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -259,12 +251,10 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             @Override
             protected Void doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query());
-                long count = 0;
                 try {
                     if (cursor.moveToFirst()) {
                         while (!cursor.isAfterLast()) {
                             long itemID = cursor.getLong(cursor.getColumnIndex(DownloadManager.COLUMN_ID));
-                            count++;
                             downloadManager.remove(itemID);
                             cursor.moveToNext();
                         }
@@ -274,8 +264,6 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 }
 
                 thumbnailRegistry.clearAll();
-
-                analyticsTracker.send(createEventBuilder(AnalyticsCategory.Remove).setAction("all").setValue(count));
 
                 return null;
             }
@@ -307,7 +295,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     private class IssueDeleteButtonOnClickListener implements View.OnClickListener {
         private final int position;
 
-        public IssueDeleteButtonOnClickListener(int position) {
+        IssueDeleteButtonOnClickListener(int position) {
             this.position = position;
         }
 

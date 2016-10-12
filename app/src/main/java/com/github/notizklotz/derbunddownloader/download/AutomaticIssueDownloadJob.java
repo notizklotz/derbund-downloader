@@ -18,27 +18,27 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 
 import com.evernote.android.job.Job;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsCategory;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseParams;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
 import com.github.notizklotz.derbunddownloader.common.WifiConnectionFailedException;
 import com.github.notizklotz.derbunddownloader.common.WifiNotEnabledException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.google.android.gms.analytics.HitBuilders;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
 import java.util.concurrent.Callable;
-
-import static com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker.createEventBuilder;
 
 class AutomaticIssueDownloadJob extends Job {
 
@@ -48,7 +48,7 @@ class AutomaticIssueDownloadJob extends Job {
 
     private final Settings settings;
 
-    private final AnalyticsTracker analyticsTracker;
+    private final FirebaseAnalytics firebaseAnalytics;
 
     private final NotificationService notificationService;
 
@@ -58,13 +58,13 @@ class AutomaticIssueDownloadJob extends Job {
 
     AutomaticIssueDownloadJob(WifiCommandExecutor wifiCommandExecutor,
                               Settings settings,
-                              AnalyticsTracker analyticsTracker,
+                              FirebaseAnalytics firebaseAnalytics,
                               NotificationService notificationService,
                               IssueDownloader issueDownloader,
                               AutomaticDownloadScheduler automaticDownloadScheduler) {
         this.wifiCommandExecutor = wifiCommandExecutor;
         this.settings = settings;
-        this.analyticsTracker = analyticsTracker;
+        this.firebaseAnalytics = firebaseAnalytics;
         this.notificationService = notificationService;
         this.issueDownloader = issueDownloader;
         this.automaticDownloadScheduler = automaticDownloadScheduler;
@@ -82,43 +82,49 @@ class AutomaticIssueDownloadJob extends Job {
 
         Job.Result result;
         try {
+
             if (wifiOnly) {
                 wifiCommandExecutor.execute(new Callable() {
                     @Override
                     public Object call() throws Exception {
-                        issueDownloader.download(issueDate);
+                        issueDownloader.download(issueDate, "auto");
                         return null;
                     }
                 });
             } else {
-                issueDownloader.download(issueDate);
+                issueDownloader.download(issueDate, "auto");
             }
-            analyticsTracker.sendWithCustomDimensions(AnalyticsTracker.createEventBuilder(AnalyticsCategory.Download).setAction("auto").setLabel(issueDate.toString()).setValue(1));
 
             result = Result.SUCCESS;
         }
         catch (WifiConnectionFailedException e) {
-            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi connection failed").setNonInteraction(true));
+            logErrorEvent(issueDate, "Wifi connection failed");
             notificationService.notifyUser(getContext().getText(R.string.download_wifi_connection_failed), getContext().getText(R.string.download_wifi_connection_failed_text), true);
+
             result = Result.RESCHEDULE;
         } catch (WifiNotEnabledException e) {
-            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Wifi disabled").setNonInteraction(true));
+            logErrorEvent(issueDate, "Wifi disabled");
             notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_no_wifi_text), true);
+
             result = Result.FAILURE;
         } catch (EpaperApiInvalidCredentialsException e) {
-            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("Invalid credentials").setNonInteraction(true));
+            logErrorEvent(issueDate, "Invalid credentials");
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
+
             result = Result.FAILURE;
         } catch (EpaperApiInexistingIssueRequestedException e) {
-            analyticsTracker.send(new HitBuilders.ExceptionBuilder().setFatal(false).setDescription("Inexisting issue " + e.getIssueDate().toString()));
+            logErrorEvent(issueDate, "Inexisting issue");
+
             result = Result.RESCHEDULE;
         } catch (IOException e) {
-            analyticsTracker.sendWithCustomDimensions(createEventBuilder(AnalyticsCategory.Error).setAction("No connection on download").setNonInteraction(true));
+            logErrorEvent(issueDate, "Connection failed");
             notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_text), true);
+
             result = Result.RESCHEDULE;
         } catch (Exception e) {
-            analyticsTracker.sendDefaultException(getContext(), e);
+            logErrorEvent(issueDate, e.getMessage());
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
+
             result = Result.FAILURE;
         }
 
@@ -127,5 +133,12 @@ class AutomaticIssueDownloadJob extends Job {
         }
 
         return result;
+    }
+
+    private void logErrorEvent(LocalDate issueDate, String cause) {
+        Bundle bundle = new Bundle();
+        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
+        bundle.putString(FirebaseParams.ERROR_CAUSE,  StringUtils.substring(cause, 0, 36));
+        firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_ERROR, bundle);
     }
 }

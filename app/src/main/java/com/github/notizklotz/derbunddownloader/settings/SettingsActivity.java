@@ -21,23 +21,13 @@ package com.github.notizklotz.derbunddownloader.settings;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 
-import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
-import com.google.android.gms.analytics.HitBuilders;
-
-import javax.inject.Inject;
 
 public class SettingsActivity extends AppCompatActivity {
-
-    @Inject
-    AnalyticsTracker analyticsTracker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        ((DerBundDownloaderApplication) getApplication()).getSettingsComponent().inject(this);
 
         setContentView(R.layout.activity_settings);
 
@@ -47,9 +37,4 @@ public class SettingsActivity extends AppCompatActivity {
                 .commit();
     }
 
-    @Override
-    protected void onResume() {
-        analyticsTracker.sendScreenView("Settings", new HitBuilders.ScreenViewBuilder());
-        super.onResume();
-    }
 }

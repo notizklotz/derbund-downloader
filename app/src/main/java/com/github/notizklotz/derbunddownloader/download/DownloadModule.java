@@ -27,10 +27,10 @@ import com.evernote.android.job.Job;
 import com.evernote.android.job.JobCreator;
 import com.evernote.android.job.JobManager;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
-import com.github.notizklotz.derbunddownloader.analytics.AnalyticsTracker;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
+import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Singleton;
 
@@ -55,7 +55,7 @@ public class DownloadModule {
     @Singleton
     JobCreator jobCreator(final WifiCommandExecutor wifiCommandExecutor,
                                          final Settings settings,
-                                         final AnalyticsTracker analyticsTracker,
+                                         final FirebaseAnalytics analyticsTracker,
                                          final NotificationService notificationService,
                                          final IssueDownloader issueDownloader,
                                          final AutomaticDownloadScheduler automaticDownloadScheduler) {
