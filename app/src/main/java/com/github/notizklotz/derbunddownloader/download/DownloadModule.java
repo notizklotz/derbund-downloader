@@ -45,7 +45,7 @@ public class DownloadModule {
     JobManager jobManager(Application application) {
         JobManager jobManager = JobManager.create(application);
         if (BuildConfig.DEBUG) {
-            jobManager.setVerbose(true);
+            jobManager.getConfig().setVerbose(true);
         }
 
         return jobManager;
@@ -53,29 +53,24 @@ public class DownloadModule {
 
     @Provides
     @Singleton
-    AutomaticIssueDownloadJob automaticIssueDownloadJob(JobManager jobManager,
-                WifiCommandExecutor wifiCommandExecutor,
-                Settings settings,
-                AnalyticsTracker analyticsTracker,
-                NotificationService notificationService,
-                IssueDownloader issueDownloader,
-                AutomaticDownloadScheduler automaticDownloadScheduler) {
-
-        final AutomaticIssueDownloadJob automaticIssueDownloadJob = new AutomaticIssueDownloadJob(
-                wifiCommandExecutor, settings, analyticsTracker, notificationService,
-                issueDownloader, automaticDownloadScheduler);
-
-        jobManager.addJobCreator(new JobCreator() {
+    JobCreator jobCreator(final WifiCommandExecutor wifiCommandExecutor,
+                                         final Settings settings,
+                                         final AnalyticsTracker analyticsTracker,
+                                         final NotificationService notificationService,
+                                         final IssueDownloader issueDownloader,
+                                         final AutomaticDownloadScheduler automaticDownloadScheduler) {
+        return new JobCreator() {
             @Override
             public Job create(String tag) {
                 if (AutomaticIssueDownloadJob.TAG.equals(tag)) {
-                    return automaticIssueDownloadJob;
+                    return new AutomaticIssueDownloadJob(
+                            wifiCommandExecutor, settings, analyticsTracker, notificationService,
+                            issueDownloader, automaticDownloadScheduler);
                 }
                 return null;
             }
-        });
+        };
 
-        return automaticIssueDownloadJob;
     }
 
     @Provides

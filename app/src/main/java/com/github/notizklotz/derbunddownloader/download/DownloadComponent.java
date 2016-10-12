@@ -18,8 +18,8 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-import android.app.DownloadManager;
-
+import com.evernote.android.job.JobCreator;
+import com.evernote.android.job.JobManager;
 import com.github.notizklotz.derbunddownloader.AppModule;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsModule;
 
@@ -33,9 +33,9 @@ public interface DownloadComponent {
 
     AutomaticDownloadScheduler automaticDownloadScheduler();
 
-    ThumbnailRegistry thumbnailRegistry();
+    JobCreator jobCreator();
 
-    DownloadManager downloadManager();
+    JobManager jobManager();
 
     void inject(IssueDownloadIntentService target);
 

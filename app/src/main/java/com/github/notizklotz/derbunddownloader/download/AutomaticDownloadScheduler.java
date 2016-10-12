@@ -79,14 +79,14 @@ public class AutomaticDownloadScheduler {
         }
     }
 
-    public void scheduleNextJobRequest() {
+    void scheduleNextJobRequest() {
         schedule();
     }
 
     private void schedule() {
         LocalTime alarmTime = new LocalTime(5, 0);
         if (BuildConfig.DEBUG) {
-            alarmTime = new LocalTime().plusMinutes(2);
+            alarmTime = new LocalTime().plusSeconds(10);
         }
 
         DateTime nextAlarmSwissTime = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(alarmTime);
@@ -101,15 +101,22 @@ public class AutomaticDownloadScheduler {
             while (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY || HOLIDAYS.contains(nextAlarmSwissTime.toLocalDate())) {
                 nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
             }
+
+            //TODO Add random value to prevent DoS on server
         }
 
         DateTime nowDeviceTime = DateTime.now();
         Duration windowStart = new Duration(nowDeviceTime, nextAlarmSwissTime);
-        Duration windowEnd =  new Duration(nowDeviceTime, nextAlarmSwissTime.plusMinutes(5));
+        Duration windowEnd;
+        if (!BuildConfig.DEBUG) {
+            windowEnd = new Duration(nowDeviceTime, nextAlarmSwissTime.plusMinutes(15));
+        } else {
+            windowEnd = windowStart;
+        }
 
         JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
                 .setPersisted(true).setRequirementsEnforced(false);
-        if (JobApi.V_14.equals(jobManager.getApi())) {
+        if (JobApi.V_14.equals(jobManager.getApi()) || JobApi.V_19.equals(jobManager.getApi())) {
             //Currently, com.evernote.android.job.v14.JobProxy14 doesn't use RTC_WAKEUP for non-exact jobs.
             builder.setExact(windowStart.getMillis());
         } else {

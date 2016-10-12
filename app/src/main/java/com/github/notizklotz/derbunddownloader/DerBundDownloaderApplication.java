@@ -58,6 +58,8 @@ public class DerBundDownloaderApplication extends Application {
         settingsComponent = DaggerSettingsComponent.builder().appModule(appModule).build();
         downloadedIssuesComponent = DaggerDownloadedIssuesComponent.builder().appModule(appModule).analyticsModule(analyticsModule).downloadModule(downloadModule).build();
 
+        downloadComponent.jobManager().addJobCreator(downloadComponent.jobCreator());
+
         downloadComponent.automaticDownloadScheduler().update();
     }
 
