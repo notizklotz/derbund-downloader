@@ -20,6 +20,7 @@ package com.github.notizklotz.derbunddownloader.analytics;
 
 import android.app.Application;
 
+import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.google.firebase.analytics.FirebaseAnalytics;
 
@@ -35,6 +36,10 @@ public class AnalyticsModule {
     @Singleton
     FirebaseAnalytics firebaseAnalytics(Application application) {
         FirebaseAnalytics instance = FirebaseAnalytics.getInstance(application);
+        if (BuildConfig.DEBUG) {
+            instance.setAnalyticsCollectionEnabled(false);
+        }
+
         instance.setUserProperty("timezone",  DateHandlingUtils.getUserTimezone().getID());
         return instance;
     }
