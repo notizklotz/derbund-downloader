@@ -18,6 +18,8 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.support.annotation.NonNull;
+
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
 import com.evernote.android.job.util.JobApi;
@@ -29,6 +31,7 @@ import org.apache.commons.lang3.RandomUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.Duration;
+import org.joda.time.Instant;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
@@ -46,6 +49,9 @@ public class AutomaticDownloadScheduler {
     private final JobManager jobManager;
 
     private static final Set<LocalDate> HOLIDAYS = new HashSet<>();
+
+    @SuppressWarnings("PointlessBooleanExpression")
+    private static final boolean DEBUG = BuildConfig.DEBUG && false;
 
     static {
         HOLIDAYS.add(new LocalDate(2016, 3, 28));
@@ -83,29 +89,12 @@ public class AutomaticDownloadScheduler {
     }
 
     private void schedule(boolean update) {
-        LocalTime alarmTime = new LocalTime(5, 0);
-        if (BuildConfig.DEBUG) {
-            alarmTime = new LocalTime().plusSeconds(10);
-        }
-
-        DateTime nextAlarmSwissTime = new DateTime(DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(alarmTime);
-        if (nextAlarmSwissTime.isBeforeNow()) {
-            nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
-        }
-        if (!BuildConfig.DEBUG) {
-            while (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY || HOLIDAYS.contains(nextAlarmSwissTime.toLocalDate())) {
-                nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
-            }
-
-            //Randomize so device are not requesting at the same time
-            int randomSeconds = RandomUtils.nextInt(0, 180);
-            nextAlarmSwissTime.plusSeconds(randomSeconds);
-        }
+        DateTime nextAlarmSwissTime = calculateNextAlarmTime(Instant.now(), RandomUtils.nextInt(0, 180));
 
         DateTime nowDeviceTime = DateTime.now();
         Duration windowStart = new Duration(nowDeviceTime, nextAlarmSwissTime);
         Duration windowEnd;
-        if (!BuildConfig.DEBUG) {
+        if (!DEBUG) {
             windowEnd = new Duration(nowDeviceTime, nextAlarmSwissTime.plusMinutes(15));
         } else {
             windowEnd = windowStart;
@@ -128,6 +117,27 @@ public class AutomaticDownloadScheduler {
         }
 
         builder.build().schedule();
+    }
+
+    @NonNull
+    DateTime calculateNextAlarmTime(Instant now, int randomSeconds) {
+        LocalTime alarmTime;
+        if (!DEBUG) {
+            alarmTime = new LocalTime(5, 0).plusSeconds(randomSeconds);
+        } else {
+            alarmTime = new LocalTime().plusSeconds(120);
+        }
+
+        DateTime nextAlarmSwissTime = new DateTime(now, DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(alarmTime);
+        if (nextAlarmSwissTime.isBeforeNow()) {
+            nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
+        }
+        if (!DEBUG) {
+            while (nextAlarmSwissTime.getDayOfWeek() == DateTimeConstants.SUNDAY || HOLIDAYS.contains(nextAlarmSwissTime.toLocalDate())) {
+                nextAlarmSwissTime = nextAlarmSwissTime.plusDays(1);
+            }
+        }
+        return nextAlarmSwissTime;
     }
 
 }
