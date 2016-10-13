@@ -51,7 +51,7 @@ public class AutomaticDownloadScheduler {
     private static final Set<LocalDate> HOLIDAYS = new HashSet<>();
 
     @SuppressWarnings("PointlessBooleanExpression")
-    private static final boolean DEBUG = BuildConfig.DEBUG && true;
+    private static final boolean DEBUG = BuildConfig.DEBUG && false;
 
     static {
         HOLIDAYS.add(new LocalDate(2016, 3, 28));
@@ -89,7 +89,7 @@ public class AutomaticDownloadScheduler {
                 .setPersisted(false)
                 .setRequirementsEnforced(false)
                 .setUpdateCurrent(true)
-                .setExecutionWindow(TimeUnit.MINUTES.toMillis(2), TimeUnit.MINUTES.toMillis(15));
+                .setExecutionWindow(TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(5));
 
         if (settings.isWifiOnly()) {
             builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
