@@ -28,7 +28,7 @@ android {
         applicationId "com.github.notizklotz.derbunddownloader"
         minSdkVersion 15
         targetSdkVersion 24
-        versionCode 38
+        versionCode 39
         versionName "2.8"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
