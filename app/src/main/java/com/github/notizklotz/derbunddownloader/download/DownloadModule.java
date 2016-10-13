@@ -62,7 +62,7 @@ public class DownloadModule {
         return new JobCreator() {
             @Override
             public Job create(String tag) {
-                if (AutomaticIssueDownloadJob.TAG.equals(tag)) {
+                if (AutomaticIssueDownloadJob.TAG_PERIODIC.equals(tag) || AutomaticIssueDownloadJob.TAG_FALLBACK.equals(tag)) {
                     return new AutomaticIssueDownloadJob(
                             wifiCommandExecutor, settings, analyticsTracker, notificationService,
                             issueDownloader, automaticDownloadScheduler);

@@ -22,7 +22,6 @@ import android.support.annotation.NonNull;
 
 import com.evernote.android.job.JobManager;
 import com.evernote.android.job.JobRequest;
-import com.evernote.android.job.util.JobApi;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -37,6 +36,7 @@ import org.joda.time.LocalTime;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -51,7 +51,7 @@ public class AutomaticDownloadScheduler {
     private static final Set<LocalDate> HOLIDAYS = new HashSet<>();
 
     @SuppressWarnings("PointlessBooleanExpression")
-    private static final boolean DEBUG = BuildConfig.DEBUG && false;
+    private static final boolean DEBUG = BuildConfig.DEBUG && true;
 
     static {
         HOLIDAYS.add(new LocalDate(2016, 3, 28));
@@ -77,18 +77,30 @@ public class AutomaticDownloadScheduler {
     }
 
     public void update() {
+        jobManager.cancelAll();
+
         if (settings.isAutoDownloadEnabled()) {
-            schedule(true);
-        } else {
-            jobManager.cancelAllForTag(AutomaticIssueDownloadJob.TAG);
+            scheduleNextPeriodicJob();
         }
     }
 
-    void scheduleNextJobRequest() {
-        schedule(false);
+    void scheduleFallbackJob() {
+        JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG_FALLBACK)
+                .setPersisted(false)
+                .setRequirementsEnforced(false)
+                .setUpdateCurrent(true)
+                .setExecutionWindow(TimeUnit.MINUTES.toMillis(2), TimeUnit.MINUTES.toMillis(15));
+
+        if (settings.isWifiOnly()) {
+            builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
+        } else {
+            builder.setRequiredNetworkType(JobRequest.NetworkType.CONNECTED);
+        }
+
+        builder.build().schedule();
     }
 
-    private void schedule(boolean update) {
+    void scheduleNextPeriodicJob() {
         DateTime nextAlarmSwissTime = calculateNextAlarmTime(Instant.now(), RandomUtils.nextInt(0, 180));
 
         DateTime nowDeviceTime = DateTime.now();
@@ -100,20 +112,16 @@ public class AutomaticDownloadScheduler {
             windowEnd = windowStart;
         }
 
-        JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG)
-                .setPersisted(true).setRequirementsEnforced(false).setUpdateCurrent(update);
+        JobRequest.Builder builder = new JobRequest.Builder(AutomaticIssueDownloadJob.TAG_PERIODIC)
+                .setPersisted(true)
+                .setRequirementsEnforced(false)
+                .setUpdateCurrent(false)
+                .setExecutionWindow(windowStart.getMillis(), windowEnd.getMillis());
 
-        if (JobApi.V_14.equals(jobManager.getApi()) || JobApi.V_19.equals(jobManager.getApi())) {
-            //Currently, com.evernote.android.job.v14.JobProxy14 doesn't use RTC_WAKEUP for non-exact jobs.
-            builder.setExact(windowStart.getMillis());
+        if (settings.isWifiOnly()) {
+            builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
         } else {
-            builder.setExecutionWindow(windowStart.getMillis(), windowEnd.getMillis());
-
-            if (settings.isWifiOnly()) {
-                builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
-            } else {
-                builder.setRequiredNetworkType(JobRequest.NetworkType.CONNECTED);
-            }
+            builder.setRequiredNetworkType(JobRequest.NetworkType.CONNECTED);
         }
 
         builder.build().schedule();
@@ -125,7 +133,7 @@ public class AutomaticDownloadScheduler {
         if (!DEBUG) {
             alarmTime = new LocalTime(5, 0).plusSeconds(randomSeconds);
         } else {
-            alarmTime = new LocalTime().plusSeconds(120);
+            alarmTime = new LocalTime().plusSeconds(30);
         }
 
         DateTime nextAlarmSwissTime = new DateTime(now, DateHandlingUtils.TIMEZONE_SWITZERLAND).withTime(alarmTime);

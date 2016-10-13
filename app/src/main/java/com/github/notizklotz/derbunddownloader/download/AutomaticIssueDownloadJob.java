@@ -42,7 +42,9 @@ import java.util.concurrent.Callable;
 
 class AutomaticIssueDownloadJob extends Job {
 
-    static final String TAG = "AutomaticIssueDownloadJob";
+    static final String TAG_PERIODIC = "AutomaticIssueDownloadJob";
+
+    static final String TAG_FALLBACK = "AutomaticIssueDownloadJobFallback";
 
     private final WifiCommandExecutor wifiCommandExecutor;
 
@@ -80,7 +82,7 @@ class AutomaticIssueDownloadJob extends Job {
 
         final boolean wifiOnly = settings.isWifiOnly();
 
-        Job.Result result;
+        boolean retry = false;
         try {
 
             if (wifiOnly) {
@@ -95,44 +97,50 @@ class AutomaticIssueDownloadJob extends Job {
                 issueDownloader.download(issueDate, "auto");
             }
 
-            result = Result.SUCCESS;
+            return Result.SUCCESS;
         }
         catch (WifiConnectionFailedException e) {
             logErrorEvent(issueDate, "Wifi connection failed");
             notificationService.notifyUser(getContext().getText(R.string.download_wifi_connection_failed), getContext().getText(R.string.download_wifi_connection_failed_text), true);
+            retry = true;
 
-            result = Result.RESCHEDULE;
         } catch (WifiNotEnabledException e) {
             logErrorEvent(issueDate, "Wifi disabled");
             notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_no_wifi_text), true);
 
-            result = Result.FAILURE;
         } catch (EpaperApiInvalidCredentialsException e) {
             logErrorEvent(issueDate, "Invalid credentials");
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
 
-            result = Result.FAILURE;
         } catch (EpaperApiInexistingIssueRequestedException e) {
             logErrorEvent(issueDate, "Inexisting issue");
 
-            result = Result.RESCHEDULE;
+            retry = true;
         } catch (IOException e) {
             logErrorEvent(issueDate, "Connection failed");
             notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_text), true);
 
-            result = Result.RESCHEDULE;
+            retry = true;
         } catch (Exception e) {
             logErrorEvent(issueDate, e.getMessage());
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
 
-            result = Result.FAILURE;
+            retry = true;
+        } finally {
+            automaticDownloadScheduler.scheduleNextPeriodicJob();
         }
 
-        if (result != Result.RESCHEDULE) {
-            automaticDownloadScheduler.scheduleNextJobRequest();
+        if (TAG_PERIODIC.equals(params.getTag())) {
+            if (retry) {
+                automaticDownloadScheduler.scheduleFallbackJob();
+            }
+
+            return Result.FAILURE;
+        } else if (TAG_FALLBACK.equals(params.getTag())) {
+            return retry ? Result.RESCHEDULE : Result.FAILURE;
         }
 
-        return result;
+        return Result.FAILURE;
     }
 
     private void logErrorEvent(LocalDate issueDate, String cause) {

@@ -19,6 +19,9 @@
 package com.github.notizklotz.derbunddownloader;
 
 import android.app.Application;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsComponent;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsModule;
@@ -36,6 +39,7 @@ import net.danlew.android.joda.JodaTimeAndroid;
 
 public class DerBundDownloaderApplication extends Application {
 
+    public static final String KEY_LAST_APP_VERSION = "last_app_version";
     private AnalyticsComponent analyticsComponent;
 
     private DownloadComponent downloadComponent;
@@ -60,7 +64,23 @@ public class DerBundDownloaderApplication extends Application {
 
         downloadComponent.jobManager().addJobCreator(downloadComponent.jobCreator());
 
-        downloadComponent.automaticDownloadScheduler().update();
+        migrate();
+    }
+
+    private void migrate() {
+        try {
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+            int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+            int lastAppVersion = defaultSharedPreferences.getInt(KEY_LAST_APP_VERSION, 0);
+
+            if (lastAppVersion < currentAppVersion) {
+                downloadComponent.automaticDownloadScheduler().update();
+                defaultSharedPreferences.edit().putInt(KEY_LAST_APP_VERSION, currentAppVersion).apply();
+            }
+        } catch (PackageManager.NameNotFoundException e) {
+            // Do nothing
+        }
     }
 
     public AnalyticsComponent getAnalyticsComponent() {
