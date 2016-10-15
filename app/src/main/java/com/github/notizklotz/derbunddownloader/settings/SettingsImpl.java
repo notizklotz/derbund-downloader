@@ -57,6 +57,11 @@ public class SettingsImpl implements Settings {
         getDefaultSharedPreferences().edit().putString(Settings.KEY_LAST_WAKEUP, s).apply();
     }
 
+    @Override
+    public void setUsernamePasswort(String username, String password) {
+        getDefaultSharedPreferences().edit().putString(KEY_USERNAME, username).putString(KEY_PASSWORD, password).apply();
+    }
+
     private SharedPreferences getDefaultSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(context);
     }

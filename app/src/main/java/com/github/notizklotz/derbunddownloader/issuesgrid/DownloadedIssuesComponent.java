@@ -21,6 +21,7 @@ package com.github.notizklotz.derbunddownloader.issuesgrid;
 import com.github.notizklotz.derbunddownloader.AppModule;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsModule;
 import com.github.notizklotz.derbunddownloader.download.DownloadModule;
+import com.github.notizklotz.derbunddownloader.login.LoginActivity;
 
 import javax.inject.Singleton;
 
@@ -31,4 +32,6 @@ import dagger.Component;
 public interface DownloadedIssuesComponent {
 
     void inject(DownloadedIssuesActivity target);
+
+    void inject(LoginActivity target);
 }

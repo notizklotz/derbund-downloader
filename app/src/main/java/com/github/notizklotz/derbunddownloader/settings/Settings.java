@@ -34,4 +34,6 @@ public interface Settings {
     boolean isAutoDownloadEnabled();
 
     void setLastWakeup(String s);
+
+    void setUsernamePasswort(String username, String password);
 }

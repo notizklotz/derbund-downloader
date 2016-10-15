@@ -54,7 +54,7 @@ import okio.BufferedSink;
 import okio.Okio;
 
 @Singleton
-class EpaperApiClient {
+public class EpaperApiClient {
 
     private static final String ISSUE_DATE__TEMPLATE = "%04d-%02d-%02d";
 
@@ -118,7 +118,7 @@ class EpaperApiClient {
         }
     }
 
-    private void login(@NonNull String username, @NonNull String password) throws EpaperApiInvalidCredentialsException, EpaperApiInvalidResponseException {
+    public void login(@NonNull String username, @NonNull String password) throws EpaperApiInvalidCredentialsException, EpaperApiInvalidResponseException {
         cookiejar.edit().clear().apply();
         try {
             JSONObject bodyJson = new JSONObject().put("user", username).put("password", password).put("stayLoggedIn", true).put("closeActiveSessions", false);

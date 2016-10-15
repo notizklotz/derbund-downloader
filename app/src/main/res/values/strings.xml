@@ -56,4 +56,13 @@
     <string name="epaper_api_domain">epaper.derbund.ch</string>
     <string name="epaper_api_defid">46</string>
     <string name="issue_title">Der Bund</string>
+    <string name="title_activity_login">Login</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Benutzername (Email)</string>
+    <string name="prompt_password">Passwort</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_sign_in_short">Login</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
 </resources>
