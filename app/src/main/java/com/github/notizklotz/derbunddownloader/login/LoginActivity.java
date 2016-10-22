@@ -23,14 +23,17 @@ import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.design.widget.TextInputEditText;
+import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.text.Html;
 import android.text.TextUtils;
+import android.text.method.LinkMovementMethod;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
@@ -59,10 +62,14 @@ public class LoginActivity extends AppCompatActivity {
      */
     private UserLoginTask mAuthTask = null;
 
-    private EditText mPasswordView;
+    private TextInputEditText mPasswordView;
+    private TextInputEditText mEmailView;
+
+    private TextInputLayout emailViewInputLayout;
+    private TextInputLayout passwordViewInputLayout;
+
     private View mProgressView;
     private View mLoginFormView;
-    private EditText mEmailView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,9 +79,9 @@ public class LoginActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_login);
         // Set up the login form.
-        mEmailView = (EditText) findViewById(R.id.email);
+        mEmailView = (TextInputEditText) findViewById(R.id.email);
 
-        mPasswordView = (EditText) findViewById(R.id.password);
+        mPasswordView = (TextInputEditText) findViewById(R.id.password);
         mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
@@ -86,6 +93,9 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+        emailViewInputLayout = (TextInputLayout) findViewById(R.id.emailInputLayout);
+        passwordViewInputLayout = (TextInputLayout) findViewById(R.id.passwordInputLayout);
+
         Button mEmailSignInButton = (Button) findViewById(R.id.email_sign_in_button);
         mEmailSignInButton.setOnClickListener(new OnClickListener() {
             @Override
@@ -96,6 +106,10 @@ public class LoginActivity extends AppCompatActivity {
 
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
+
+        TextView registrationLink = (TextView) findViewById(R.id.registrationLink);
+        registrationLink.setText(Html.fromHtml("<a href=\"" + getString(R.string.pw_request_url) + "\">" + getString(R.string.request_pw) + "</a>"));
+        registrationLink.setMovementMethod(LinkMovementMethod.getInstance());
     }
 
     @Override
@@ -129,8 +143,15 @@ public class LoginActivity extends AppCompatActivity {
         View focusView = null;
 
         // Check for a valid email address.
+        if (TextUtils.isEmpty(password)) {
+            passwordViewInputLayout.setError(getString(R.string.error_field_required));
+            focusView = mPasswordView;
+            cancel = true;
+        }
+
+        // Check for a valid email address.
         if (TextUtils.isEmpty(email)) {
-            mEmailView.setError(getString(R.string.error_field_required));
+            emailViewInputLayout.setError(getString(R.string.error_field_required));
             focusView = mEmailView;
             cancel = true;
         }
@@ -211,8 +232,9 @@ public class LoginActivity extends AppCompatActivity {
             if (success) {
                 showDownloadedIssues();
             } else {
-                mPasswordView.setError(getString(R.string.error_incorrect_password));
-                mPasswordView.requestFocus();
+                emailViewInputLayout.setError(getString(R.string.error_incorrect_password));
+                passwordViewInputLayout.setError(getString(R.string.error_incorrect_password));
+                mEmailView.requestFocus();
             }
         }
 

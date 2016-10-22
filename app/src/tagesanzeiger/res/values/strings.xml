@@ -17,10 +17,13 @@
   -->
 
 <resources>
+
+    <!-- Per flavour -->
     <string name="app_name">Tagi ePaper</string>
     <string name="file_provider_authority">com.github.notizklotz.derbunddownloader.tagesanzeiger</string>
 
     <string name="epaper_api_domain">epaper.tagesanzeiger.ch</string>
     <string name="epaper_api_defid">20</string>
     <string name="issue_title">Tagesanzeiger</string>
+    <string name="pw_request_url">https://abo.tagesanzeiger.ch/tamstorefront/login/pw/request</string>
 </resources>

@@ -17,8 +17,6 @@
   -->
 
 <resources>
-    <string name="app_name">Bund ePaper</string>
-    <string name="file_provider_authority">com.github.notizklotz.derbunddownloader</string>
     <string name="action_settings">Einstellungen</string>
     <string name="action_download">Herunterladen</string>
     <string name="auto_download">Automatisch täglich herunterladen</string>
@@ -52,17 +50,24 @@
     <string name="action_delete_all">Alle entfernen</string>
     <string name="debugging">Informationen</string>
     <string name="issue_deleted">Ausgabe entfernt: </string>
+    <string name="request_pw">Zugangsdaten vergessen</string>
+
+    <!-- Strings related to login -->
+    <string name="title_activity_login">Login</string>
+    <string name="prompt_email">Email</string>
+    <string name="prompt_password">Passwort</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_sign_in_short">Login</string>
+    <string name="error_incorrect_password">Die Zugangsdaten sind nicht korrekt</string>
+    <string name="error_field_required">Dieses Feld darf nicht leer sein</string>
+
+    <!-- Per flavour -->
+    <string name="app_name">Der Bund ePaper</string>
+    <string name="file_provider_authority">com.github.notizklotz.derbunddownloader</string>
 
     <string name="epaper_api_domain">epaper.derbund.ch</string>
     <string name="epaper_api_defid">46</string>
     <string name="issue_title">Der Bund</string>
-    <string name="title_activity_login">Login</string>
+    <string name="pw_request_url">https://abo.derbund.ch/tamstorefront/login/pw/request</string>
 
-    <!-- Strings related to login -->
-    <string name="prompt_email">Benutzername (Email)</string>
-    <string name="prompt_password">Passwort</string>
-    <string name="action_sign_in">Login</string>
-    <string name="action_sign_in_short">Login</string>
-    <string name="error_incorrect_password">This password is incorrect</string>
-    <string name="error_field_required">This field is required</string>
 </resources>

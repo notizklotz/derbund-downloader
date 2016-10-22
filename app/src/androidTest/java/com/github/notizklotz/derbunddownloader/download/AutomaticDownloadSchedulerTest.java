@@ -23,7 +23,7 @@ import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 
 public class AutomaticDownloadSchedulerTest {
@@ -32,7 +32,7 @@ public class AutomaticDownloadSchedulerTest {
     public void calculateNextAlarmTime() throws Exception {
         DateTime dateTime = new AutomaticDownloadScheduler(null, null)
                 .calculateNextAlarmTime(new DateTime(2016, 10, 13, 12, 12, DateHandlingUtils.TIMEZONE_SWITZERLAND).toInstant(), 60);
-        assertThat(dateTime).isEqualTo(new DateTime(2016, 10, 14, 5, 1, DateHandlingUtils.TIMEZONE_SWITZERLAND));
+        assertEquals(new DateTime(2016, 10, 14, 5, 1, DateHandlingUtils.TIMEZONE_SWITZERLAND), dateTime);
     }
 
 }
