@@ -39,7 +39,7 @@ import android.widget.TextView;
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.EpaperApiClient;
-import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity;
+import com.github.notizklotz.derbunddownloader.issuesgrid.MainActivity;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import org.apache.commons.lang3.StringUtils;
@@ -195,7 +195,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void showDownloadedIssues() {
-        startActivity(new Intent(this, DownloadedIssuesActivity.class));
+        startActivity(new Intent(this, MainActivity.class));
         finish();
     }
 

@@ -17,6 +17,9 @@
   -->
 
 <resources>
+    <string name="navigation_drawer_open">Navigation öffnen</string>
+    <string name="navigation_drawer_close">Navigation schliessen</string>
+
     <string name="action_settings">Einstellungen</string>
     <string name="action_download">Herunterladen</string>
     <string name="auto_download">Automatisch täglich herunterladen</string>
@@ -69,5 +72,7 @@
     <string name="epaper_api_defid">46</string>
     <string name="issue_title">Der Bund</string>
     <string name="pw_request_url">https://abo.derbund.ch/tamstorefront/login/pw/request</string>
+
+
 
 </resources>

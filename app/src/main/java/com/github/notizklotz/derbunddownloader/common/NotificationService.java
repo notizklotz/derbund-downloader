@@ -27,7 +27,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
 
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesActivity;
+import com.github.notizklotz.derbunddownloader.issuesgrid.MainActivity;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -59,8 +59,8 @@ public class NotificationService {
         // The stack builder object will contain an artificial back stack for thestarted Activity.
         // This ensures that navigating backward from the Activity leads out of your application to the Home screen.
         builder.setContentIntent(TaskStackBuilder.create(context).
-                addParentStack(DownloadedIssuesActivity.class).
-                addNextIntent(new Intent(context, DownloadedIssuesActivity.class)).
+                addParentStack(MainActivity.class).
+                addNextIntent(new Intent(context, MainActivity.class)).
                 getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT));
 
         NotificationManagerCompat.from(context).notify(1, builder.build());

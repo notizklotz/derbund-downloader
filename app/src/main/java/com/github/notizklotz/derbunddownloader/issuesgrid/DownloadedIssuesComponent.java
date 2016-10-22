@@ -31,7 +31,7 @@ import dagger.Component;
 @Component(modules = {AppModule.class, AnalyticsModule.class, DownloadModule.class})
 public interface DownloadedIssuesComponent {
 
-    void inject(DownloadedIssuesActivity target);
+    void inject(MainActivity mainActivity);
 
     void inject(LoginActivity target);
 }

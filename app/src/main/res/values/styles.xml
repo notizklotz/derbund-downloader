@@ -25,4 +25,13 @@
     </style>
 
     <style name="Theme.DerBund" parent="Theme.DerBund.Base" />
+
+    <style name="Theme.DerBund.NoActionBar">
+        <item name="windowActionBar">false</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="Theme.DerBund.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+
+    <style name="Theme.DerBund.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
 </resources>

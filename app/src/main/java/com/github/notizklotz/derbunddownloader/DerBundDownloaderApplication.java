@@ -21,6 +21,7 @@ package com.github.notizklotz.derbunddownloader;
 import android.app.Application;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.StrictMode;
 import android.preference.PreferenceManager;
 
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsComponent;
@@ -51,6 +52,13 @@ public class DerBundDownloaderApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        //noinspection PointlessBooleanExpression
+        if (BuildConfig.DEBUG && false) {
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
+        }
+
         JodaTimeAndroid.init(this);
 
         AppModule appModule = new AppModule(this);

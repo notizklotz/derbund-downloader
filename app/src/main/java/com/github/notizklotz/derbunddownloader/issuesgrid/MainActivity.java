@@ -26,14 +26,17 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.StrictMode;
-import android.preference.PreferenceManager;
+import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.FileProvider;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -41,9 +44,8 @@ import android.widget.AdapterView;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.SimpleCursorAdapter;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
@@ -54,14 +56,13 @@ import com.github.notizklotz.derbunddownloader.settings.SettingsActivity;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 
 import java.io.File;
 
 import javax.inject.Inject;
 
-public class DownloadedIssuesActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
@@ -85,71 +86,43 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
-        //noinspection PointlessBooleanExpression
-        if (BuildConfig.DEBUG && false) {
-            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder().detectAll().penaltyLog().build());
-            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder().detectAll().penaltyLog().build());
-        }
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                menuItemDownloadSelected();
+            }
+        });
 
-        PreferenceManager.setDefaultValues(getApplicationContext(), R.xml.preferences, false);
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawer.addDrawerListener(toggle);
+        toggle.syncState();
+
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        ((DerBundDownloaderApplication)getApplication()).getDownloadedIssuesComponent().inject(this);
+
+        TextView navHeaderMail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_header_email);
+        navHeaderMail.setText(settings.getUsername());
 
         NotificationManagerCompat.from(this).cancelAll();
-
-        setContentView(R.layout.activity_downloaded_issues);
 
         this.gridView = ((GridView) findViewById(R.id.gridview));
         this.emptyGridView = findViewById(R.id.empty_grid_view);
 
-        ((DerBundDownloaderApplication)getApplication()).getDownloadedIssuesComponent().inject(this);
-
         setupIssuesGrid();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        String username = settings.getUsername();
-        String password = settings.getPassword();
-
-        if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
-            startActivity(new Intent(this, SettingsActivity.class));
-
-            Toast.makeText(this, getString(R.string.please_login), Toast.LENGTH_LONG).show();
-        }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater menuInflater = getMenuInflater();
-        menuInflater.inflate(R.menu.main, menu);
-        return super.onCreateOptionsMenu(menu);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        int itemId_ = item.getItemId();
-        if (itemId_ == R.id.action_deleteAll) {
-            showDeleteAllIssuesDialog();
-            return true;
-        }
-        if (itemId_ == R.id.action_download) {
-            menuItemDownloadSelected();
-            return true;
-        }
-        if (itemId_ == R.id.action_settings) {
-            menuItemSettingsSelected();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
-
-
-
     void setupIssuesGrid() {
         gridView.setEmptyView(emptyGridView);
-        gridView.setOnItemClickListener(new IssuesGridOnItemClickListener());
+        gridView.setOnItemClickListener(new MainActivity.IssuesGridOnItemClickListener());
 
         final SimpleCursorAdapter issueListAdapter = new SimpleCursorAdapter(this,
                 R.layout.include_issue, null,
@@ -160,7 +133,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
             public View getView(final int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
                 View deleteButton = view.findViewById(R.id.issueDeleteButton);
-                deleteButton.setOnClickListener(new IssueDeleteButtonOnClickListener(position));
+                deleteButton.setOnClickListener(new MainActivity.IssueDeleteButtonOnClickListener(position));
 
                 // Load the thumbnail image
                 ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
@@ -169,7 +142,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
                 LocalDate issueDate = DateHandlingUtils.fromDateString(description);
                 File originalThumbnailUri = thumbnailRegistry.getThumbnailFile(issueDate);
 
-                Picasso.with(DownloadedIssuesActivity.this)
+                Picasso.with(MainActivity.this)
                         .load(originalThumbnailUri)
                         .placeholder(R.drawable.issue_placeholder)
                         .fit()
@@ -277,7 +250,7 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
     }
 
-    void menuItemSettingsSelected() {
+    void showSettingsActivity() {
         startActivity(new Intent(this, SettingsActivity.class));
     }
 
@@ -310,4 +283,53 @@ public class DownloadedIssuesActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    public void onBackPressed() {
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        if (drawer.isDrawerOpen(GravityCompat.START)) {
+            drawer.closeDrawer(GravityCompat.START);
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.action_deleteAll) {
+            showDeleteAllIssuesDialog();
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
+    }
+
+    @SuppressWarnings("StatementWithEmptyBody")
+    @Override
+    public boolean onNavigationItemSelected(MenuItem item) {
+        // Handle navigation view item clicks here.
+        int id = item.getItemId();
+
+        if (id == R.id.nav_gallery) {
+            // Handle the camera action
+        } else if (id == R.id.nav_settings) {
+            showSettingsActivity();
+        }
+
+        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
+        drawer.closeDrawer(GravityCompat.START);
+        return true;
+    }
 }

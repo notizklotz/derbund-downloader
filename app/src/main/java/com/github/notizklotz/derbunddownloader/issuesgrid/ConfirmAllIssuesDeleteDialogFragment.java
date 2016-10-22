@@ -37,7 +37,7 @@ public class ConfirmAllIssuesDeleteDialogFragment extends DialogFragment {
         return new AlertDialog.Builder(getActivity()).setMessage("Alle heruntergeladenen Ausgaben entfernen?")
                 .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
-                        ((DownloadedIssuesActivity) getActivity()).deleteAllIssues();
+                        ((MainActivity) getActivity()).deleteAllIssues();
                     }
                 })
                 .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
