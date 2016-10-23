@@ -43,6 +43,8 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.EpaperApiClient;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
+import org.apache.commons.lang3.StringUtils;
+
 import javax.inject.Inject;
 
 /**
@@ -111,7 +113,10 @@ public class LoginActivity extends AppCompatActivity {
         registrationLinkTextView.setText(createSpanned(registrationLink));
         registrationLinkTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
-        mEmailView.setText(settings.getUsername());
+        String username = settings.getUsername();
+        if (StringUtils.isNotBlank(username)) {
+            mEmailView.setText(username);
+        }
         mPasswordView.setText(settings.getPassword());
     }
 
