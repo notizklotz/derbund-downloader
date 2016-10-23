@@ -72,7 +72,7 @@
     <string name="epaper_api_defid">46</string>
     <string name="issue_title">Der Bund</string>
     <string name="pw_request_url">https://abo.derbund.ch/tamstorefront/login/pw/request</string>
-
+    <string name="zeitungen">Zeitungen</string>
 
 
 </resources>

@@ -22,11 +22,13 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.TextInputEditText;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
+import android.text.Spanned;
 import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.view.KeyEvent;
@@ -40,8 +42,6 @@ import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.EpaperApiClient;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-
-import org.apache.commons.lang3.StringUtils;
 
 import javax.inject.Inject;
 
@@ -106,18 +106,24 @@ public class LoginActivity extends AppCompatActivity {
         mLoginFormView = findViewById(R.id.login_form);
         mProgressView = findViewById(R.id.login_progress);
 
-        TextView registrationLink = (TextView) findViewById(R.id.registrationLink);
-        registrationLink.setText(Html.fromHtml("<a href=\"" + getString(R.string.pw_request_url) + "\">" + getString(R.string.request_pw) + "</a>"));
-        registrationLink.setMovementMethod(LinkMovementMethod.getInstance());
+        TextView registrationLinkTextView = (TextView) findViewById(R.id.registrationLink);
+        String registrationLink = "<a href=\"" + getString(R.string.pw_request_url) + "\">" + getString(R.string.request_pw) + "</a>";
+        registrationLinkTextView.setText(createSpanned(registrationLink));
+        registrationLinkTextView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        mEmailView.setText(settings.getUsername());
+        mPasswordView.setText(settings.getPassword());
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-        if (StringUtils.isNotBlank(settings.getUsername()) && StringUtils.isNotBlank(settings.getPassword())) {
-            showDownloadedIssues();
+    private Spanned createSpanned(String registrationLink) {
+        Spanned text;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            text = Html.fromHtml(registrationLink, Html.FROM_HTML_MODE_COMPACT);
+        } else {
+            //noinspection deprecation
+            text = Html.fromHtml(registrationLink);
         }
+        return text;
     }
 
     /**
