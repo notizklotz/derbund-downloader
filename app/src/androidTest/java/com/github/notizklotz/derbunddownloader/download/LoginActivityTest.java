@@ -28,7 +28,7 @@ import android.view.View;
 
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.login.LoginActivity;
+import com.github.notizklotz.derbunddownloader.ui.LoginActivity;
 
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;

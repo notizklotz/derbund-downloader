@@ -30,10 +30,10 @@ import com.github.notizklotz.derbunddownloader.analytics.DaggerAnalyticsComponen
 import com.github.notizklotz.derbunddownloader.download.DaggerDownloadComponent;
 import com.github.notizklotz.derbunddownloader.download.DownloadComponent;
 import com.github.notizklotz.derbunddownloader.download.DownloadModule;
-import com.github.notizklotz.derbunddownloader.issuesgrid.DaggerDownloadedIssuesComponent;
-import com.github.notizklotz.derbunddownloader.issuesgrid.DownloadedIssuesComponent;
 import com.github.notizklotz.derbunddownloader.settings.DaggerSettingsComponent;
 import com.github.notizklotz.derbunddownloader.settings.SettingsComponent;
+import com.github.notizklotz.derbunddownloader.ui.DaggerUiComponent;
+import com.github.notizklotz.derbunddownloader.ui.UiComponent;
 
 import net.danlew.android.joda.JodaTimeAndroid;
 
@@ -47,7 +47,7 @@ public class DerBundDownloaderApplication extends Application {
 
     private SettingsComponent settingsComponent;
 
-    private DownloadedIssuesComponent downloadedIssuesComponent;
+    private UiComponent uiComponent;
 
     @Override
     public void onCreate() {
@@ -68,7 +68,7 @@ public class DerBundDownloaderApplication extends Application {
         analyticsComponent = DaggerAnalyticsComponent.builder().appModule(appModule).analyticsModule(analyticsModule).build();
         downloadComponent = DaggerDownloadComponent.builder().appModule(appModule).analyticsModule(analyticsModule).downloadModule(downloadModule).build();
         settingsComponent = DaggerSettingsComponent.builder().appModule(appModule).build();
-        downloadedIssuesComponent = DaggerDownloadedIssuesComponent.builder().appModule(appModule).analyticsModule(analyticsModule).downloadModule(downloadModule).build();
+        uiComponent = DaggerUiComponent.builder().appModule(appModule).analyticsModule(analyticsModule).downloadModule(downloadModule).build();
 
         downloadComponent.jobManager().addJobCreator(downloadComponent.jobCreator());
 
@@ -103,7 +103,7 @@ public class DerBundDownloaderApplication extends Application {
         return settingsComponent;
     }
 
-    public DownloadedIssuesComponent getDownloadedIssuesComponent() {
-        return downloadedIssuesComponent;
+    public UiComponent getUiComponent() {
+        return uiComponent;
     }
 }

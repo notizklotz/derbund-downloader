@@ -16,9 +16,13 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.issuesgrid;
+package com.github.notizklotz.derbunddownloader.ui;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.DownloadManager;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
@@ -26,6 +30,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
@@ -52,7 +57,6 @@ import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.github.notizklotz.derbunddownloader.settings.SettingsActivity;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.squareup.picasso.Picasso;
 
@@ -107,7 +111,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        ((DerBundDownloaderApplication)getApplication()).getDownloadedIssuesComponent().inject(this);
+        ((DerBundDownloaderApplication)getApplication()).getUiComponent().inject(this);
 
         TextView navHeaderMail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_header_email);
         navHeaderMail.setText(settings.getUsername());
@@ -218,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     void showDeleteAllIssuesDialog() {
-        ConfirmAllIssuesDeleteDialogFragment.createDialogFragment().show(getFragmentManager(), "issueDelete");
+        new DeleteAllDialogFragment().show(getFragmentManager(), "issueDelete");
     }
 
     void deleteAllIssues() {
@@ -248,10 +252,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     void menuItemDownloadSelected() {
         new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
-    }
-
-    void showSettingsActivity() {
-        startActivity(new Intent(this, SettingsActivity.class));
     }
 
     private class IssuesGridOnItemClickListener implements AdapterView.OnItemClickListener {
@@ -318,18 +318,65 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @SuppressWarnings("StatementWithEmptyBody")
     @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
+    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
         if (id == R.id.nav_gallery) {
-            // Handle the camera action
+            startActivity(new Intent(this, MainActivity.class));
         } else if (id == R.id.nav_settings) {
-            showSettingsActivity();
+            startActivity(new Intent(this, SettingsActivity.class));
         }
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         drawer.closeDrawer(GravityCompat.START);
         return true;
+    }
+
+    public static class ConfirmIssueDeleteDialogFragment extends DialogFragment {
+
+        private static final String ARG_ISSUE_ID = "issueID";
+
+        static ConfirmIssueDeleteDialogFragment createDialogFragment(long issueID) {
+            Bundle bundle = new Bundle();
+            bundle.putLong(ARG_ISSUE_ID, issueID);
+            ConfirmIssueDeleteDialogFragment confirmIssueDeleteDialogFragment = new ConfirmIssueDeleteDialogFragment();
+            confirmIssueDeleteDialogFragment.setArguments(bundle);
+            return confirmIssueDeleteDialogFragment;
+        }
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            final long issueId = getArguments().getLong("issueID");
+
+            return new AlertDialog.Builder(getActivity()).setMessage("Heruntergeladene Ausgabe entfernen?")
+                    .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            ((MainActivity) getActivity()).deleteIssue(issueId);
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    }).create();
+        }
+    }
+
+    public static class DeleteAllDialogFragment extends DialogFragment {
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            return new AlertDialog.Builder(getActivity()).setMessage("Alle heruntergeladenen Ausgaben entfernen?")
+                    .setPositiveButton(R.string.delete, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            ((MainActivity) getActivity()).deleteAllIssues();
+                        }
+                    })
+                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int id) {
+                            // User cancelled the dialog
+                        }
+                    }).create();
+        }
     }
 }

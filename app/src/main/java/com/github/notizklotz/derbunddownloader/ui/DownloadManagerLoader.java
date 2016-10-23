@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.issuesgrid;
+package com.github.notizklotz.derbunddownloader.ui;
 
 import android.app.DownloadManager;
 import android.content.AsyncTaskLoader;
@@ -34,7 +34,7 @@ class DownloadManagerLoader extends AsyncTaskLoader<Cursor> {
 
     private Cursor mCursor;
 
-    public DownloadManagerLoader(Context context, DownloadManager.Query query) {
+    DownloadManagerLoader(Context context, DownloadManager.Query query) {
         super(context);
         mObserver = new Loader.ForceLoadContentObserver();
         this.mQuery = query;

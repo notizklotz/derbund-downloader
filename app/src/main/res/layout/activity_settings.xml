@@ -21,6 +21,6 @@
     android:id="@+id/container"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".settings.SettingsActivity">
+    tools:context=".ui.SettingsActivity">
 
 </android.support.design.widget.CoordinatorLayout>

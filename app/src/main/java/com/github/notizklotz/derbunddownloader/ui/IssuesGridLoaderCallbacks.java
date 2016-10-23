@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.issuesgrid;
+package com.github.notizklotz.derbunddownloader.ui;
 
 import android.app.DownloadManager;
 import android.app.LoaderManager;
@@ -31,7 +31,7 @@ class IssuesGridLoaderCallbacks implements LoaderManager.LoaderCallbacks<Cursor>
     private final Context context;
     private final SimpleCursorAdapter issueListAdapter;
 
-    public IssuesGridLoaderCallbacks(Context context, SimpleCursorAdapter issueListAdapter) {
+    IssuesGridLoaderCallbacks(Context context, SimpleCursorAdapter issueListAdapter) {
         this.context = context;
         this.issueListAdapter = issueListAdapter;
     }

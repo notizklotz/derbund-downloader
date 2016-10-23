@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.issuesgrid;
+package com.github.notizklotz.derbunddownloader.ui;
 
 import android.app.DownloadManager;
 import android.content.Context;
@@ -30,7 +30,7 @@ import com.github.notizklotz.derbunddownloader.R;
 class IssuesGridViewBinder implements SimpleCursorAdapter.ViewBinder {
     private final Context context;
 
-    public IssuesGridViewBinder(Context context) {
+    IssuesGridViewBinder(Context context) {
         this.context = context;
     }
 

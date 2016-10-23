@@ -16,12 +16,11 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.issuesgrid;
+package com.github.notizklotz.derbunddownloader.ui;
 
 import com.github.notizklotz.derbunddownloader.AppModule;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsModule;
 import com.github.notizklotz.derbunddownloader.download.DownloadModule;
-import com.github.notizklotz.derbunddownloader.login.LoginActivity;
 
 import javax.inject.Singleton;
 
@@ -29,9 +28,11 @@ import dagger.Component;
 
 @Singleton
 @Component(modules = {AppModule.class, AnalyticsModule.class, DownloadModule.class})
-public interface DownloadedIssuesComponent {
+public interface UiComponent {
 
     void inject(MainActivity mainActivity);
 
     void inject(LoginActivity target);
+
+    void inject(SettingsActivity.SettingsFragment target);
 }

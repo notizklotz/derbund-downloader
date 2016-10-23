@@ -23,7 +23,7 @@
         <item
             android:id="@+id/nav_gallery"
             android:icon="@drawable/ic_view_module_black_24dp"
-            android:title="Zeitungen" />
+            android:title="Zeitungen" android:checkable="true" android:checked="true" />
 
         <item
             android:id="@+id/nav_settings"

@@ -16,7 +16,7 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.login;
+package com.github.notizklotz.derbunddownloader.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -39,7 +39,6 @@ import android.widget.TextView;
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.download.EpaperApiClient;
-import com.github.notizklotz.derbunddownloader.issuesgrid.MainActivity;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import org.apache.commons.lang3.StringUtils;
@@ -75,7 +74,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((DerBundDownloaderApplication)getApplication()).getDownloadedIssuesComponent().inject(this);
+        ((DerBundDownloaderApplication)getApplication()).getUiComponent().inject(this);
 
         setContentView(R.layout.activity_login);
         // Set up the login form.

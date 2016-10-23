@@ -27,7 +27,7 @@ import android.support.v4.app.TaskStackBuilder;
 import android.support.v7.app.NotificationCompat;
 
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.issuesgrid.MainActivity;
+import com.github.notizklotz.derbunddownloader.ui.MainActivity;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
