@@ -124,6 +124,13 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         TextView navHeaderMail = (TextView) navigationView.getHeaderView(0).findViewById(R.id.nav_header_email);
         navHeaderMail.setText(settings.getUsername());
+        navHeaderMail.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
+        });
 
         NotificationManagerCompat.from(this).cancelAll();
 

@@ -22,16 +22,6 @@
     <PreferenceCategory
         android:key="pref_key_main_settings"
         android:title="@string/action_settings">
-        <EditTextPreference
-            android:inputType="textEmailAddress"
-            android:key="username"
-            android:persistent="true"
-            android:title="Benutzername (E-Mail Adresse)" />
-        <EditTextPreference
-            android:inputType="textPassword"
-            android:key="password"
-            android:persistent="true"
-            android:title="Passwort" />
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="wifi_only"

@@ -21,7 +21,6 @@ package com.github.notizklotz.derbunddownloader.ui;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.Preference;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 
@@ -101,30 +100,12 @@ public class SettingsActivity extends AppCompatActivity {
         }
 
         private void updateSummaries(SharedPreferences sharedPreferences) {
-            updateUsername(sharedPreferences);
-            updateLogin(sharedPreferences);
             updateLastWakeup(sharedPreferences);
         }
 
         private void updateLastWakeup(SharedPreferences sharedPreferences) {
             getPreferenceScreen().findPreference(SettingsImpl.KEY_LAST_WAKEUP).setSummary(sharedPreferences.getString(SettingsImpl.KEY_LAST_WAKEUP,
                     this.getString(R.string.last_wakeup_never)));
-        }
-
-        private void updateLogin(SharedPreferences sharedPreferences) {
-            Preference passwordPreference = getPreferenceScreen().findPreference(SettingsImpl.KEY_PASSWORD);
-            assert passwordPreference != null;
-            if (sharedPreferences.contains(SettingsImpl.KEY_PASSWORD)) {
-                passwordPreference.setSummary("****");
-            } else {
-                passwordPreference.setSummary(this.getString(R.string.password_summary));
-            }
-        }
-
-        private void updateUsername(SharedPreferences sharedPreferences) {
-            Preference usernamePreference = getPreferenceScreen().findPreference(SettingsImpl.KEY_USERNAME);
-            assert usernamePreference != null;
-            usernamePreference.setSummary(sharedPreferences.getString(SettingsImpl.KEY_USERNAME, this.getString(R.string.username_summary)));
         }
 
     }
