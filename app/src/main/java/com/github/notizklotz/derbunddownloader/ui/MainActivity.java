@@ -331,9 +331,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         // Handle navigation view item clicks here.
         int id = item.getItemId();
 
-        if (id == R.id.nav_gallery) {
-            startActivity(new Intent(this, MainActivity.class));
-        } else if (id == R.id.nav_settings) {
+        if (id == R.id.nav_settings) {
             startActivity(new Intent(this, SettingsActivity.class));
         }
 
