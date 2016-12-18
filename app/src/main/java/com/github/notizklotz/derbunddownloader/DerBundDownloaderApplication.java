@@ -79,11 +79,12 @@ public class DerBundDownloaderApplication extends Application {
         try {
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-            int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+
             int lastAppVersion = defaultSharedPreferences.getInt(KEY_LAST_APP_VERSION, 0);
 
-            if (lastAppVersion < currentAppVersion) {
+            if (lastAppVersion < 40) {
                 downloadComponent.automaticDownloadScheduler().update();
+                int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
                 defaultSharedPreferences.edit().putInt(KEY_LAST_APP_VERSION, currentAppVersion).apply();
             }
         } catch (PackageManager.NameNotFoundException e) {
