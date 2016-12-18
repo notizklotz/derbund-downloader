@@ -28,6 +28,4 @@ public class FirebaseParams {
 
     public static final String DOWNLOAD_TIME_SECONDS = "download_time_seconds";
 
-    public static final String ERROR_CAUSE = "error_cause";
-
 }

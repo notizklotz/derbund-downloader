@@ -25,7 +25,5 @@ public class FirebaseEvents {
 
     public static final String DOWNLOAD_ISSUE_COMPLETED = "download_issue_completed";
 
-    public static final String DOWNLOAD_ISSUE_ERROR = "download_issue_error";
-
     public static final String USER_ERROR = "user_error";
 }

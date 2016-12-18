@@ -30,7 +30,6 @@ import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 import javax.inject.Singleton;
 
@@ -54,17 +53,16 @@ public class DownloadModule {
     @Provides
     @Singleton
     JobCreator jobCreator(final WifiCommandExecutor wifiCommandExecutor,
-                                         final Settings settings,
-                                         final FirebaseAnalytics analyticsTracker,
-                                         final NotificationService notificationService,
-                                         final IssueDownloader issueDownloader,
-                                         final AutomaticDownloadScheduler automaticDownloadScheduler) {
+                          final Settings settings,
+                          final NotificationService notificationService,
+                          final IssueDownloader issueDownloader,
+                          final AutomaticDownloadScheduler automaticDownloadScheduler) {
         return new JobCreator() {
             @Override
             public Job create(String tag) {
                 if (AutomaticIssueDownloadJob.TAG_PERIODIC.equals(tag) || AutomaticIssueDownloadJob.TAG_FALLBACK.equals(tag)) {
                     return new AutomaticIssueDownloadJob(
-                            wifiCommandExecutor, settings, analyticsTracker, notificationService,
+                            wifiCommandExecutor, settings, notificationService,
                             issueDownloader, automaticDownloadScheduler);
                 }
                 return null;

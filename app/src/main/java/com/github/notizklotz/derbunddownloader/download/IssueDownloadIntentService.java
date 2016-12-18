@@ -25,12 +25,9 @@ import android.os.Bundle;
 
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
-import com.github.notizklotz.derbunddownloader.analytics.FirebaseParams;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
-import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crash.FirebaseCrash;
 
-import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 
 import java.io.IOException;
@@ -43,9 +40,6 @@ public class IssueDownloadIntentService extends IntentService {
     public final static String DAY_EXTRA = "day";
     public final static String MONTH_EXTRA = "month";
     public final static String YEAR_EXTRA = "year";
-
-    @Inject
-    FirebaseAnalytics firebaseAnalytics;
 
     @Inject
     NotificationService notificationService;
@@ -69,12 +63,16 @@ public class IssueDownloadIntentService extends IntentService {
         try {
             issueDownloader.download(issueDate, "manual");
         } catch (IOException e) {
+            FirebaseCrash.log("Connection failed");
+            FirebaseCrash.report(e);
             notificationService.notifyUser(this.getText(R.string.download_connection_failed), this.getText(R.string.download_connection_failed_text), true);
         } catch (EpaperApiInexistingIssueRequestedException | EpaperApiInvalidResponseException e) {
-            logErrorEvent(issueDate, e.getMessage());
+            FirebaseCrash.log("Could not download");
+            FirebaseCrash.report(e);
             notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
         } catch (EpaperApiInvalidCredentialsException e) {
-            logErrorEvent(issueDate, "Invalid credentials");
+            FirebaseCrash.log("Invalid credentials");
+            FirebaseCrash.report(e);
             notificationService.notifyUser(this.getText(R.string.download_login_failed), this.getText(R.string.download_login_failed_text), true);
         }
     }
@@ -101,13 +99,6 @@ public class IssueDownloadIntentService extends IntentService {
                 downloadIssue(dayExtra, monthExtra, yearExtra);
             }
         }
-    }
-
-    private void logErrorEvent(LocalDate issueDate, String cause) {
-        Bundle bundle = new Bundle();
-        bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
-        bundle.putString(FirebaseParams.ERROR_CAUSE,  StringUtils.substring(cause, 0, 36));
-        firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_ERROR, bundle);
     }
 
 }
