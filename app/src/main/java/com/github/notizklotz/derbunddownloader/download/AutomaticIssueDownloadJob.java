@@ -124,7 +124,9 @@ class AutomaticIssueDownloadJob extends Job {
 
             retry = true;
         } finally {
-            automaticDownloadScheduler.scheduleNextPeriodicJob();
+            if (TAG_PERIODIC.equals(params.getTag())) {
+                automaticDownloadScheduler.scheduleNextPeriodicJob();
+            }
         }
 
         if (TAG_PERIODIC.equals(params.getTag())) {
