@@ -28,7 +28,6 @@ import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
@@ -132,15 +131,9 @@ public class IssueDownloader {
                 .setTitle(title)
                 .setDescription(DateHandlingUtils.toDateString(issueDate))
                 .setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE)
-                .setDestinationInExternalFilesDir(context, null, filename);
+                .setDestinationInExternalFilesDir(context, null, filename)
+                .setAllowedOverMetered(!wifiOnly);
 
-        if (wifiOnly) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                pdfDownloadRequest.setAllowedOverMetered(false);
-            } else {
-                pdfDownloadRequest.setAllowedNetworkTypes(DownloadManager.Request.NETWORK_WIFI);
-            }
-        }
         downloadManager.enqueue(pdfDownloadRequest);
 
         return title;
