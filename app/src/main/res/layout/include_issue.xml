@@ -20,6 +20,7 @@
 
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content">
 
@@ -43,13 +44,15 @@
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:orientation="vertical"
-            android:paddingLeft="16dp">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            tools:ignore="RelativeOverlap">
 
             <TextView
                 android:id="@+id/dateTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
+                android:maxLines="1"
                 android:textColor="#ffffffff"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -58,21 +61,21 @@
                 android:id="@+id/stateTextView"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:singleLine="true"
                 android:textColor="#ffffffff"
-                android:textSize="12sp" />
+                android:textSize="12sp"
+                android:maxLines="1" />
         </LinearLayout>
 
         <android.support.v7.widget.AppCompatImageView
             android:id="@+id/issueDeleteButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_centerInParent="true"
             android:background="@android:color/transparent"
             android:contentDescription="@string/delete"
             android:padding="12dp"
-            app:srcCompat="@drawable/ic_delete_forever_white_24px" />
+            app:srcCompat="@drawable/ic_delete_white_24dp" />
     </RelativeLayout>
 
 </FrameLayout>
