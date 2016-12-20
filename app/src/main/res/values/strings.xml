@@ -33,16 +33,11 @@
     <string name="download_state_running">Lade herunter…</string>
     <string name="download_state_failed">Fehler beim Herunterladen</string>
     <string name="no_pdf_reader">Bitte installieren Sie einen PDF Reader</string>
-    <string name="username_summary">Bitte geben Sie ihren Benutzernamen ein</string>
-    <string name="password_summary">Bitte geben Sie ihr Passwort ein</string>
     <string name="download_login_failed">ePaper Login fehlgeschlagen</string>
     <string name="download_login_failed_text">Ihre Benutzerdaten sind nicht gültig</string>
-    <string name="download_wifi_connection_failed">WLAN-Verbindung fehlgeschlagen</string>
-    <string name="download_wifi_connection_failed_text">Es konnte keine WLAN-Verbindung hergestellt werden.</string>
     <string name="download_connection_failed_no_wifi_text">WLAN war nicht eingeschaltet. Die Zeitung wurde nicht heruntergeladen.</string>
     <string name="download_connection_failed">Verbindung fehlgeschlagen</string>
     <string name="download_connection_failed_text">Es konnte keine Internet-Verbindung hergestellt werden.</string>
-    <string name="please_login">Bitte geben Sie Benutzername und Passwort ihres \"ePaper\" Logins ein</string>
     <string name="download_completed">Download Abgeschlossen</string>
     <string name="last_wakeup">Zuletzt aufgewacht</string>
     <string name="last_wakeup_never">Nie</string>
@@ -76,5 +71,6 @@
     <string name="issue_title">Der Bund</string>
     <string name="pw_request_url">https://abo.derbund.ch/tamstorefront/login/pw/request</string>
     <string name="registration_url">https://abo.derbund.ch/tamstorefront/activate</string>
+    <string name="logo">Logo</string>
 
 </resources>

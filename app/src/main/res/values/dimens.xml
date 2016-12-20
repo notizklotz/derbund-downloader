@@ -20,7 +20,6 @@
     <dimen name="activity_margin">16dp</dimen>
 
     <dimen name="image_thumbnail_width">150dp</dimen>
-    <dimen name="image_thumbnail_height">220dp</dimen>
     <dimen name="image_thumbnail_spacing">4dp</dimen>
     <dimen name="grid_padding">@dimen/image_thumbnail_spacing</dimen>
     <!-- Default screen margins, per the Android Design guidelines. -->
