@@ -18,31 +18,24 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
+import android.net.wifi.WifiManager;
 import android.support.annotation.NonNull;
 
 import com.evernote.android.job.Job;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
-import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
-import com.github.notizklotz.derbunddownloader.common.WifiConnectionFailedException;
-import com.github.notizklotz.derbunddownloader.common.WifiNotEnabledException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.crash.FirebaseCrash;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
-import java.io.IOException;
-import java.util.concurrent.Callable;
-
 class AutomaticIssueDownloadJob extends Job {
 
     static final String TAG_PERIODIC = "AutomaticIssueDownloadJob";
 
     static final String TAG_FALLBACK = "AutomaticIssueDownloadJobFallback";
-
-    private final WifiCommandExecutor wifiCommandExecutor;
 
     private final Settings settings;
 
@@ -52,12 +45,14 @@ class AutomaticIssueDownloadJob extends Job {
 
     private final AutomaticDownloadScheduler automaticDownloadScheduler;
 
-    AutomaticIssueDownloadJob(WifiCommandExecutor wifiCommandExecutor,
+    private final WifiManager wifiManager;
+
+    AutomaticIssueDownloadJob(WifiManager wifiManager,
                               Settings settings,
                               NotificationService notificationService,
                               IssueDownloader issueDownloader,
                               AutomaticDownloadScheduler automaticDownloadScheduler) {
-        this.wifiCommandExecutor = wifiCommandExecutor;
+        this.wifiManager = wifiManager;
         this.settings = settings;
         this.notificationService = notificationService;
         this.issueDownloader = issueDownloader;
@@ -72,53 +67,30 @@ class AutomaticIssueDownloadJob extends Job {
         DateTime nowInSwitzerland = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
         final LocalDate issueDate = new LocalDate(nowInSwitzerland.getYear(), nowInSwitzerland.getMonthOfYear(), nowInSwitzerland.getDayOfMonth());
 
-        final boolean wifiOnly = settings.isWifiOnly();
+
 
         boolean retry = false;
         try {
 
-            if (wifiOnly) {
-                wifiCommandExecutor.execute(new Callable() {
-                    @Override
-                    public Object call() throws Exception {
-                        issueDownloader.download(issueDate, "auto");
-                        return null;
-                    }
-                });
-            } else {
+            if (isRequirementNetworkTypeMet()) {
                 issueDownloader.download(issueDate, "auto");
+                return Result.SUCCESS;
+            } else {
+                if (settings.isWifiOnly() && !wifiManager.isWifiEnabled()) {
+                    notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_no_wifi_text), true);
+                } else {
+                    retry = true;
+                }
             }
-
-            return Result.SUCCESS;
-        }
-        catch (WifiConnectionFailedException e) {
-            FirebaseCrash.log("Wifi connection failed");
-            FirebaseCrash.report(e);
-            notificationService.notifyUser(getContext().getText(R.string.download_wifi_connection_failed), getContext().getText(R.string.download_wifi_connection_failed_text), true);
-            retry = true;
-
-        } catch (WifiNotEnabledException e) {
-            FirebaseCrash.log("Wifi disabled");
-            FirebaseCrash.report(e);
-            notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_no_wifi_text), true);
-
         } catch (EpaperApiInvalidCredentialsException e) {
             FirebaseCrash.log("Invalid credentials");
             FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
-
         } catch (EpaperApiInexistingIssueRequestedException e) {
             FirebaseCrash.log("Inexisting issue");
             FirebaseCrash.report(e);
             retry = true;
-        } catch (IOException e) {
-            FirebaseCrash.log("Connection failed");
-            FirebaseCrash.report(e);
-            notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_text), true);
-
-            retry = true;
         } catch (Exception e) {
-            FirebaseCrash.log("Could not download");
             FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
 

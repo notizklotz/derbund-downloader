@@ -28,7 +28,6 @@ import com.evernote.android.job.JobCreator;
 import com.evernote.android.job.JobManager;
 import com.github.notizklotz.derbunddownloader.BuildConfig;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
-import com.github.notizklotz.derbunddownloader.common.WifiCommandExecutor;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import javax.inject.Singleton;
@@ -52,7 +51,7 @@ public class DownloadModule {
 
     @Provides
     @Singleton
-    JobCreator jobCreator(final WifiCommandExecutor wifiCommandExecutor,
+    JobCreator jobCreator(final WifiManager wifiManager,
                           final Settings settings,
                           final NotificationService notificationService,
                           final IssueDownloader issueDownloader,
@@ -62,7 +61,7 @@ public class DownloadModule {
             public Job create(String tag) {
                 if (AutomaticIssueDownloadJob.TAG_PERIODIC.equals(tag) || AutomaticIssueDownloadJob.TAG_FALLBACK.equals(tag)) {
                     return new AutomaticIssueDownloadJob(
-                            wifiCommandExecutor, settings, notificationService,
+                            wifiManager, settings, notificationService,
                             issueDownloader, automaticDownloadScheduler);
                 }
                 return null;
