@@ -21,7 +21,8 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
-import android.util.Log;
+
+import com.google.firebase.crash.FirebaseCrash;
 
 import org.joda.time.LocalDate;
 
@@ -37,6 +38,7 @@ public class ThumbnailRegistry {
 
     private final Context context;
 
+    @SuppressWarnings("WeakerAccess")
     @Inject
     public ThumbnailRegistry(Application context) {
         this.context = context;
@@ -53,7 +55,7 @@ public class ThumbnailRegistry {
             //noinspection ResultOfMethodCallIgnored
             thumbnailFile.delete();
         } catch (Exception e) {
-            Log.e(TAG, "clear: failed", e);
+            FirebaseCrash.report(e);
         }
     }
 
@@ -67,7 +69,7 @@ public class ThumbnailRegistry {
                 }
             }
         } catch (Exception e) {
-            Log.e(TAG, "clearAll: failed", e);
+            FirebaseCrash.report(e);
         }
     }
 

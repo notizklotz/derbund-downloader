@@ -32,7 +32,6 @@ import android.os.Bundle;
 import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
-import android.util.Log;
 
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
@@ -41,6 +40,7 @@ import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crash.FirebaseCrash;
 
 import org.joda.time.LocalDate;
 
@@ -54,7 +54,6 @@ import javax.inject.Singleton;
 @SuppressWarnings("WeakerAccess")
 @Singleton
 public class IssueDownloader {
-    private static final String LOG_TAG = IssueDownloader.class.getSimpleName();
 
     private final Context context;
 
@@ -96,7 +95,8 @@ public class IssueDownloader {
         try {
             epaperApiClient.savePdfThumbnail(issueDate);
         } catch (Exception e) {
-            Log.e(LOG_TAG, "Could not save thumbnail", e);
+            FirebaseCrash.log("Could not save thumbnail");
+            FirebaseCrash.report(e);
         }
 
         final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
@@ -118,7 +118,7 @@ public class IssueDownloader {
 
             notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
         } catch (InterruptedException e) {
-            Log.wtf(LOG_TAG, "Interrupted while waiting for the downloadDoneSignal");
+            FirebaseCrash.report(e);
         } finally {
             context.unregisterReceiver(receiver);
         }
