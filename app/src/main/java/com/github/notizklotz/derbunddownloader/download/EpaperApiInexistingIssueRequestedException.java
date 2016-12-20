@@ -20,7 +20,8 @@ package com.github.notizklotz.derbunddownloader.download;
 
 class EpaperApiInexistingIssueRequestedException extends Exception {
 
-    EpaperApiInexistingIssueRequestedException() {
+    EpaperApiInexistingIssueRequestedException(String date) {
+        super("Inexisting issue requested: " + date);
     }
 
 }

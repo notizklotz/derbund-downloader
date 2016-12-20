@@ -51,6 +51,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+@SuppressWarnings("WeakerAccess")
 @Singleton
 public class IssueDownloader {
     private static final String LOG_TAG = IssueDownloader.class.getSimpleName();
@@ -85,7 +86,7 @@ public class IssueDownloader {
 
     public void download(LocalDate issueDate, String trigger) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        if (networkInfo == null || !networkInfo.isConnected()) {
+        if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
             throw new IOException("Not connected");
         }
 

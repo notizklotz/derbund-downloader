@@ -86,11 +86,8 @@ class AutomaticIssueDownloadJob extends Job {
             FirebaseCrash.log("Invalid credentials");
             FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
-        } catch (EpaperApiInexistingIssueRequestedException e) {
-            FirebaseCrash.log("Inexisting issue");
-            FirebaseCrash.report(e);
-            retry = true;
         } catch (Exception e) {
+            FirebaseCrash.log(e.getMessage());
             FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
 

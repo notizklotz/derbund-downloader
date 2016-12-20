@@ -63,15 +63,15 @@ public class IssueDownloadIntentService extends IntentService {
         try {
             issueDownloader.download(issueDate, "manual");
         } catch (IOException e) {
-            FirebaseCrash.log("Connection failed");
+            FirebaseCrash.log(e.getMessage());
             FirebaseCrash.report(e);
             notificationService.notifyUser(this.getText(R.string.download_connection_failed), this.getText(R.string.download_connection_failed_text), true);
         } catch (EpaperApiInexistingIssueRequestedException | EpaperApiInvalidResponseException e) {
-            FirebaseCrash.log("Could not download");
+            FirebaseCrash.log(e.getMessage());
             FirebaseCrash.report(e);
             notificationService.notifyUser(this.getText(R.string.download_service_error), e.getMessage(), true);
         } catch (EpaperApiInvalidCredentialsException e) {
-            FirebaseCrash.log("Invalid credentials");
+            FirebaseCrash.log(e.getMessage());
             FirebaseCrash.report(e);
             notificationService.notifyUser(this.getText(R.string.download_login_failed), this.getText(R.string.download_login_failed_text), true);
         }

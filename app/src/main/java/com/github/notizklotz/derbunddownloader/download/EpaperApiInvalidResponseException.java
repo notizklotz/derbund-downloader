@@ -18,13 +18,13 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-public class EpaperApiInvalidResponseException extends Exception {
+class EpaperApiInvalidResponseException extends Exception {
 
-    public EpaperApiInvalidResponseException(String detailMessage) {
+    EpaperApiInvalidResponseException(String detailMessage) {
         super(detailMessage);
     }
 
-    public EpaperApiInvalidResponseException(Throwable throwable) {
+    EpaperApiInvalidResponseException(Throwable throwable) {
         super("Illegal response from server", throwable);
     }
 }

@@ -190,7 +190,7 @@ public class EpaperApiClient {
             Response response = client.newCall(request).execute();
             if (!response.isSuccessful()) {
                 if (response.code() == 500) {
-                    throw new EpaperApiInexistingIssueRequestedException();
+                    throw new EpaperApiInexistingIssueRequestedException(issueDateString);
                 }
 
                 throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());

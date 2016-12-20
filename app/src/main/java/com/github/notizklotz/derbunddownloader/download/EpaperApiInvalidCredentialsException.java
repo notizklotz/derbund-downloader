@@ -18,9 +18,9 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-public class EpaperApiInvalidCredentialsException extends Exception {
+class EpaperApiInvalidCredentialsException extends Exception {
 
-    public EpaperApiInvalidCredentialsException() {
+    EpaperApiInvalidCredentialsException() {
         super("Invalid credentials");
     }
 
