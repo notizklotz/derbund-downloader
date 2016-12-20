@@ -109,9 +109,12 @@ public class LoginActivity extends AppCompatActivity {
         mProgressView = findViewById(R.id.login_progress);
 
         TextView registrationLinkTextView = (TextView) findViewById(R.id.registrationLink);
-        String registrationLink = "<a href=\"" + getString(R.string.pw_request_url) + "\">" + getString(R.string.request_pw) + "</a>";
-        registrationLinkTextView.setText(createSpanned(registrationLink));
+        registrationLinkTextView.setText(createSpanned("<a href=\"" + getString(R.string.registration_url) + "\">" + getString(R.string.register) + "</a>"));
         registrationLinkTextView.setMovementMethod(LinkMovementMethod.getInstance());
+
+        TextView pwResetLinkTextView = (TextView) findViewById(R.id.pwResetLink);
+        pwResetLinkTextView.setText(createSpanned("<a href=\"" + getString(R.string.pw_request_url) + "\">" + getString(R.string.request_pw) + "</a>"));
+        pwResetLinkTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
         String username = settings.getUsername();
         if (StringUtils.isNotBlank(username)) {

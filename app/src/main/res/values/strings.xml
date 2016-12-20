@@ -54,6 +54,7 @@
     <string name="debugging">Informationen</string>
     <string name="issue_deleted">Ausgabe entfernt: </string>
     <string name="request_pw">Zugangsdaten vergessen</string>
+    <string name="register">ePaper freischalten</string>
 
     <!-- Strings related to login -->
     <string name="title_activity_login">Login</string>
@@ -63,6 +64,8 @@
     <string name="action_sign_in_short">Login</string>
     <string name="error_incorrect_password">Die Zugangsdaten sind nicht korrekt</string>
     <string name="error_field_required">Dieses Feld darf nicht leer sein</string>
+    <string name="zeitungen">Zeitungen</string>
+    <string name="klicken_um_einzuloggen">Klicken um einzuloggen</string>
 
     <!-- Per flavour -->
     <string name="app_name">Der Bund ePaper</string>
@@ -72,8 +75,6 @@
     <string name="epaper_api_defid">46</string>
     <string name="issue_title">Der Bund</string>
     <string name="pw_request_url">https://abo.derbund.ch/tamstorefront/login/pw/request</string>
-    <string name="zeitungen">Zeitungen</string>
-    <string name="klicken_um_einzuloggen">Klicken um einzuloggen</string>
-
+    <string name="registration_url">https://abo.derbund.ch/tamstorefront/activate</string>
 
 </resources>

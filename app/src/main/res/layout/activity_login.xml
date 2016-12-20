@@ -28,13 +28,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.github.notizklotz.derbunddownloader.ui.LoginActivity">
 
-    <TextView
-        android:text="@string/issue_title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/title"
-        android:textAppearance="@style/TextAppearance.AppCompat.Title" />
-
     <ProgressBar
         android:id="@+id/login_progress"
         style="?android:attr/progressBarStyleLarge"
@@ -95,7 +88,12 @@
                 android:text="@string/action_sign_in"
                 android:textStyle="bold" />
 
-            <TextView
+            <TextView android:layout_marginTop="16dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/pwResetLink"/>
+
+            <TextView android:layout_marginTop="16dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/registrationLink"/>
