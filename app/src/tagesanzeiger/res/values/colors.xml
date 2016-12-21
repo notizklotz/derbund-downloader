@@ -18,6 +18,6 @@
 
 <resources>
     <color name="myPrimaryColor">#007abf</color>
-    <color name="myPrimaryDarkColor">#006B89</color>
+    <color name="myPrimaryDarkColor">#00659e</color>
     <color name="themeAccentColor">#007abf</color>
 </resources>
