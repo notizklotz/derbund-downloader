@@ -40,7 +40,8 @@ import net.danlew.android.joda.JodaTimeAndroid;
 
 public class DerBundDownloaderApplication extends Application {
 
-    public static final String KEY_LAST_APP_VERSION = "last_app_version";
+    private static final String KEY_LAST_APP_VERSION = "last_app_version";
+
     private AnalyticsComponent analyticsComponent;
 
     private DownloadComponent downloadComponent;

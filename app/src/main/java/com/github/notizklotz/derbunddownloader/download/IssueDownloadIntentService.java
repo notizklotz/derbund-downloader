@@ -36,10 +36,10 @@ import javax.inject.Inject;
 
 public class IssueDownloadIntentService extends IntentService {
 
-    public final static String ACTION_DOWNLOAD_ISSUE = "downloadIssue";
-    public final static String DAY_EXTRA = "day";
-    public final static String MONTH_EXTRA = "month";
-    public final static String YEAR_EXTRA = "year";
+    private final static String ACTION_DOWNLOAD_ISSUE = "downloadIssue";
+    private final static String DAY_EXTRA = "day";
+    private final static String MONTH_EXTRA = "month";
+    private final static String YEAR_EXTRA = "year";
 
     @Inject
     NotificationService notificationService;
@@ -58,7 +58,7 @@ public class IssueDownloadIntentService extends IntentService {
         ((DerBundDownloaderApplication)getApplication()).getDownloadComponent().inject(this);
     }
 
-    void downloadIssue(int day, int month, int year) {
+    private void downloadIssue(int day, int month, int year) {
         final LocalDate issueDate = new LocalDate(year, month, day);
         try {
             issueDownloader.download(issueDate, "manual");

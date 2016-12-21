@@ -34,8 +34,6 @@ import javax.inject.Singleton;
 @Singleton
 public class ThumbnailRegistry {
 
-    private static final String TAG = "ThumbnailRegistry";
-
     private final Context context;
 
     @SuppressWarnings("WeakerAccess")

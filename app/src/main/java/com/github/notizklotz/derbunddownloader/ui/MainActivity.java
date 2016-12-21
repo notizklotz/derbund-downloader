@@ -182,7 +182,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    void setupIssuesGrid() {
+    private void setupIssuesGrid() {
         gridView.setEmptyView(emptyGridView);
         gridView.setOnItemClickListener(new MainActivity.IssuesGridOnItemClickListener());
 
@@ -248,7 +248,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }
     }
 
-    public void deleteIssue(final long id) {
+    private void deleteIssue(final long id) {
         new AsyncTask<Void, Void, String>() {
             @Override
             protected String doInBackground(Void... params) {
@@ -275,15 +275,15 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }.execute();
     }
 
-    static String getDescriptionFromCursor(Cursor cursor) {
+    private static String getDescriptionFromCursor(Cursor cursor) {
         return cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
     }
 
-    void showDeleteAllIssuesDialog() {
+    private void showDeleteAllIssuesDialog() {
         new DeleteAllDialogFragment().show(getFragmentManager(), "issueDelete");
     }
 
-    void deleteAllIssues() {
+    private void deleteAllIssues() {
         new AsyncTask<Void, Void, Void>() {
             @Override
             protected Void doInBackground(Void... params) {
@@ -308,7 +308,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         }.execute();
     }
 
-    void menuItemDownloadSelected() {
+    private void menuItemDownloadSelected() {
         new ManuallyDownloadIssueDatePickerFragment().show(getFragmentManager(), TAG_DOWNLOAD_ISSUE_DATE_PICKER);
     }
 
