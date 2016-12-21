@@ -29,13 +29,11 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.SystemClock;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
-import com.github.notizklotz.derbunddownloader.analytics.FirebaseParams;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
@@ -46,7 +44,6 @@ import org.joda.time.LocalDate;
 
 import java.io.IOException;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -83,7 +80,7 @@ public class IssueDownloader {
         this.settings = settings;
     }
 
-    public void download(LocalDate issueDate, String trigger) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
+    public void download(LocalDate issueDate, String trigger, boolean waitForCompletion) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
             throw new IOException("Not connected");
@@ -104,16 +101,15 @@ public class IssueDownloader {
         context.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
 
         try {
-            long millisBeforeDownload = SystemClock.elapsedRealtime();
-
             String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
-            downloadDoneSignal.await();
+
+            if (waitForCompletion) {
+                downloadDoneSignal.await();
+            }
 
             Bundle bundle = new Bundle();
             bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
-            bundle.putString(FirebaseParams.DOWNLOAD_TRIGGER, trigger);
-            bundle.putLong(FirebaseParams.DOWNLOAD_TIME_SECONDS, TimeUnit.MILLISECONDS.toSeconds(SystemClock.elapsedRealtime() - millisBeforeDownload));
-
+            bundle.putString("download_trigger", trigger);
             firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
 
             notificationService.notifyUser(title, context.getString(R.string.download_completed), false);

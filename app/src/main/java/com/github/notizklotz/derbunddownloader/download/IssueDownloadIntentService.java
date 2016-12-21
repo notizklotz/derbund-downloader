@@ -61,7 +61,7 @@ public class IssueDownloadIntentService extends IntentService {
     private void downloadIssue(int day, int month, int year) {
         final LocalDate issueDate = new LocalDate(year, month, day);
         try {
-            issueDownloader.download(issueDate, "manual");
+            issueDownloader.download(issueDate, "manual", false);
         } catch (IOException e) {
             FirebaseCrash.log(e.getMessage());
             FirebaseCrash.report(e);

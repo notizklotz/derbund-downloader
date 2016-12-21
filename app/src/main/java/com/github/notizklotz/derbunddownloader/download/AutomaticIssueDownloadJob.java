@@ -73,7 +73,7 @@ class AutomaticIssueDownloadJob extends Job {
         try {
 
             if (isRequirementNetworkTypeMet()) {
-                issueDownloader.download(issueDate, "auto");
+                issueDownloader.download(issueDate, "auto", true);
                 return Result.SUCCESS;
             } else {
                 if (settings.isWifiOnly() && !wifiManager.isWifiEnabled()) {
