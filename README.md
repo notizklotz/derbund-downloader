@@ -1,12 +1,11 @@
 Der Bund ePaper Downloader [![Build Status](https://travis-ci.org/notizklotz/derbund-downloader.svg?branch=master)](https://travis-ci.org/notizklotz/derbund-downloader)
 ==========================
 
-Android application to download ePaper issues of the Swiss newspaper "Der Bund".
+Android application to download ePaper issues of the Swiss newspapers "Der Bund" and "Tagesanzeiger".
 
-Get it in the [Play Store](https://play.google.com/store/apps/details?id=com.github.notizklotz.derbunddownloader)
+[Der Bund ePaper on Play Store](https://play.google.com/store/apps/details?id=com.github.notizklotz.derbunddownloader)
+[Tagesanzeiger ePaper on Play Store](https://play.google.com/store/apps/details?id=com.github.notizklotz.derbunddownloader.tagesanzeiger)
 
 References
 --------------------------
-Logo icon based on image made by [DooFi](http://openclipart.org/detail/131095/news-by-doofi) which was released as public domain.
-
-Notification bar icon based on "News notice" icon made by [Designmodo](http://www.designmodo.com) from [Flaticon](http://www.flaticon.com) which is licensed under [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/)
+Notification bar icon based on "News notice" icon made by [Designmodo](http://www.designmodo.com) published on [Flaticon](http://www.flaticon.com) which is licensed under [CC BY 3.0](http://creativecommons.org/licenses/by/3.0/)
