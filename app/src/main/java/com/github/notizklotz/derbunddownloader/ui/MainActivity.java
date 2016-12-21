@@ -18,18 +18,19 @@
 
 package com.github.notizklotz.derbunddownloader.ui;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.DownloadManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -39,6 +40,7 @@ import android.support.v4.content.FileProvider;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -58,6 +60,7 @@ import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.analytics.FirebaseAnalytics;
+import com.google.firebase.crash.FirebaseCrash;
 import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.StringUtils;
@@ -71,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
+    private static final String KEY_LAST_WHATS_NEW_VERSION = "last_whats_new";
 
     private GridView gridView;
 
@@ -138,6 +142,44 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         this.emptyGridView = findViewById(R.id.empty_grid_view);
 
         setupIssuesGrid();
+
+        showWhatsNewDialogIfApplicable();
+    }
+
+    private void showWhatsNewDialogIfApplicable() {
+        try {
+            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+            int lastWhatsNewVersion = defaultSharedPreferences.getInt(KEY_LAST_WHATS_NEW_VERSION, 0);
+            int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+
+            if (lastWhatsNewVersion < currentAppVersion) {
+                defaultSharedPreferences.edit().putInt(KEY_LAST_WHATS_NEW_VERSION, currentAppVersion).apply();
+
+                if (!"com.github.notizklotz.derbunddownloader.tagesanzeiger".equals(getPackageName())) {
+                    AlertDialog.Builder dialog = new AlertDialog.Builder(this);
+                    dialog.setMessage(R.string.tagi_teaser)
+                            .setPositiveButton(R.string.tryit, new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                                    intent.setData(Uri.parse("market://details?id=com.github.notizklotz.derbunddownloader.tagesanzeiger"));
+                                    startActivity(intent);
+                                }
+                            })
+                            .setNegativeButton(R.string.ignoreit, new DialogInterface.OnClickListener() {
+
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+
+                                }
+                            })
+                            .create().show();
+                }
+            }
+        } catch (Exception e) {
+            FirebaseCrash.report(e);
+        }
     }
 
     void setupIssuesGrid() {

@@ -17,6 +17,18 @@
   -->
 
 <resources>
+
+    <!-- Per flavour -->
+    <string name="app_name">Der Bund ePaper</string>
+    <string name="file_provider_authority">com.github.notizklotz.derbunddownloader</string>
+
+    <string name="epaper_api_domain">epaper.derbund.ch</string>
+    <string name="epaper_api_defid">46</string>
+    <string name="issue_title">Der Bund</string>
+    <string name="pw_request_url">https://abo.derbund.ch/tamstorefront/login/pw/request</string>
+    <string name="registration_url">https://abo.derbund.ch/tamstorefront/activate</string>
+
+    <!-- other -->
     <string name="navigation_drawer_open">Navigation öffnen</string>
     <string name="navigation_drawer_close">Navigation schliessen</string>
 
@@ -51,7 +63,6 @@
     <string name="request_pw">Zugangsdaten vergessen</string>
     <string name="register">ePaper freischalten</string>
 
-    <!-- Strings related to login -->
     <string name="title_activity_login">Login</string>
     <string name="prompt_email">Email</string>
     <string name="prompt_password">Passwort</string>
@@ -62,15 +73,9 @@
     <string name="zeitungen">Zeitungen</string>
     <string name="klicken_um_einzuloggen">Klicken um einzuloggen</string>
 
-    <!-- Per flavour -->
-    <string name="app_name">Der Bund ePaper</string>
-    <string name="file_provider_authority">com.github.notizklotz.derbunddownloader</string>
-
-    <string name="epaper_api_domain">epaper.derbund.ch</string>
-    <string name="epaper_api_defid">46</string>
-    <string name="issue_title">Der Bund</string>
-    <string name="pw_request_url">https://abo.derbund.ch/tamstorefront/login/pw/request</string>
-    <string name="registration_url">https://abo.derbund.ch/tamstorefront/activate</string>
     <string name="logo">Logo</string>
+    <string name="tagi_teaser">Den ePaper Downloader gibt\'s jetzt auch für den Zürcher Tagesanzeiger!</string>
+    <string name="tryit">Ausprobieren</string>
+    <string name="ignoreit">Mir egal</string>
 
 </resources>
