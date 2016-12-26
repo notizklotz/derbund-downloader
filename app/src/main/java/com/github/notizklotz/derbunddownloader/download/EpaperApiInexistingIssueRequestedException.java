@@ -18,10 +18,18 @@
 
 package com.github.notizklotz.derbunddownloader.download;
 
-class EpaperApiInexistingIssueRequestedException extends Exception {
+import org.joda.time.LocalDate;
 
-    EpaperApiInexistingIssueRequestedException(String date) {
+public class EpaperApiInexistingIssueRequestedException extends Exception {
+
+    private final LocalDate date;
+
+    EpaperApiInexistingIssueRequestedException(LocalDate date) {
         super("Inexisting issue requested: " + date);
+        this.date = date;
     }
 
+    public LocalDate getDate() {
+        return date;
+    }
 }

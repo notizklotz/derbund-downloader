@@ -25,23 +25,17 @@ import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.widget.DatePicker;
-import android.widget.Toast;
 
-import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
-import com.github.notizklotz.derbunddownloader.download.IssueDownloadIntentService;
-import com.google.firebase.analytics.FirebaseAnalytics;
 
 import org.joda.time.DateTime;
-import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 
 public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Activity activity = getActivity();
+        final Activity activity = getActivity();
         if (activity == null) {
             throw new IllegalStateException("Activity is null");
         }
@@ -58,30 +52,15 @@ public class ManuallyDownloadIssueDatePickerFragment extends DialogFragment {
         datePickerDialog.setButton(DatePickerDialog.BUTTON_POSITIVE, activity.getText(R.string.action_download), new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                onDateSet(datePicker.getYear(), datePicker.getMonth() + 1, datePicker.getDayOfMonth());
+                ((DateSelectionListener)activity).onDateSet(new LocalDate(datePicker.getYear(), datePicker.getMonth() + 1, datePicker.getDayOfMonth()));
             }
         });
 
         return datePickerDialog;
     }
 
-    private void onDateSet(final int year, final int monthOfYear, final int dayOfMonth) {
-        final Activity activity = getActivity();
-        assert activity != null;
-
-        LocalDate selectedDate = new LocalDate(year, monthOfYear, dayOfMonth);
-
-        FirebaseAnalytics firebaseAnalytics = ((DerBundDownloaderApplication)getActivity().getApplication()).getAnalyticsComponent().firebaseAnalytics();
-
-        if (selectedDate.getDayOfWeek() == DateTimeConstants.SUNDAY) {
-            Bundle bundle = new Bundle();
-            bundle.putString("cause", "Sunday issue download attempted");
-            firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
-
-            Toast.makeText(activity, activity.getString(R.string.error_no_issue_on_sundays), Toast.LENGTH_SHORT).show();
-        } else {
-            IssueDownloadIntentService.startDownload(activity.getApplication(), dayOfMonth, monthOfYear, year);
-        }
+    public interface DateSelectionListener {
+        void onDateSet(LocalDate date);
     }
 
 }

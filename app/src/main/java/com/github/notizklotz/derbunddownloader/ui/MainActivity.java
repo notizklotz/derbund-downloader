@@ -57,6 +57,9 @@ import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
+import com.github.notizklotz.derbunddownloader.download.EpaperApiInexistingIssueRequestedException;
+import com.github.notizklotz.derbunddownloader.download.EpaperApiInvalidCredentialsException;
+import com.github.notizklotz.derbunddownloader.download.IssueDownloader;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.analytics.FirebaseAnalytics;
@@ -64,13 +67,15 @@ import com.google.firebase.crash.FirebaseCrash;
 import com.squareup.picasso.Picasso;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.LocalDate;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.inject.Inject;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener, ManuallyDownloadIssueDatePickerFragment.DateSelectionListener {
 
     private static final String TAG_DOWNLOAD_ISSUE_DATE_PICKER = "downloadIssueDatePicker";
     private static final String MEDIA_TYPE_PDF = "application/pdf";
@@ -88,6 +93,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
     @Inject
     ThumbnailRegistry thumbnailRegistry;
+
+    @Inject
+    IssueDownloader issueDownloader;
 
     @Inject
     FirebaseAnalytics firebaseAnalytics;
@@ -152,7 +160,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             int lastWhatsNewVersion = defaultSharedPreferences.getInt(KEY_LAST_WHATS_NEW_VERSION, 0);
             int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
 
-            if (lastWhatsNewVersion < currentAppVersion) {
+            if (lastWhatsNewVersion < 43) {
                 defaultSharedPreferences.edit().putInt(KEY_LAST_WHATS_NEW_VERSION, currentAppVersion).apply();
 
                 if (!"com.github.notizklotz.derbunddownloader.tagesanzeiger".equals(getPackageName())) {
@@ -433,6 +441,45 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                             // User cancelled the dialog
                         }
                     }).create();
+        }
+    }
+
+    @Override
+    public void onDateSet(LocalDate selectedDate) {
+        if (selectedDate.getDayOfWeek() == DateTimeConstants.SUNDAY) {
+            Bundle bundle = new Bundle();
+            bundle.putString("cause", "Sunday issue download attempted");
+            firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
+
+            Snackbar.make(gridView, R.string.error_no_issue_on_sundays, Snackbar.LENGTH_LONG).show();
+        } else {
+            new ManualIssueDownloadAsyncTask().execute(selectedDate);
+        }
+    }
+
+    private class ManualIssueDownloadAsyncTask extends AsyncTask<LocalDate, Void, Integer> {
+
+        @Override
+        protected Integer doInBackground(LocalDate... issueDate) {
+            try {
+                issueDownloader.download(issueDate[0], "manual", false);
+            } catch (IOException e) {
+                return R.string.download_connection_failed_text;
+            } catch (EpaperApiInexistingIssueRequestedException e) {
+                return R.string.error_issue_not_available;
+            } catch (EpaperApiInvalidCredentialsException e) {
+                return R.string.download_login_failed_text;
+            } catch (Exception e) {
+                return R.string.download_service_error;
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Integer integer) {
+            if (integer != null) {
+                Snackbar.make(gridView, integer, Snackbar.LENGTH_LONG).show();
+            }
         }
     }
 }

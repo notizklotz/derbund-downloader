@@ -81,42 +81,52 @@ public class IssueDownloader {
     }
 
     public void download(LocalDate issueDate, String trigger, boolean waitForCompletion) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
-        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-        if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
-            throw new IOException("Not connected");
-        }
-
-        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-        Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
-
         try {
-            epaperApiClient.savePdfThumbnail(issueDate);
-        } catch (Exception e) {
-            FirebaseCrash.log("Could not save thumbnail");
-            FirebaseCrash.report(e);
-        }
-
-        final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
-        final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
-        context.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-        try {
-            String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
-
-            if (waitForCompletion) {
-                downloadDoneSignal.await();
+            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+            if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
+                throw new IOException("Not connected");
             }
 
-            Bundle bundle = new Bundle();
-            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
-            bundle.putString("download_trigger", trigger);
-            firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
+            final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+            Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
 
-            notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
-        } catch (InterruptedException e) {
+            try {
+                epaperApiClient.savePdfThumbnail(issueDate);
+            } catch (Exception e) {
+                FirebaseCrash.log("Could not save thumbnail");
+                FirebaseCrash.report(e);
+            }
+
+            final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
+            final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
+            context.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+            try {
+                String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
+
+                if (waitForCompletion) {
+                    downloadDoneSignal.await();
+                }
+
+                Bundle bundle = new Bundle();
+                bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
+                bundle.putString("download_trigger", trigger);
+                firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
+
+                notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
+            } catch (InterruptedException e) {
+                FirebaseCrash.report(e);
+            } finally {
+                context.unregisterReceiver(receiver);
+            }
+        } catch (EpaperApiInvalidCredentialsException | EpaperApiInexistingIssueRequestedException e) {
+            Bundle bundle = new Bundle();
+            bundle.putString("cause", e.getMessage());
+            firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
+            throw e;
+        } catch (Exception e) {
             FirebaseCrash.report(e);
-        } finally {
-            context.unregisterReceiver(receiver);
+            throw e;
         }
     }
 

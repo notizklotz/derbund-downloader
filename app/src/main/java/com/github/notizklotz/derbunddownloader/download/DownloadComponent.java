@@ -37,6 +37,4 @@ public interface DownloadComponent {
 
     JobManager jobManager();
 
-    void inject(IssueDownloadIntentService target);
-
 }

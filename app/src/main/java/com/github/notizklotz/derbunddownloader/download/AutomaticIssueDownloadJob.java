@@ -26,7 +26,6 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
-import com.google.firebase.crash.FirebaseCrash;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -67,8 +66,6 @@ class AutomaticIssueDownloadJob extends Job {
         DateTime nowInSwitzerland = DateTime.now(DateHandlingUtils.TIMEZONE_SWITZERLAND);
         final LocalDate issueDate = new LocalDate(nowInSwitzerland.getYear(), nowInSwitzerland.getMonthOfYear(), nowInSwitzerland.getDayOfMonth());
 
-
-
         boolean retry = false;
         try {
 
@@ -83,14 +80,11 @@ class AutomaticIssueDownloadJob extends Job {
                 }
             }
         } catch (EpaperApiInvalidCredentialsException e) {
-            FirebaseCrash.log("Invalid credentials");
-            FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
+        } catch (EpaperApiInexistingIssueRequestedException e) {
+            notificationService.notifyUser(getContext().getString(R.string.download_state_failed), getContext().getString(R.string.error_issue_not_available), true);
         } catch (Exception e) {
-            FirebaseCrash.log(e.getMessage());
-            FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
-
             retry = true;
         } finally {
             if (TAG_PERIODIC.equals(params.getTag())) {

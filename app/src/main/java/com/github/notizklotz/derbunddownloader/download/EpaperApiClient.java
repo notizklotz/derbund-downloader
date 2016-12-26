@@ -103,11 +103,11 @@ public class EpaperApiClient {
     Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate)
             throws EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException, EpaperApiInexistingIssueRequestedException {
 
-        boolean subscribed = false;
+        boolean subscribed;
         try {
             subscribed = isSubscribed(issueDate);
         } catch (EpaperApiInvalidResponseException e) {
-            //No problem
+            subscribed = false;
         }
 
         if (subscribed) {
@@ -190,7 +190,7 @@ public class EpaperApiClient {
             Response response = client.newCall(request).execute();
             if (!response.isSuccessful()) {
                 if (response.code() == 500) {
-                    throw new EpaperApiInexistingIssueRequestedException(issueDateString);
+                    throw new EpaperApiInexistingIssueRequestedException(issueDate);
                 }
 
                 throw new EpaperApiInvalidResponseException("Request PDF url response was not successful " + response.code());
@@ -198,11 +198,19 @@ public class EpaperApiClient {
 
             JSONObject jsonObject = new JSONObject(response.body().string());
 
-
-            JSONObject jsonObject1 = jsonObject.getJSONArray("data").getJSONObject(0);
-            String uriString = jsonObject1.optString("issuepdf");
+            String uriString = null;
+            JSONArray data = jsonObject.optJSONArray("data");
+            if (data != null) {
+                JSONObject jsonObject1 = data.optJSONObject(0);
+                if (jsonObject1 != null) {
+                    uriString = jsonObject1.optString("issuepdf");
+                    if (uriString == null) {
+                        uriString = jsonObject1.getString("issuefile");
+                    }
+                }
+            }
             if (uriString == null) {
-                uriString = jsonObject1.getString("issuefile");
+                throw new EpaperApiInexistingIssueRequestedException(issueDate);
             }
 
             return Uri.parse(uriString);
