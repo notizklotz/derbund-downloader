@@ -252,7 +252,26 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             bundle.putString("cause", "No PDF reader installed");
             firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
 
-            Snackbar.make(gridView, R.string.no_pdf_reader, Snackbar.LENGTH_LONG).show();
+            new AlertDialog.Builder(this).setMessage("Sie benötigen einen PDF Reader zum Lesen der Zeitung. Möchten Sie im Google Play Store eine solche App suchen?")
+                    .setPositiveButton("Ja", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            openWebPage("https://play.google.com/store/search?q=pdf%20reader");
+                        }
+                    }).setNegativeButton("Nein", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+            }).show();
+        }
+    }
+
+    public void openWebPage(String url) {
+        Uri webpage = Uri.parse(url);
+        Intent intent = new Intent(Intent.ACTION_VIEW, webpage);
+        if (intent.resolveActivity(getPackageManager()) != null) {
+            startActivity(intent);
         }
     }
 
