@@ -67,6 +67,7 @@ class AutomaticIssueDownloadJob extends Job {
         final LocalDate issueDate = new LocalDate(nowInSwitzerland.getYear(), nowInSwitzerland.getMonthOfYear(), nowInSwitzerland.getDayOfMonth());
 
         boolean retry = false;
+
         try {
 
             if (isRequirementNetworkTypeMet()) {
@@ -99,7 +100,7 @@ class AutomaticIssueDownloadJob extends Job {
 
             return Result.FAILURE;
         } else if (TAG_FALLBACK.equals(params.getTag())) {
-            return retry ? Result.RESCHEDULE : Result.FAILURE;
+            return (retry && getParams().getFailureCount() < 8) ? Result.RESCHEDULE : Result.FAILURE;
         }
 
         return Result.FAILURE;
