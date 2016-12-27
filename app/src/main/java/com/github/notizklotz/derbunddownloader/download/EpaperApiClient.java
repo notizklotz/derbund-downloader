@@ -135,11 +135,8 @@ public class EpaperApiClient {
 
             JSONObject responseBodyJson = new JSONObject(response.body().string());
             if (!responseBodyJson.getBoolean("success")) {
-                if ("INVALID_CREDENTIALS".equals(responseBodyJson.getString("errorCode"))) {
-                    throw new EpaperApiInvalidCredentialsException();
-                } else {
-                    throw new EpaperApiInvalidResponseException(responseBodyJson.getString("error"));
-                }
+                String errorCode = responseBodyJson.optString("errorCode");
+                throw new EpaperApiInvalidCredentialsException("Code: " + errorCode + ", " + responseBodyJson.optString("error"));
             }
         } catch (JSONException | IOException e) {
             throw new EpaperApiInvalidResponseException(e);
