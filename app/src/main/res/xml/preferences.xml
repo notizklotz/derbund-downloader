@@ -22,6 +22,7 @@
     <PreferenceCategory
         android:key="pref_key_main_settings"
         android:title="@string/action_settings">
+        <Preference android:title="@string/change_logindata"/>
         <CheckBoxPreference
             android:defaultValue="true"
             android:key="wifi_only"

@@ -78,5 +78,6 @@
     <string name="tagi_teaser">Den ePaper Downloader gibt\'s jetzt auch für den Zürcher Tagesanzeiger!</string>
     <string name="tryit">Ausprobieren</string>
     <string name="ignoreit">Mir egal</string>
+    <string name="change_logindata">Zugangsdaten ändern</string>
 
 </resources>

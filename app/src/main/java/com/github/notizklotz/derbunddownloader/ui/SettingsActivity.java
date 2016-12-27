@@ -18,9 +18,11 @@
 
 package com.github.notizklotz.derbunddownloader.ui;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.support.v7.app.AppCompatActivity;
 
@@ -57,9 +59,12 @@ public class SettingsActivity extends AppCompatActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
+
             addPreferencesFromResource(R.xml.preferences);
 
             ((DerBundDownloaderApplication) getActivity().getApplication()).getUiComponent().inject(this);
+
+            ((PreferenceCategory)getPreferenceScreen().getPreference(0)).getPreference(0).setIntent(new Intent(this.getActivity(), LoginActivity.class));
 
             updateSummaries(getPreferenceScreen().getSharedPreferences());
         }
