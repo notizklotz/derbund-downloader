@@ -32,6 +32,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 
+import com.evernote.android.job.JobManager;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
@@ -80,7 +81,7 @@ public class IssueDownloader {
         this.settings = settings;
     }
 
-    public void download(LocalDate issueDate, String trigger, boolean waitForCompletion) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
+    public void download(LocalDate issueDate, DownloadTrigger trigger, boolean waitForCompletion) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
         try {
             NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
             if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
@@ -110,7 +111,10 @@ public class IssueDownloader {
 
                 Bundle bundle = new Bundle();
                 bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
-                bundle.putString("download_trigger", trigger);
+                bundle.putString("download_trigger", trigger.name());
+                if (trigger == DownloadTrigger.AUTO) {
+                    bundle.putString("job_api", JobManager.instance().getApi().name());
+                }
                 firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
 
                 notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
@@ -162,6 +166,12 @@ public class IssueDownloader {
 
     private static String expandTemplateWithDate(String template, LocalDate localDate) {
         return String.format(template, localDate.getDayOfMonth(), localDate.getMonthOfYear(), localDate.getYear());
+    }
+
+    public enum DownloadTrigger {
+
+        AUTO, MANUAL
+
     }
 
 }

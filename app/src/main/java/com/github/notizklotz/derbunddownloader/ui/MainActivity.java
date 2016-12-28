@@ -481,7 +481,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         protected Integer doInBackground(LocalDate... issueDate) {
             try {
-                issueDownloader.download(issueDate[0], "manual", false);
+                issueDownloader.download(issueDate[0], IssueDownloader.DownloadTrigger.MANUAL, false);
             } catch (IOException e) {
                 return R.string.download_connection_failed_text;
             } catch (EpaperApiInexistingIssueRequestedException e) {
