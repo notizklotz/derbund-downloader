@@ -54,13 +54,6 @@ public class AutomaticDownloadScheduler {
     private static final boolean DEBUG = BuildConfig.DEBUG && false;
 
     static {
-        HOLIDAYS.add(new LocalDate(2016, 3, 28));
-        HOLIDAYS.add(new LocalDate(2016, 5, 5));
-        HOLIDAYS.add(new LocalDate(2016, 5, 16));
-        HOLIDAYS.add(new LocalDate(2016, 8, 1));
-        HOLIDAYS.add(new LocalDate(2016, 12, 26));
-
-        HOLIDAYS.add(new LocalDate(2017, 1, 2));
         HOLIDAYS.add(new LocalDate(2017, 4, 14));
         HOLIDAYS.add(new LocalDate(2017, 4, 17));
         HOLIDAYS.add(new LocalDate(2017, 5, 25));

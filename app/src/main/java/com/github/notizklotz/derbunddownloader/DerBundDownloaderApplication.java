@@ -24,7 +24,6 @@ import android.content.pm.PackageManager;
 import android.os.StrictMode;
 import android.preference.PreferenceManager;
 
-import com.evernote.android.job.util.JobApi;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsComponent;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsModule;
 import com.github.notizklotz.derbunddownloader.analytics.DaggerAnalyticsComponent;
@@ -75,11 +74,6 @@ public class DerBundDownloaderApplication extends Application {
         downloadComponent.jobManager().addJobCreator(downloadComponent.jobCreator());
 
         migrate();
-
-        if (downloadComponent.jobManager().getApi().equals(JobApi.GCM)) {
-            //Android job currently doesn't handle rescheduling if GCM is used
-            downloadComponent.automaticDownloadScheduler().update();
-        }
     }
 
     private void migrate() {
@@ -87,7 +81,7 @@ public class DerBundDownloaderApplication extends Application {
             SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
             int lastAppVersion = defaultSharedPreferences.getInt(KEY_LAST_APP_VERSION, 0);
 
-            if (lastAppVersion < 40) {
+            if (lastAppVersion < 46) {
                 downloadComponent.automaticDownloadScheduler().update();
                 int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
                 defaultSharedPreferences.edit().putInt(KEY_LAST_APP_VERSION, currentAppVersion).apply();
