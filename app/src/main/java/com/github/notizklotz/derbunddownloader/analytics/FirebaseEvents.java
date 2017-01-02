@@ -22,6 +22,9 @@ public class FirebaseEvents {
 
     private FirebaseEvents() {
     }
+    public static final String KEY_JOB_API = "job_api";
+
+    public static final String KEY_DOWNLOAD_TRIGGER = "download_trigger";
 
     public static final String DOWNLOAD_ISSUE_COMPLETED = "download_issue_completed";
 

@@ -27,6 +27,7 @@ import android.preference.PreferenceManager;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsComponent;
 import com.github.notizklotz.derbunddownloader.analytics.AnalyticsModule;
 import com.github.notizklotz.derbunddownloader.analytics.DaggerAnalyticsComponent;
+import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.download.DaggerDownloadComponent;
 import com.github.notizklotz.derbunddownloader.download.DownloadComponent;
 import com.github.notizklotz.derbunddownloader.download.DownloadModule;
@@ -74,6 +75,8 @@ public class DerBundDownloaderApplication extends Application {
         downloadComponent.jobManager().addJobCreator(downloadComponent.jobCreator());
 
         migrate();
+
+        analyticsComponent.firebaseAnalytics().setUserProperty(FirebaseEvents.KEY_JOB_API, downloadComponent.jobManager().getApi().toString());
     }
 
     private void migrate() {

@@ -111,9 +111,9 @@ public class IssueDownloader {
 
                 Bundle bundle = new Bundle();
                 bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
-                bundle.putString("download_trigger", trigger.name());
+                bundle.putString(FirebaseEvents.KEY_DOWNLOAD_TRIGGER, trigger.name());
                 if (trigger == DownloadTrigger.AUTO) {
-                    bundle.putString("job_api", JobManager.instance().getApi().name());
+                    bundle.putString(FirebaseEvents.KEY_JOB_API, JobManager.instance().getApi().name());
                 }
                 firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
 
