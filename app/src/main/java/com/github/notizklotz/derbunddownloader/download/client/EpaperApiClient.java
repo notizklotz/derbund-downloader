@@ -144,10 +144,10 @@ public class EpaperApiClient {
         }
 
         try {
-            JSONObject responseBodyJson = new JSONObject(response.body().string());
+            String responseString = response.body().string();
+            JSONObject responseBodyJson = new JSONObject(responseString);
             if (!responseBodyJson.getBoolean("success")) {
-                String errorCode = responseBodyJson.optString("errorCode");
-                throw new InvalidCredentialsException("Code: " + errorCode + ", " + responseBodyJson.optString("error"));
+                throw new InvalidCredentialsException(responseString);
             }
         } catch (JSONException | IOException e) {
             throw new InvalidResponseException(e);

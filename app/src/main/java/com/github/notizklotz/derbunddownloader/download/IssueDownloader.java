@@ -99,7 +99,11 @@ public class IssueDownloader {
             pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
         } catch (InvalidCredentialsException | InexistingIssueRequestedException e) {
             Bundle bundle = new Bundle();
-            bundle.putString("cause", e.getMessage());
+            String message = e.getMessage();
+            if (message.length() > 100) {
+                message = message.substring(0, 100);
+            }
+            bundle.putString("cause", message);
             firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
             throw e;
         }
