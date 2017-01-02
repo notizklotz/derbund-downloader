@@ -16,15 +16,15 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.download;
+package com.github.notizklotz.derbunddownloader.download.client;
 
 import org.joda.time.LocalDate;
 
-public class EpaperApiInexistingIssueRequestedException extends Exception {
+public class InexistingIssueRequestedException extends Exception {
 
     private final LocalDate date;
 
-    EpaperApiInexistingIssueRequestedException(LocalDate date) {
+    InexistingIssueRequestedException(LocalDate date) {
         super("Inexisting issue requested: " + date);
         this.date = date;
     }

@@ -57,10 +57,10 @@ import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
-import com.github.notizklotz.derbunddownloader.download.EpaperApiInexistingIssueRequestedException;
-import com.github.notizklotz.derbunddownloader.download.EpaperApiInvalidCredentialsException;
 import com.github.notizklotz.derbunddownloader.download.IssueDownloader;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
+import com.github.notizklotz.derbunddownloader.download.client.InexistingIssueRequestedException;
+import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
@@ -484,11 +484,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 issueDownloader.download(issueDate[0], IssueDownloader.DownloadTrigger.MANUAL, false);
             } catch (IOException e) {
                 return R.string.download_connection_failed_text;
-            } catch (EpaperApiInexistingIssueRequestedException e) {
+            } catch (InexistingIssueRequestedException e) {
                 return R.string.error_issue_not_available;
-            } catch (EpaperApiInvalidCredentialsException e) {
+            } catch (InvalidCredentialsException e) {
                 return R.string.download_login_failed_text;
             } catch (Exception e) {
+                FirebaseCrash.report(e);
                 return R.string.download_service_error;
             }
             return null;

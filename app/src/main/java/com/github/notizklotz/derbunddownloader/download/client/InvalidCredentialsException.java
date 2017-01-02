@@ -16,11 +16,11 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.download;
+package com.github.notizklotz.derbunddownloader.download.client;
 
-public class EpaperApiInvalidCredentialsException extends Exception {
+public class InvalidCredentialsException extends Exception {
 
-    EpaperApiInvalidCredentialsException(String reason) {
+    InvalidCredentialsException(String reason) {
         super(reason);
     }
 

@@ -40,7 +40,7 @@ import android.widget.TextView;
 
 import com.github.notizklotz.derbunddownloader.DerBundDownloaderApplication;
 import com.github.notizklotz.derbunddownloader.R;
-import com.github.notizklotz.derbunddownloader.download.EpaperApiClient;
+import com.github.notizklotz.derbunddownloader.download.client.EpaperApiClient;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 
 import org.apache.commons.lang3.StringUtils;

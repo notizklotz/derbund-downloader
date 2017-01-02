@@ -25,7 +25,10 @@ import com.evernote.android.job.Job;
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
+import com.github.notizklotz.derbunddownloader.download.client.InexistingIssueRequestedException;
+import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
+import com.google.firebase.crash.FirebaseCrash;
 
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -69,7 +72,6 @@ class AutomaticIssueDownloadJob extends Job {
         boolean retry = false;
 
         try {
-
             if (isRequirementNetworkTypeMet()) {
                 issueDownloader.download(issueDate, IssueDownloader.DownloadTrigger.AUTO, true);
                 return Result.SUCCESS;
@@ -80,11 +82,12 @@ class AutomaticIssueDownloadJob extends Job {
                     retry = true;
                 }
             }
-        } catch (EpaperApiInvalidCredentialsException e) {
+        } catch (InvalidCredentialsException e) {
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
-        } catch (EpaperApiInexistingIssueRequestedException e) {
+        } catch (InexistingIssueRequestedException e) {
             notificationService.notifyUser(getContext().getString(R.string.download_state_failed), getContext().getString(R.string.error_issue_not_available), true);
         } catch (Exception e) {
+            FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
             retry = true;
         } finally {

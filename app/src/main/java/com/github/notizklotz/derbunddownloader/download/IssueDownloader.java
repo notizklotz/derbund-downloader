@@ -37,6 +37,9 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
+import com.github.notizklotz.derbunddownloader.download.client.EpaperApiClient;
+import com.github.notizklotz.derbunddownloader.download.client.InexistingIssueRequestedException;
+import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
@@ -81,56 +84,56 @@ public class IssueDownloader {
         this.settings = settings;
     }
 
-    public void download(LocalDate issueDate, DownloadTrigger trigger, boolean waitForCompletion) throws IOException, EpaperApiInexistingIssueRequestedException, EpaperApiInvalidResponseException, EpaperApiInvalidCredentialsException {
+    public void download(LocalDate issueDate, DownloadTrigger trigger, boolean waitForCompletion)
+            throws IOException, InexistingIssueRequestedException, InvalidCredentialsException {
+
+        NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
+        if (networkInfo == null || !networkInfo.isConnected()) {
+            throw new IOException("Not connected");
+        }
+
+        final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
+
+        Uri pdfDownloadUrl;
         try {
-            NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
-            if (networkInfo == null || !networkInfo.isConnectedOrConnecting()) {
-                throw new IOException("Not connected");
-            }
-
-            final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
-            Uri pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
-
-            try {
-                epaperApiClient.savePdfThumbnail(issueDate);
-            } catch (Exception e) {
-                FirebaseCrash.log("Could not save thumbnail");
-                FirebaseCrash.report(e);
-            }
-
-            final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
-            final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
-            context.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
-
-            try {
-                String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
-
-                if (waitForCompletion) {
-                    downloadDoneSignal.await();
-                }
-
-                Bundle bundle = new Bundle();
-                bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
-                bundle.putString(FirebaseEvents.KEY_DOWNLOAD_TRIGGER, trigger.name());
-                if (trigger == DownloadTrigger.AUTO) {
-                    bundle.putString(FirebaseEvents.KEY_JOB_API, JobManager.instance().getApi().name());
-                }
-                firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
-
-                notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
-            } catch (InterruptedException e) {
-                FirebaseCrash.report(e);
-            } finally {
-                context.unregisterReceiver(receiver);
-            }
-        } catch (EpaperApiInvalidCredentialsException | EpaperApiInexistingIssueRequestedException e) {
+            pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
+        } catch (InvalidCredentialsException | InexistingIssueRequestedException e) {
             Bundle bundle = new Bundle();
             bundle.putString("cause", e.getMessage());
             firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
             throw e;
+        }
+
+        try {
+            epaperApiClient.savePdfThumbnail(issueDate);
         } catch (Exception e) {
             FirebaseCrash.report(e);
-            throw e;
+        }
+
+        final CountDownLatch downloadDoneSignal = new CountDownLatch(1);
+        final DownloadCompletedBroadcastReceiver receiver = new DownloadCompletedBroadcastReceiver(downloadDoneSignal);
+        context.registerReceiver(receiver, new IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE));
+
+        try {
+            String title = enqueueDownloadRequest(pdfDownloadUrl, issueDate, settings.isWifiOnly());
+
+            if (waitForCompletion) {
+                downloadDoneSignal.await();
+            }
+
+            Bundle bundle = new Bundle();
+            bundle.putString(FirebaseAnalytics.Param.ITEM_ID, issueDate.toString());
+            bundle.putString(FirebaseEvents.KEY_DOWNLOAD_TRIGGER, trigger.name());
+            if (trigger == DownloadTrigger.AUTO) {
+                bundle.putString(FirebaseEvents.KEY_JOB_API, JobManager.instance().getApi().name());
+            }
+            firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
+
+            notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
+        } catch (InterruptedException e) {
+            FirebaseCrash.report(e);
+        } finally {
+            context.unregisterReceiver(receiver);
         }
     }
 

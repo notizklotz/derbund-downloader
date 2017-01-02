@@ -16,15 +16,22 @@
  * along with this program. If not, see {http://www.gnu.org/licenses/}.
  */
 
-package com.github.notizklotz.derbunddownloader.download;
+package com.github.notizklotz.derbunddownloader.download.client;
 
-class EpaperApiInvalidResponseException extends Exception {
+/**
+ * Response from API was unexpected.
+ */
+class InvalidResponseException extends RuntimeException {
 
-    EpaperApiInvalidResponseException(String detailMessage) {
+    InvalidResponseException(String detailMessage) {
         super(detailMessage);
     }
 
-    EpaperApiInvalidResponseException(Throwable throwable) {
+    InvalidResponseException(Throwable throwable) {
         super("Illegal response from server", throwable);
+    }
+
+    InvalidResponseException(String s, Exception e) {
+        super(s, e);
     }
 }

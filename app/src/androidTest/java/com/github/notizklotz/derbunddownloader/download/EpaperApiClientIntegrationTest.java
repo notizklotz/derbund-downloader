@@ -20,6 +20,8 @@ package com.github.notizklotz.derbunddownloader.download;
 
 import android.support.test.runner.AndroidJUnit4;
 
+import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
+
 import org.junit.Assume;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -29,7 +31,7 @@ import org.junit.runner.RunWith;
 @Ignore("Issues real requests against the ePaper API")
 public class EpaperApiClientIntegrationTest {
 
-    @Test(expected = EpaperApiInvalidCredentialsException.class)
+    @Test(expected = InvalidCredentialsException.class)
     public void invalidLogin() throws Exception {
         //new EpaperApiClient(context, analyticsTracker, thumbnailRegistry).getPdfDownloadUrl("asdfawer", "asdfasdfa", new LocalDate(2015, 12, 14));
     }
