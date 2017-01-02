@@ -82,7 +82,7 @@ public class AutomaticDownloadScheduler {
                 .setPersisted(false)
                 .setRequirementsEnforced(false)
                 .setUpdateCurrent(true)
-                .setExecutionWindow(TimeUnit.MINUTES.toMillis(1), TimeUnit.MINUTES.toMillis(5));
+                .setExecutionWindow(TimeUnit.MINUTES.toMillis(5), TimeUnit.MINUTES.toMillis(15));
 
         if (settings.isWifiOnly()) {
             builder.setRequiredNetworkType(JobRequest.NetworkType.UNMETERED);
