@@ -86,7 +86,10 @@ public class DerBundDownloaderApplication extends Application {
 
             if (lastAppVersion < 46) {
                 downloadComponent.automaticDownloadScheduler().update();
-                int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+            }
+
+            int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
+            if (currentAppVersion != lastAppVersion) {
                 defaultSharedPreferences.edit().putInt(KEY_LAST_APP_VERSION, currentAppVersion).apply();
             }
         } catch (PackageManager.NameNotFoundException e) {

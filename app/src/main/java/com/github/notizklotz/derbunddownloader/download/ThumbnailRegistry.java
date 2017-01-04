@@ -21,6 +21,7 @@ package com.github.notizklotz.derbunddownloader.download;
 import android.app.Application;
 import android.content.Context;
 import android.support.annotation.NonNull;
+import android.support.v4.content.ContextCompat;
 
 import com.google.firebase.crash.FirebaseCrash;
 
@@ -73,6 +74,6 @@ public class ThumbnailRegistry {
 
     @NonNull
     private File getCacheDir() {
-        return new File(context.getCacheDir(), "thumbs");
+        return new File(ContextCompat.getNoBackupFilesDir(context), "thumbs");
     }
 }
