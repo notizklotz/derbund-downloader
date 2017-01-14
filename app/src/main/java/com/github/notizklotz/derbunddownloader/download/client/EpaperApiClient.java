@@ -296,7 +296,12 @@ public class EpaperApiClient {
         new RetriableTask<>(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                Response response = client.newCall(request).execute();
+                Response response;
+                try {
+                    response = client.newCall(request).execute();
+                } catch (SSLHandshakeException e) {
+                    response = clientWithCustomCertificates.newCall(request).execute();
+                }
                 if (response.isSuccessful()) {
                     BufferedSink sink = Okio.buffer(Okio.sink(thumbnailFile));
                     ResponseBody body = response.body();
