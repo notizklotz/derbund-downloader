@@ -80,14 +80,17 @@ public class DerBundDownloaderApplication extends Application {
     }
 
     private void migrate() {
+        SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(DerBundDownloaderApplication.this);
+        int lastAppVersion = defaultSharedPreferences.getInt(KEY_LAST_APP_VERSION, 0);
+
+        if (lastAppVersion < 46) {
+            downloadComponent.automaticDownloadScheduler().update();
+        }
+
+        if (lastAppVersion < 49) {
+            downloadComponent.thumnailRegistry().migrate();
+        }
         try {
-            SharedPreferences defaultSharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-            int lastAppVersion = defaultSharedPreferences.getInt(KEY_LAST_APP_VERSION, 0);
-
-            if (lastAppVersion < 46) {
-                downloadComponent.automaticDownloadScheduler().update();
-            }
-
             int currentAppVersion = getPackageManager().getPackageInfo(getPackageName(), 0).versionCode;
             if (currentAppVersion != lastAppVersion) {
                 defaultSharedPreferences.edit().putInt(KEY_LAST_APP_VERSION, currentAppVersion).apply();

@@ -25,6 +25,7 @@ import android.support.v4.content.ContextCompat;
 
 import com.google.firebase.crash.FirebaseCrash;
 
+import org.apache.commons.io.FileUtils;
 import org.joda.time.LocalDate;
 
 import java.io.File;
@@ -75,5 +76,24 @@ public class ThumbnailRegistry {
     @NonNull
     private File getCacheDir() {
         return new File(ContextCompat.getNoBackupFilesDir(context), "thumbs");
+    }
+
+    public void migrate() {
+        try {
+            File oldCacheDir = new File(context.getCacheDir(), "thumbs");
+            if (oldCacheDir.exists()) {
+                File newCacheDir = getCacheDir();
+                //noinspection ResultOfMethodCallIgnored
+                newCacheDir.mkdirs();
+                for (File oldFile : oldCacheDir.listFiles()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    FileUtils.copyFile(oldFile, new File(newCacheDir, oldFile.getName()));
+                    //noinspection ResultOfMethodCallIgnored
+                    oldFile.delete();
+                }
+            }
+        } catch (Exception e) {
+            FirebaseCrash.report(e);
+        }
     }
 }

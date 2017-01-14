@@ -37,4 +37,6 @@ public interface DownloadComponent {
 
     JobManager jobManager();
 
+    ThumbnailRegistry thumnailRegistry();
+
 }
