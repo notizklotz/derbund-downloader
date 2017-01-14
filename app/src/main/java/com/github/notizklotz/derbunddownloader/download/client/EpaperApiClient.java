@@ -334,6 +334,8 @@ public class EpaperApiClient {
         });
 
         if (withCustomCertificates) {
+            //https://developer.android.com/training/articles/security-ssl.html#CommonProblems
+            //https://github.com/square/okhttp/blob/master/samples/guide/src/main/java/okhttp3/recipes/CustomTrust.java
             try {
                 String keyStoreType = KeyStore.getDefaultType();
                 KeyStore keyStore = KeyStore.getInstance(keyStoreType);
