@@ -23,12 +23,15 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.annotation.NonNull;
+import android.support.annotation.RawRes;
 
 import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.RetriableTask;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
+import com.google.firebase.crash.FirebaseCrash;
 
+import org.apache.commons.io.IOUtils;
 import org.joda.time.LocalDate;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -36,6 +39,12 @@ import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.KeyStore;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +52,11 @@ import java.util.concurrent.Callable;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLHandshakeException;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.TrustManagerFactory;
+import javax.net.ssl.X509TrustManager;
 
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
@@ -70,6 +84,8 @@ public class EpaperApiClient {
 
     private final OkHttpClient client;
 
+    private final OkHttpClient clientWithCustomCertificates;
+
     private final SharedPreferences cookiejar;
 
     private final String domain;
@@ -81,26 +97,8 @@ public class EpaperApiClient {
         this.domain = context.getString(R.string.epaper_api_domain);
 
         cookiejar = context.getSharedPreferences("cookiejar", Context.MODE_PRIVATE);
-        this.client = new OkHttpClient.Builder().cookieJar(new CookieJar() {
-            @Override
-            public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
-                SharedPreferences.Editor edit = cookiejar.edit();
-                for (Cookie cookie : cookies) {
-                    edit.putString(cookie.name(), cookie.value());
-                }
-                edit.apply();
-            }
-
-            @Override
-            public List<Cookie> loadForRequest(HttpUrl url) {
-                List<Cookie> result = new LinkedList<>();
-                for (Map.Entry<String, ?> cookieEntry : cookiejar.getAll().entrySet()) {
-                    result.add(new Cookie.Builder().name(cookieEntry.getKey()).value(cookieEntry.getValue().toString()).domain(domain).build());
-                }
-
-                return result;
-            }
-        }).build();
+        client = createOkHttpClient(context, false);
+        clientWithCustomCertificates = createOkHttpClient(context, true);
     }
 
     public Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate) throws InvalidCredentialsException, InexistingIssueRequestedException {
@@ -137,7 +135,7 @@ public class EpaperApiClient {
                 .post(body)
                 .build();
 
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, request)).call();
+        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
 
         if (!response.isSuccessful()) {
             throw new InvalidResponseException("Login response was not successful " + response.code());
@@ -172,7 +170,7 @@ public class EpaperApiClient {
                 .url("https://" + domain + "/index.cfm/epaper/1.0/getArticle")
                 .post(body)
                 .build();
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, request)).call();
+        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
         if (!response.isSuccessful()) {
             throw new InvalidResponseException("Subscription check url response was not successful " + response.code());
         }
@@ -205,7 +203,7 @@ public class EpaperApiClient {
                 .post(body)
                 .build();
 
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, request)).call();
+        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
 
         if (!response.isSuccessful()) {
             if (response.code() == 500) {
@@ -263,7 +261,7 @@ public class EpaperApiClient {
                 .post(body)
                 .build();
 
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, request)).call();
+        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
 
         if (!response.isSuccessful()) {
             throw new InvalidResponseException("Request PDF url response was not successful " + response.code());
@@ -312,20 +310,95 @@ public class EpaperApiClient {
         }).call();
     }
 
+    private OkHttpClient createOkHttpClient(Application context, boolean withCustomCertificates) {
+        OkHttpClient.Builder builder = new OkHttpClient.Builder();
+        builder.cookieJar(new CookieJar() {
+            @Override
+            public void saveFromResponse(HttpUrl url, List<Cookie> cookies) {
+                SharedPreferences.Editor edit = cookiejar.edit();
+                for (Cookie cookie : cookies) {
+                    edit.putString(cookie.name(), cookie.value());
+                }
+                edit.apply();
+            }
+
+            @Override
+            public List<Cookie> loadForRequest(HttpUrl url) {
+                List<Cookie> result = new LinkedList<>();
+                for (Map.Entry<String, ?> cookieEntry : cookiejar.getAll().entrySet()) {
+                    result.add(new Cookie.Builder().name(cookieEntry.getKey()).value(cookieEntry.getValue().toString()).domain(domain).build());
+                }
+
+                return result;
+            }
+        });
+
+        if (withCustomCertificates) {
+            try {
+                String keyStoreType = KeyStore.getDefaultType();
+                KeyStore keyStore = KeyStore.getInstance(keyStoreType);
+                keyStore.load(null, null);
+                CertificateFactory cf = CertificateFactory.getInstance("X.509");
+                keyStore.setCertificateEntry("root", getCertificate(R.raw.digi_cert_root, context, cf));
+                keyStore.setCertificateEntry("intermediate", getCertificate(R.raw.digi_cert_sha2, context, cf));
+
+                // Create a TrustManager that trusts the CAs in our KeyStore
+                String tmfAlgorithm = TrustManagerFactory.getDefaultAlgorithm();
+                TrustManagerFactory tmf = TrustManagerFactory.getInstance(tmfAlgorithm);
+                tmf.init(keyStore);
+                TrustManager[] trustManagers = tmf.getTrustManagers();
+                if (trustManagers.length != 1 || !(trustManagers[0] instanceof X509TrustManager)) {
+                    throw new IllegalStateException("Unexpected default trust managers:" + Arrays.toString(trustManagers));
+                }
+                X509TrustManager trustManager = (X509TrustManager) trustManagers[0];
+
+                SSLContext sslContext = SSLContext.getInstance("TLS");
+                sslContext.init(null, tmf.getTrustManagers(), null);
+
+                builder.sslSocketFactory(sslContext.getSocketFactory(), trustManager);
+            } catch (Exception e) {
+                FirebaseCrash.report(e);
+            }
+        }
+
+        return builder.build();
+    }
+
+    private Certificate getCertificate(@RawRes int id, Application context, CertificateFactory cf) throws CertificateException {
+        InputStream caInput = context.getResources().openRawResource(id);
+        Certificate ca;
+        try {
+            ca = cf.generateCertificate(caInput);
+        } finally {
+            IOUtils.closeQuietly(caInput);
+        }
+        return ca;
+    }
+
     private static class HttpRequestCallable implements Callable<Response> {
 
+        @NonNull
         private final OkHttpClient client;
+        @NonNull
+        private final OkHttpClient clientWithCustomCertificates;
+
+        @NonNull
         private final Request request;
 
-        private HttpRequestCallable(@NonNull OkHttpClient client, @NonNull Request request) {
+        private HttpRequestCallable(@NonNull OkHttpClient client, @NonNull OkHttpClient clientWithCustomCertificates, @NonNull Request request) {
             this.client = client;
+            this.clientWithCustomCertificates = clientWithCustomCertificates;
             this.request = request;
         }
 
         @Override
         @NonNull
         public Response call() throws Exception {
-            return client.newCall(request).execute();
+            try {
+                return client.newCall(request).execute();
+            } catch (SSLHandshakeException e) {
+                return clientWithCustomCertificates.newCall(request).execute();
+            }
         }
     }
 
