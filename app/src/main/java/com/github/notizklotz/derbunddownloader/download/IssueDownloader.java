@@ -123,6 +123,7 @@ public class IssueDownloader {
 
             if (waitForCompletion) {
                 downloadDoneSignal.await();
+                notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
             }
 
             Bundle bundle = new Bundle();
@@ -132,8 +133,6 @@ public class IssueDownloader {
                 bundle.putString(FirebaseEvents.KEY_JOB_API, JobManager.instance().getApi().name());
             }
             firebaseAnalytics.logEvent(FirebaseEvents.DOWNLOAD_ISSUE_COMPLETED, bundle);
-
-            notificationService.notifyUser(title, context.getString(R.string.download_completed), false);
         } catch (InterruptedException e) {
             FirebaseCrash.report(e);
         } finally {
