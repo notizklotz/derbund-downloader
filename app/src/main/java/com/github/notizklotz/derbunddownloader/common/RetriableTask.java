@@ -69,7 +69,7 @@ public class RetriableTask<T> implements Callable<T> {
         return numberOfRetries != numberOfTriesLeft;
     }
 
-    private static class RetryException extends RuntimeException {
+    public static class RetryException extends RuntimeException {
         RetryException(String s, Exception e) {
             super(s, e);
         }

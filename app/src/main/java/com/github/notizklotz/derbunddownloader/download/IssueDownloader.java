@@ -37,6 +37,7 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
+import com.github.notizklotz.derbunddownloader.common.RetriableTask;
 import com.github.notizklotz.derbunddownloader.download.client.EpaperApiClient;
 import com.github.notizklotz.derbunddownloader.download.client.InexistingIssueRequestedException;
 import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
@@ -98,13 +99,14 @@ public class IssueDownloader {
         try {
             pdfDownloadUrl = epaperApiClient.getPdfDownloadUrl(sharedPref.getString(Settings.KEY_USERNAME, ""), sharedPref.getString(Settings.KEY_PASSWORD, ""), issueDate);
         } catch (InvalidCredentialsException | InexistingIssueRequestedException e) {
-            Bundle bundle = new Bundle();
-            String message = e.getMessage();
-            if (message.length() > 100) {
-                message = message.substring(0, 100);
+            logException(FirebaseEvents.USER_ERROR, e);
+            throw e;
+        } catch (RetriableTask.RetryException e) {
+            Exception cause = (Exception) e.getCause();
+            if (cause instanceof IOException) {
+                logException(FirebaseEvents.CONNECTION_ERROR, e);
+                throw (IOException) cause;
             }
-            bundle.putString("cause", message);
-            firebaseAnalytics.logEvent(FirebaseEvents.USER_ERROR, bundle);
             throw e;
         }
 
@@ -138,6 +140,16 @@ public class IssueDownloader {
         } finally {
             context.unregisterReceiver(receiver);
         }
+    }
+
+    private void logException(String event, Exception e) {
+        Bundle bundle = new Bundle();
+        String message = e.getMessage();
+        if (message.length() > 100) {
+            message = message.substring(0, 100);
+        }
+        bundle.putString("cause", message);
+        firebaseAnalytics.logEvent(event, bundle);
     }
 
     private String enqueueDownloadRequest(Uri issueUrl, LocalDate issueDate, boolean wifiOnly) {

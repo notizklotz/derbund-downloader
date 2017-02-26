@@ -50,7 +50,7 @@
     <string name="download_login_failed_text">Ihre Benutzerdaten sind nicht gültig</string>
     <string name="download_connection_failed_no_wifi_text">WLAN war nicht eingeschaltet. Die Zeitung wurde nicht heruntergeladen.</string>
     <string name="download_connection_failed">Verbindung fehlgeschlagen</string>
-    <string name="download_connection_failed_text">Es konnte keine Internet-Verbindung hergestellt werden.</string>
+    <string name="download_connection_failed_text">Es konnte keine Verbindung zu den Servern hergestellt werden.</string>
     <string name="download_completed">Download Abgeschlossen</string>
     <string name="last_wakeup">Zuletzt aufgewacht</string>
     <string name="last_wakeup_never">Nie</string>

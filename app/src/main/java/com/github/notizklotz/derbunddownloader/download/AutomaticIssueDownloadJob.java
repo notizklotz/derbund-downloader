@@ -33,6 +33,8 @@ import com.google.firebase.crash.FirebaseCrash;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
+import java.io.IOException;
+
 class AutomaticIssueDownloadJob extends Job {
 
     static final String TAG_PERIODIC = "AutomaticIssueDownloadJob";
@@ -82,6 +84,9 @@ class AutomaticIssueDownloadJob extends Job {
                     retry = true;
                 }
             }
+        } catch (IOException e) {
+            notificationService.notifyUser(getContext().getText(R.string.download_connection_failed), getContext().getText(R.string.download_connection_failed_text), true);
+            retry = true;
         } catch (InvalidCredentialsException e) {
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
         } catch (InexistingIssueRequestedException e) {
