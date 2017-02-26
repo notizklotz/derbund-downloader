@@ -37,14 +37,9 @@ public class RetriableTask<T> implements Callable<T> {
     private int numberOfTriesLeft;
 
     public RetriableTask(Callable<T> task) {
-        this(DEFAULT_NUMBER_OF_RETRIES, DEFAULT_WAIT_TIME, task);
-    }
-
-    private RetriableTask(int numberOfRetries, long timeToWait,
-                          Callable<T> task) {
-        this.numberOfRetries = numberOfRetries;
-        numberOfTriesLeft = numberOfRetries;
-        this.timeToWait = timeToWait;
+        this.numberOfRetries = DEFAULT_NUMBER_OF_RETRIES;
+        numberOfTriesLeft = DEFAULT_NUMBER_OF_RETRIES;
+        this.timeToWait = DEFAULT_WAIT_TIME;
         this.task = task;
     }
 
@@ -68,6 +63,10 @@ public class RetriableTask<T> implements Callable<T> {
                 }
             }
         }
+    }
+
+    public boolean hasRetried() {
+        return numberOfRetries != numberOfTriesLeft;
     }
 
     private static class RetryException extends RuntimeException {

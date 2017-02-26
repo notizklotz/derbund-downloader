@@ -22,6 +22,7 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RawRes;
 
@@ -29,6 +30,7 @@ import com.github.notizklotz.derbunddownloader.R;
 import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.RetriableTask;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
+import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
 
 import org.apache.commons.io.IOUtils;
@@ -70,6 +72,8 @@ import okhttp3.ResponseBody;
 import okio.BufferedSink;
 import okio.Okio;
 
+import static com.github.notizklotz.derbunddownloader.analytics.FirebaseEvents.RETRY_SUCCEEDED;
+
 @Singleton
 public class EpaperApiClient {
 
@@ -86,12 +90,14 @@ public class EpaperApiClient {
 
     private final OkHttpClient clientWithCustomCertificates;
 
+    private final FirebaseAnalytics firebaseAnalytics;
+
     private final SharedPreferences cookiejar;
 
     private final String domain;
 
     @Inject
-    EpaperApiClient(final Application context, ThumbnailRegistry thumbnailRegistry) {
+    EpaperApiClient(final Application context, ThumbnailRegistry thumbnailRegistry, FirebaseAnalytics firebaseAnalytics) {
         this.context = context;
         this.thumbnailRegistry = thumbnailRegistry;
         this.domain = context.getString(R.string.epaper_api_domain);
@@ -99,6 +105,7 @@ public class EpaperApiClient {
         cookiejar = context.getSharedPreferences("cookiejar", Context.MODE_PRIVATE);
         client = createOkHttpClient(context, false);
         clientWithCustomCertificates = createOkHttpClient(context, true);
+        this.firebaseAnalytics = firebaseAnalytics;
     }
 
     public Uri getPdfDownloadUrl(@NonNull String username, @NonNull String password, @NonNull LocalDate issueDate) throws InvalidCredentialsException, InexistingIssueRequestedException {
@@ -135,7 +142,7 @@ public class EpaperApiClient {
                 .post(body)
                 .build();
 
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
+        Response response = executeRequest(request);
 
         if (!response.isSuccessful()) {
             throw new InvalidResponseException("Login response was not successful " + response.code());
@@ -170,7 +177,8 @@ public class EpaperApiClient {
                 .url("https://" + domain + "/index.cfm/epaper/1.0/getArticle")
                 .post(body)
                 .build();
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
+        Response response = executeRequest(request);
+
         if (!response.isSuccessful()) {
             throw new InvalidResponseException("Subscription check url response was not successful " + response.code());
         }
@@ -202,8 +210,7 @@ public class EpaperApiClient {
                 .url("https://" + domain + "/index.cfm/epaper/1.0/getEditionDoc")
                 .post(body)
                 .build();
-
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
+        Response response = executeRequest(request);
 
         if (!response.isSuccessful()) {
             if (response.code() == 500) {
@@ -260,8 +267,7 @@ public class EpaperApiClient {
                 .url("https://" + domain + "/index.cfm/epaper/1.0/getFirstPage")
                 .post(body)
                 .build();
-
-        Response response = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request)).call();
+        Response response = executeRequest(request);
 
         if (!response.isSuccessful()) {
             throw new InvalidResponseException("Request PDF url response was not successful " + response.code());
@@ -293,7 +299,7 @@ public class EpaperApiClient {
         //noinspection ResultOfMethodCallIgnored
         thumbnailFile.getParentFile().mkdirs();
 
-        new RetriableTask<>(new Callable<Void>() {
+        RetriableTask<Void> retriableTask = new RetriableTask<>(new Callable<Void>() {
             @Override
             public Void call() throws Exception {
                 Response response;
@@ -312,7 +318,11 @@ public class EpaperApiClient {
 
                 return null;
             }
-        }).call();
+        });
+        retriableTask.call();
+        if (retriableTask.hasRetried()) {
+            firebaseAnalytics.logEvent(RETRY_SUCCEEDED, new Bundle());
+        }
     }
 
     private OkHttpClient createOkHttpClient(Application context, boolean withCustomCertificates) {
@@ -380,6 +390,15 @@ public class EpaperApiClient {
             IOUtils.closeQuietly(caInput);
         }
         return ca;
+    }
+
+    private Response executeRequest(Request request) {
+        RetriableTask<Response> responseRetriableTask = new RetriableTask<>(new HttpRequestCallable(client, clientWithCustomCertificates, request));
+        Response response = responseRetriableTask.call();
+        if (responseRetriableTask.hasRetried()) {
+            firebaseAnalytics.logEvent(RETRY_SUCCEEDED, new Bundle());
+        }
+        return response;
     }
 
     private static class HttpRequestCallable implements Callable<Response> {
