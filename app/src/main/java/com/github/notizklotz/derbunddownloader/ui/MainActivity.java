@@ -28,7 +28,6 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
@@ -229,17 +228,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private void openPDF(Uri uri) {
         NotificationManagerCompat.from(this).cancelAll();
 
-        Intent intent = new Intent(Intent.ACTION_VIEW);
+        final Uri dataUri = FileProvider.getUriForFile(this, getPackageName(), new File(uri.getPath()));
+        final Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_HISTORY);
-
-        Uri dataUri;
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            File file = new File(uri.getPath());
-            dataUri = FileProvider.getUriForFile(this, getPackageName(), file);
-            intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        } else {
-            dataUri = uri;
-        }
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         intent.setDataAndType(dataUri, MEDIA_TYPE_PDF);
 
         PackageManager packageManager = getPackageManager();
