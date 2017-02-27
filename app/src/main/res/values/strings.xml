@@ -37,6 +37,7 @@
     <string name="auto_download">Automatisch täglich herunterladen</string>
     <string name="einstellungen">Einstellungen</string>
     <string name="error_no_issue_on_sundays">Die Zeitung erscheint Sonntags nicht!</string>
+    <string name="downloading">Lade Ausgabe herunter</string>
     <string name="error_issue_not_available">Die Ausgabe steht (noch) nicht zur Verfügung</string>
     <string name="no_issues_downloaded">Keine Ausgaben heruntergeladen</string>
     <string name="issue">Zeitungsausgabe</string>

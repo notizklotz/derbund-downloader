@@ -468,6 +468,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         @Override
         protected Integer doInBackground(LocalDate... issueDate) {
             try {
+                Snackbar.make(gridView, R.string.downloading, Snackbar.LENGTH_SHORT).show();
                 issueDownloader.download(issueDate[0], IssueDownloader.DownloadTrigger.MANUAL, false);
             } catch (IOException e) {
                 return R.string.download_connection_failed_text;
