@@ -60,6 +60,7 @@ import com.github.notizklotz.derbunddownloader.download.IssueDownloader;
 import com.github.notizklotz.derbunddownloader.download.ThumbnailRegistry;
 import com.github.notizklotz.derbunddownloader.download.client.InexistingIssueRequestedException;
 import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
+import com.github.notizklotz.derbunddownloader.download.client.IssueAlreadyDownloadedException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
@@ -206,9 +207,8 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                 // Load the thumbnail image
                 ImageView image = (ImageView) view.findViewById(R.id.issueImageView);
-                String description = getDescriptionFromCursor(getCursor());
 
-                LocalDate issueDate = DateHandlingUtils.fromDateString(description);
+                LocalDate issueDate = IssueDownloader.getIssueDateFromDownloadManagerCursor(getCursor());
                 File originalThumbnailUri = thumbnailRegistry.getThumbnailFile(issueDate);
 
                 Picasso.with(MainActivity.this)
@@ -268,34 +268,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     }
 
     private void deleteIssue(final long id) {
-        new AsyncTask<Void, Void, String>() {
+        new AsyncTask<Void, Void, LocalDate>() {
             @Override
-            protected String doInBackground(Void... params) {
+            protected LocalDate doInBackground(Void... params) {
                 Cursor cursor = downloadManager.query(new DownloadManager.Query().setFilterById(id));
-                String descriptionFromCursor = "";
-                //noinspection TryFinallyCanBeTryWithResources
+                LocalDate issueDate = null;
                 try {
                     if (cursor.moveToFirst()) {
-                        descriptionFromCursor = getDescriptionFromCursor(cursor);
-                        thumbnailRegistry.clear(DateHandlingUtils.fromDateString(descriptionFromCursor));
+                        issueDate =  IssueDownloader.getIssueDateFromDownloadManagerCursor(cursor);
+                        thumbnailRegistry.clear(issueDate);
                     }
                 } finally {
                     cursor.close();
                 }
 
                 downloadManager.remove(id);
-                return descriptionFromCursor;
+                return issueDate;
             }
 
             @Override
-            protected void onPostExecute(String aVoid) {
-                Snackbar.make(gridView, getText(R.string.issue_deleted) + " " + aVoid, Snackbar.LENGTH_SHORT).show();
+            protected void onPostExecute(LocalDate issueDate) {
+                Snackbar.make(gridView, getText(R.string.issue_deleted) + " " + DateHandlingUtils.toDateString(issueDate), Snackbar.LENGTH_SHORT).show();
             }
         }.execute();
-    }
-
-    private static String getDescriptionFromCursor(Cursor cursor) {
-        return cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
     }
 
     private void showDeleteAllIssuesDialog() {
@@ -480,7 +475,9 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 return R.string.error_issue_not_available;
             } catch (InvalidCredentialsException e) {
                 return R.string.download_login_failed_text;
-            } catch (Exception e) {
+            } catch (IssueAlreadyDownloadedException e) {
+                return R.string.issue_already_downloaded_text;
+            }catch (Exception e) {
                 FirebaseCrash.report(e);
                 return R.string.download_service_error;
             }

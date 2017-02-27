@@ -25,6 +25,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
@@ -41,6 +42,7 @@ import com.github.notizklotz.derbunddownloader.common.RetriableTask;
 import com.github.notizklotz.derbunddownloader.download.client.EpaperApiClient;
 import com.github.notizklotz.derbunddownloader.download.client.InexistingIssueRequestedException;
 import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
+import com.github.notizklotz.derbunddownloader.download.client.IssueAlreadyDownloadedException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.analytics.FirebaseAnalytics;
 import com.google.firebase.crash.FirebaseCrash;
@@ -85,12 +87,27 @@ public class IssueDownloader {
         this.settings = settings;
     }
 
+    public static LocalDate getIssueDateFromDownloadManagerCursor(Cursor cursor) {
+        String dateString = cursor.getString(cursor.getColumnIndex(DownloadManager.COLUMN_DESCRIPTION));
+        return DateHandlingUtils.fromDateString(dateString);
+    }
+
     public void download(LocalDate issueDate, DownloadTrigger trigger, boolean waitForCompletion)
-            throws IOException, InexistingIssueRequestedException, InvalidCredentialsException {
+            throws IOException, InexistingIssueRequestedException, InvalidCredentialsException, IssueAlreadyDownloadedException {
 
         NetworkInfo networkInfo = connectivityManager.getActiveNetworkInfo();
         if (networkInfo == null || !networkInfo.isConnected()) {
             throw new IOException("Not connected");
+        }
+        Cursor cursor = downloadManager.query(new DownloadManager.Query());
+        try {
+            while (cursor.moveToNext()) {
+                if (issueDate.equals(getIssueDateFromDownloadManagerCursor(cursor))) {
+                    throw new IssueAlreadyDownloadedException(issueDate);
+                }
+            }
+        } finally {
+            cursor.close();
         }
 
         final SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);

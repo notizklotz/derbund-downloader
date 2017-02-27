@@ -27,6 +27,7 @@ import com.github.notizklotz.derbunddownloader.common.DateHandlingUtils;
 import com.github.notizklotz.derbunddownloader.common.NotificationService;
 import com.github.notizklotz.derbunddownloader.download.client.InexistingIssueRequestedException;
 import com.github.notizklotz.derbunddownloader.download.client.InvalidCredentialsException;
+import com.github.notizklotz.derbunddownloader.download.client.IssueAlreadyDownloadedException;
 import com.github.notizklotz.derbunddownloader.settings.Settings;
 import com.google.firebase.crash.FirebaseCrash;
 
@@ -91,6 +92,8 @@ class AutomaticIssueDownloadJob extends Job {
             notificationService.notifyUser(getContext().getText(R.string.download_login_failed), getContext().getText(R.string.download_login_failed_text), true);
         } catch (InexistingIssueRequestedException e) {
             notificationService.notifyUser(getContext().getString(R.string.download_state_failed), getContext().getString(R.string.error_issue_not_available), true);
+        } catch (IssueAlreadyDownloadedException e) {
+            return Result.SUCCESS;
         } catch (Exception e) {
             FirebaseCrash.report(e);
             notificationService.notifyUser(getContext().getText(R.string.download_service_error), e.getMessage(), true);
