@@ -39,7 +39,7 @@ public class DateHandlingUtils {
     }
 
     public static String toDateString(LocalDate localDate) {
-        return localDate.toString(DATE_TIME_FORMATTER);
+        return localDate != null ? localDate.toString(DATE_TIME_FORMATTER) : "";
     }
 
     public static LocalDate fromDateString(String dateString) {
